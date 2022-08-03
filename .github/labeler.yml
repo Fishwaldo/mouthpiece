@@ -8,7 +8,7 @@ labels:
       commits: "^feat: .*"
       body: "(\\n|.)*- \\[x\\] feature(\\n|.)*"
 
-  - label: "type: bug"
+  - label: "type: fix"
     sync: true
     matcher:
       title: "^fix: .*"
@@ -23,7 +23,7 @@ labels:
       body: "(\\n|.)*- \\[x\\] chore(\\n|.)*"
       files: [ ".github/*" ]
 
-  - label: "type: docs"
+  - label: "type: documentation"
     sync: true
     matcher:
       title: "^docs: .*"
@@ -32,15 +32,14 @@ labels:
 
 checks:
   - context: "Semantic Pull Request"
-    url: "https://github.com/Fishwaldo/go-logadapter/blob/master/.github/labeler.yml"
+    url: "https://github.com/Fishwaldo/mouthpiece/blob/master/.github/labeler.yml"
     description:
       success: Ready for review & merge.
       failure: Missing semantic label for merge.
     labels:
       any:
         - 'type: feature'
-        - 'type: bug'
+        - 'type: fix'
         - 'type: chore'
-        - 'type: docs'
-        - 'type: maintenance'
+        - 'type: documentation'
         - 'type: dependencies'

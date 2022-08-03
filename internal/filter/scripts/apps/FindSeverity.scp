@@ -1,0 +1,16 @@
+// Try to Guess the Severity based on the Message
+// If the content of the Messages contains Warning, Error etc
+
+// If the Severity is already set, skip this
+if (len(Severity) > 0) { 
+    return true;
+}
+severity = "Info";
+if (Message  ~= /warning/i ) {
+    severity = "Warning";    
+}
+if (Message ~= /error/i ) {
+    severity = "Error";
+}
+setseverity(severity);
+return true;

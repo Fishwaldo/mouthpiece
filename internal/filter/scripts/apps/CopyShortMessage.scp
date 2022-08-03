@@ -1,0 +1,20 @@
+// Sample Script to See if the Fields has a Key called Host
+//k = keys(Fields);
+//foreach name in k {
+//    printf("FieldName: %s", lower(name))
+//    if (lower(name) == "test") { 
+//        printf("Present")
+//        print("output")
+//        //Fields["boo"] = "boo"
+//        return true; 
+//    }
+//}
+//printf("No Match")
+//return false;
+
+//If the ShortMessage Isn't Present, then copy the Message to the ShortMessage
+
+if (len(ShortMsg) == 0) {
+    setshortmessage(Message);
+}
+return true;
