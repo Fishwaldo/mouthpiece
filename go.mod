@@ -100,4 +100,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace github.com/danielgtaylor/huma => github.com/Fishwaldo/huma Chi-Mux
+replace github.com/danielgtaylor/huma => github.com/Fishwaldo/huma v1.8.1-0.20220803065139-017c8e9c60a9
