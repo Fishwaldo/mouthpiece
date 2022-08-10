@@ -71,9 +71,9 @@ function login(prov) {
   });
 }
 
-function loginAnonymously(username) {
-  return fetch(
-    `/auth/anonymous/login?id=auth-example&user=${encodeURIComponent(username)}`
+function loginAnonymously(username, password) {
+  return req(
+    `/auth/direct/login?id=auth-example&user=${encodeURIComponent(username)}&passwd=${encodeURIComponent(password)}`
   );
 }
 
@@ -89,7 +89,7 @@ function loginViaEmailToken(token) {
   return req(`/auth/email/login?token=${token}`);
 }
 
-const validUsernameRegex = /^[a-zA-Z][\w ]+$/;
+const validUsernameRegex = /[^@]+@[^\.]+\..+/;
 
 function getUsernameInvalidReason(username) {
   if (username.length < 3) return "Username must be at least 3 characters long";
@@ -120,6 +120,11 @@ function getAnonymousLoginForm(onSubmit) {
   input.placeholder = "Username";
   input.className = "anon-form__input";
 
+  const pass = document.createElement("input");
+  pass.type = "text";
+  pass.placeholder = "Password";
+  pass.className = "anon-form__input";
+
   const submit = document.createElement("input");
   submit.type = "submit";
   submit.value = "Log in";
@@ -143,11 +148,12 @@ function getAnonymousLoginForm(onSubmit) {
   });
 
   form.appendChild(input);
+  form.appendChild(pass);
   form.appendChild(submit);
 
   form.addEventListener("submit", e => {
     e.preventDefault();
-    onSubmit(input.value);
+    onSubmit(input.value, pass.value);
   });
 
   return form;
@@ -330,7 +336,7 @@ function getLoginLinks() {
   return getProviders().then(providers =>
     providers.map(prov => {
       let a;
-      if (prov === "anonymous") {
+      if (prov === "direct") {
         a = document.createElement("span");
         a.dataset.provider = prov;
         a.className = "login__prov";
@@ -355,8 +361,8 @@ function getLoginLinks() {
           }
         });
 
-        const form = getAnonymousLoginForm(username => {
-          loginAnonymously(username)
+        const form = getAnonymousLoginForm((username, password) => {
+          loginAnonymously(username, password)
             .then(() => {
               window.location.replace(window.location.href);
             })

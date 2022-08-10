@@ -4,6 +4,7 @@ import (
 	_ "fmt"
 		"gorm.io/gorm"
 		"gorm.io/driver/sqlite"
+		. "github.com/Fishwaldo/mouthpiece/internal/log"
 	)
 
 var Db *gorm.DB
@@ -14,4 +15,5 @@ func InitializeDB() {
 	if err != nil {
 		panic(err)
 	}
+	Log.Info("Database Initialized")
 }

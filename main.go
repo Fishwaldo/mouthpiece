@@ -41,6 +41,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/internal/transport"
 	"github.com/Fishwaldo/mouthpiece/internal/user"
 	"github.com/Fishwaldo/mouthpiece/internal/app"
+	"github.com/Fishwaldo/mouthpiece/internal/middleware"
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
 
 
@@ -102,9 +103,9 @@ func main() {
 	}
 	// Create a new router & CLI with default middleware.
 	InitLogger()
+	db.InitializeDB()
 	humucli := cli.NewRouter("MouthPiece", "0.0.1")
 	humucli.DisableSchemaProperty()
-	humucli.PreStart(db.InitializeDB)
 	humucli.PreStart(transport.InitializeTransports)
 	humucli.PreStart(msg.InitializeMessage)
 	humucli.PreStart(user.InitializeUsers)
@@ -117,18 +118,10 @@ func main() {
 	humucli.GatewayAuthCode("mouthpiece2", "/oauth2/token", "/oauth2/token", nil)
 	humucli.GatewayBasicAuth("basic")
 
-
-	auth.InitAuth(fmt.Sprintf("http://arm64-1.dmz.dynam.ac:%v", viper.Get("Port")))
+	user.AuthConfig.Host = fmt.Sprintf("http://arm64-1.dmz.dynam.ac:%v", viper.Get("Port"))
+	auth.InitAuth(user.AuthConfig)
 	m := auth.AuthService.Service.Middleware()
-	p := auth.UpdateAuthContext{}
-	authRoutes, avaRoutes :=  auth.AuthService.Service.Handlers()
-	mux := humucli.Resource("/").GetMux()
-	mux.Mount("/auth", authRoutes)
-	mux.Mount("/avatar", avaRoutes)
-
-	fileServer(mux, "/frontend", http.Dir("frontend"))
-
-
+	p := middleware.Middleware{}
 
 	// Declare the root resource and a GET operation on it.
 	humucli.Resource("/health").Get("get-health", "Get Health of the Service",
@@ -147,6 +140,10 @@ func main() {
 		ctx.WriteModel(status, test)
 	})
 	v1api := humucli.Resource("/v1")
+	v1api.Middleware(m.Trace)
+	v1api.Middleware(p.Update())
+
+	auth.AuthService.AddResourceURL("/v1/message/{application}", "apigroup:message")
 	v1api.SubResource("/message/{application}").Post("post-message", "Post Message to the Service",
 		responses.OK().ContentType("application/json"),
 		responses.OK().Model(&msg.MessageResult{}),
@@ -164,24 +161,17 @@ func main() {
 			ctx.WriteError(http.StatusNotFound, "Application Not Found")
 		}
 	})
+
+
+	auth.AuthService.AddResourceURL("/v1/apps/", "apigroup:apps")
 	appapi := v1api.SubResource("/apps/")
-
-	appapi.Middleware(m.Auth)
-	appapi.Middleware(p.Update())
-
 	appapi.Get("get-apps", "Get A List of Applications",
 		responses.OK().ContentType("application/json"),
 		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model([]app.App{}),
-	).Run(func(ctx huma.Context) {
-//		printContextInternals(ctx, false)
-//		fmt.Printf("%+v\n", reflect.TypeOf(contextKey("user")))
-		fmt.Printf("Normal %+v\n", ctx.Value(auth.CtxUserValue{}))
-//		fmt.Printf("User: %+v\n", ctx.Value(contextKey("user")))
-//		fmt.Printf("User: %+v\n", getUserFromContext(ctx))		
+	).Run(func(ctx huma.Context) {	
 		ctx.WriteModel(http.StatusOK, app.GetApps())
 	})
-	
 	appapi.Put("create-app", "Create a Application",
 		responses.OK().ContentType("application/json"),
 		responses.OK().Headers("Set-Cookie"),
@@ -197,22 +187,29 @@ func main() {
 			ctx.WriteModel(http.StatusOK, app)
 		}
 	})
+
+	auth.AuthService.AddResourceURL("/v1/users/", "apigroup:users")
 	userapi := v1api.SubResource("/users/")
 	userapi.Get("get-users", "Get A List of Users",
 		responses.OK().ContentType("application/json"),
+		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model([]user.User{}),
 	).Run(func(ctx huma.Context) {
 		ctx.WriteModel(http.StatusOK, user.GetUsers())
 	})
-	usertransports := v1api.SubResource("/users/{user}/transports/")
+
+
+	auth.AuthService.AddResourceURL("/v1/users/{userid}/transports/", "apigroup:users")
+	usertransports := v1api.SubResource("/users/{userid}/transports/")
 	usertransports.Get("get-user-transports", "Get A List of Transports for a User",
 		responses.OK().ContentType("application/json"),
+		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model([]string{}),
 		responses.NotFound().ContentType("application/json"),
 	).Run(func(ctx huma.Context, input struct {
-			User string `path:"user"`
+			User uint `path:"userid"`
 		}) {
-		if user, err := user.GetUser(input.User); err != nil {
+		if user, err := user.GetUserByID(input.User); err != nil {
 			ctx.WriteError(http.StatusNotFound, "User Not Found",  err)
 		} else {
 			var transport []string
@@ -222,16 +219,18 @@ func main() {
 			ctx.WriteModel(http.StatusOK, transport)
 		}
 	})
-	usertransportdetails := v1api.SubResource("/users/{user}/transports/{transport}/")
+	auth.AuthService.AddResourceURL("/v1/users/{userid}/transports/{transportid}/", "apigroup:users")
+	usertransportdetails := v1api.SubResource("/users/{userid}/transports/{transportid}/")
 	usertransportdetails.Get("get-user-transport-details", "Get Details for a Transport for a User",
 		responses.OK().ContentType("application/json"),
+		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model(transport.TransportConfig{}),
 		responses.NotFound().ContentType("application/json"),
 	).Run(func(ctx huma.Context, input struct {
-			User string	`path:"user"`
-			Transport string `path:"transport"`
+			User uint	`path:"userid"`
+			Transport string `path:"transportid"`
 		}) {
-		if user, err := user.GetUser(input.User); err != nil {
+		if user, err := user.GetUserByID(input.User); err != nil {
 			ctx.WriteError(http.StatusNotFound, "User Not Found",  err)
 		} else {
 			ok := false
@@ -246,13 +245,24 @@ func main() {
 			}
 		}
 	})
+	auth.AuthService.AddResourceURL("/v1/transports/", "apigroup:transports")
 	transportapi := v1api.SubResource("/transports/")
 	transportapi.Get("get-transports", "Get A List of Transports",
 		responses.OK().ContentType("application/json"),
+		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model([]string{}),
 	).Run(func(ctx huma.Context) {
 		ctx.WriteModel(http.StatusOK, transport.GetTransports())
 	})
+
+
+	authRoutes, avaRoutes :=  auth.AuthService.Service.Handlers()
+	mux := humucli.Resource("/").GetMux()
+	mux.Mount("/auth", authRoutes)
+	mux.Mount("/avatar", avaRoutes)
+
+	fileServer(mux, "/static", http.Dir("frontend"))
+
 
 	// Run the CLI. When passed no arguments, it starts the server.
 	humucli.Run()

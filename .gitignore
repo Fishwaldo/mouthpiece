@@ -16,3 +16,5 @@
 config.yaml
 .gitignore
 .gitignore
+mouthpiece
+test.db
