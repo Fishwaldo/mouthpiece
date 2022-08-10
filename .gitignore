@@ -18,3 +18,4 @@ config.yaml
 .gitignore
 mouthpiece
 test.db
+frontend/node_modules/
