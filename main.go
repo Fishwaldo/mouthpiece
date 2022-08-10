@@ -261,7 +261,7 @@ func main() {
 	mux.Mount("/auth", authRoutes)
 	mux.Mount("/avatar", avaRoutes)
 
-	fileServer(mux, "/static", http.Dir("frontend"))
+	fileServer(mux, "/static", http.Dir("frontend/build/"))
 
 
 	// Run the CLI. When passed no arguments, it starts the server.
