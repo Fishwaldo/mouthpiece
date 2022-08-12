@@ -26,24 +26,24 @@ package main
 
 import (
 	//"fmt"
-//	"context"
+	//	"context"
 	"fmt"
 	"net/http"
-//	"reflect"
-	"strings"
-//	"unsafe"
 
-	"github.com/Fishwaldo/mouthpiece/internal"
-	"github.com/Fishwaldo/mouthpiece/internal/db"
+	//	"reflect"
+	"strings"
+	//	"unsafe"
+
+	mouthpiece "github.com/Fishwaldo/mouthpiece/internal"
+	"github.com/Fishwaldo/mouthpiece/internal/app"
 	"github.com/Fishwaldo/mouthpiece/internal/auth"
-	"github.com/Fishwaldo/mouthpiece/internal/message"
+	"github.com/Fishwaldo/mouthpiece/internal/db"
 	"github.com/Fishwaldo/mouthpiece/internal/filter"
+	. "github.com/Fishwaldo/mouthpiece/internal/log"
+	msg "github.com/Fishwaldo/mouthpiece/internal/message"
+	"github.com/Fishwaldo/mouthpiece/internal/middleware"
 	"github.com/Fishwaldo/mouthpiece/internal/transport"
 	"github.com/Fishwaldo/mouthpiece/internal/user"
-	"github.com/Fishwaldo/mouthpiece/internal/app"
-	"github.com/Fishwaldo/mouthpiece/internal/middleware"
-	. "github.com/Fishwaldo/mouthpiece/internal/log"
-
 
 	healthChecker "github.com/Fishwaldo/mouthpiece/internal/health"
 	_ "github.com/Fishwaldo/mouthpiece/internal/transport/stdout"
@@ -80,8 +80,6 @@ func fileServer(r chi.Router, path string, root http.FileSystem) {
 	})
 }
 
-
-
 func main() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -112,7 +110,7 @@ func main() {
 	humucli.PreStart(app.InitializeApps)
 	humucli.PreStart(transport.StartTransports)
 	humucli.PreStart(filter.InitFilter)
-//	app.PreStart()
+	//	app.PreStart()
 	humucli.PreStart(healthChecker.StartHealth)
 	humucli.GatewayClientCredentials("mouthpiece", "/oauth2/token", nil)
 	humucli.GatewayAuthCode("mouthpiece2", "/oauth2/token", "/oauth2/token", nil)
@@ -122,6 +120,13 @@ func main() {
 	auth.InitAuth(user.AuthConfig)
 	m := auth.AuthService.Service.Middleware()
 	p := middleware.Middleware{}
+
+	authRoutes, avaRoutes := auth.AuthService.Service.Handlers()
+	mux := humucli.Resource("/").GetMux()
+	mux.Mount("/auth", authRoutes)
+	mux.Mount("/avatar", avaRoutes)
+
+	fileServer(mux, "/static", http.Dir("frontend/dist/"))
 
 	// Declare the root resource and a GET operation on it.
 	humucli.Resource("/health").Get("get-health", "Get Health of the Service",
@@ -139,6 +144,15 @@ func main() {
 		}
 		ctx.WriteModel(status, test)
 	})
+
+	humucli.Resource("/config/frontend").Get("get-config", "Get Config of the Service",
+		responses.OK().ContentType("application/json"),
+		responses.OK().Headers("Content-Type"),
+		responses.OK().Model(&mouthpiece.FEConfig{}),
+	).Run(func(ctx huma.Context) {
+		ctx.WriteModel(http.StatusOK, mouthpiece.GetFEConfig())
+	})
+
 	v1api := humucli.Resource("/v1")
 	v1api.Middleware(m.Trace)
 	v1api.Middleware(p.Update())
@@ -162,14 +176,13 @@ func main() {
 		}
 	})
 
-
 	auth.AuthService.AddResourceURL("/v1/apps/", "apigroup:apps")
 	appapi := v1api.SubResource("/apps/")
 	appapi.Get("get-apps", "Get A List of Applications",
 		responses.OK().ContentType("application/json"),
 		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model([]app.App{}),
-	).Run(func(ctx huma.Context) {	
+	).Run(func(ctx huma.Context) {
 		ctx.WriteModel(http.StatusOK, app.GetApps())
 	})
 	appapi.Put("create-app", "Create a Application",
@@ -179,10 +192,10 @@ func main() {
 		responses.NotAcceptable().ContentType("application/json"),
 		responses.NotAcceptable().Headers("Set-Cookie"),
 	).Run(func(ctx huma.Context, input struct {
-			Body app.AppDetails
-		}) {
+		Body app.AppDetails
+	}) {
 		if app, err := app.CreateApp(input.Body); err != nil {
-			ctx.WriteError(http.StatusNotAcceptable, "Database Error",  err)
+			ctx.WriteError(http.StatusNotAcceptable, "Database Error", err)
 		} else {
 			ctx.WriteModel(http.StatusOK, app)
 		}
@@ -198,7 +211,6 @@ func main() {
 		ctx.WriteModel(http.StatusOK, user.GetUsers())
 	})
 
-
 	auth.AuthService.AddResourceURL("/v1/users/{userid}/transports/", "apigroup:users")
 	usertransports := v1api.SubResource("/users/{userid}/transports/")
 	usertransports.Get("get-user-transports", "Get A List of Transports for a User",
@@ -207,10 +219,10 @@ func main() {
 		responses.OK().Model([]string{}),
 		responses.NotFound().ContentType("application/json"),
 	).Run(func(ctx huma.Context, input struct {
-			User uint `path:"userid"`
-		}) {
+		User uint `path:"userid"`
+	}) {
 		if user, err := user.GetUserByID(input.User); err != nil {
-			ctx.WriteError(http.StatusNotFound, "User Not Found",  err)
+			ctx.WriteError(http.StatusNotFound, "User Not Found", err)
 		} else {
 			var transport []string
 			for _, t := range user.TransportConfigs {
@@ -227,11 +239,11 @@ func main() {
 		responses.OK().Model(transport.TransportConfig{}),
 		responses.NotFound().ContentType("application/json"),
 	).Run(func(ctx huma.Context, input struct {
-			User uint	`path:"userid"`
-			Transport string `path:"transportid"`
-		}) {
+		User      uint   `path:"userid"`
+		Transport string `path:"transportid"`
+	}) {
 		if user, err := user.GetUserByID(input.User); err != nil {
-			ctx.WriteError(http.StatusNotFound, "User Not Found",  err)
+			ctx.WriteError(http.StatusNotFound, "User Not Found", err)
 		} else {
 			ok := false
 			for _, t := range user.TransportConfigs {
@@ -254,15 +266,6 @@ func main() {
 	).Run(func(ctx huma.Context) {
 		ctx.WriteModel(http.StatusOK, transport.GetTransports())
 	})
-
-
-	authRoutes, avaRoutes :=  auth.AuthService.Service.Handlers()
-	mux := humucli.Resource("/").GetMux()
-	mux.Mount("/auth", authRoutes)
-	mux.Mount("/avatar", avaRoutes)
-
-	fileServer(mux, "/static", http.Dir("frontend/build/"))
-
 
 	// Run the CLI. When passed no arguments, it starts the server.
 	humucli.Run()

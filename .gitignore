@@ -19,3 +19,4 @@ config.yaml
 mouthpiece
 test.db
 frontend/node_modules/
+frontend/dist/
