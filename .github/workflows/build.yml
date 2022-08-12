@@ -16,8 +16,17 @@ jobs:
                 uses: actions/setup-go@v1
                 with:
                     go-version: ${{ matrix.go-version }}
+            -   name: Install NPM
+                if: success()
+                uses: actions/setup-node@v3
+                with:
+                    node-version: 16
             -   name: Checkout code
                 uses: actions/checkout@v1
+            -   name: install Node Dependancies
+                run: cd frontend && npm install
+            -   name: Build Frontend
+                run: cd frontend && npm run build
             -   name: Build 
                 run: go build .
             -   name: Run tests
