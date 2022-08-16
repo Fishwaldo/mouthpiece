@@ -11,3 +11,15 @@ updates:
       interval: "daily"
     labels:
       - "dependencies"
+      - "backend"
+    reviewers:
+      - "fishwaldo"
+  - package-ecosystem: "npm"
+    directory: "/frontend/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "dependencies"
+      - "frontend"
+    reviewers:
+      - "fishwaldo"
