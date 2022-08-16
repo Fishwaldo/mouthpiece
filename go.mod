@@ -10,7 +10,7 @@ require (
 	github.com/hellofresh/health-go/v4 v4.6.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/skx/evalfilter/v2 v2.1.19
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.22.0
 	gorm.io/gorm v1.23.8
 )
 
