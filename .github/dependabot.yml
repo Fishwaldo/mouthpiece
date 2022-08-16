@@ -14,6 +14,8 @@ updates:
       - "backend"
     reviewers:
       - "fishwaldo"
+    commit-message:
+      prefix: "chore"
   - package-ecosystem: "npm"
     directory: "/frontend/"
     schedule:
@@ -23,3 +25,5 @@ updates:
       - "frontend"
     reviewers:
       - "fishwaldo"
+    commit-message:
+      prefix: "chore"
