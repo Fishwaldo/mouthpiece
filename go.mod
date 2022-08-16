@@ -25,7 +25,7 @@ require (
 	github.com/go-pkgz/rest v1.15.6
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/mymmrac/telego v0.15.3
+	github.com/mymmrac/telego v0.16.0
 	github.com/spf13/viper v1.12.0
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
@@ -40,7 +40,7 @@ require (
 	github.com/danielgtaylor/casing v0.0.0-20210126043903-4e55e6373ac3 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.0 // indirect
 	github.com/dghubble/oauth1 v0.7.1 // indirect
-	github.com/fasthttp/router v1.4.10 // indirect
+	github.com/fasthttp/router v1.4.11 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
