@@ -11,7 +11,6 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/skx/evalfilter/v2 v2.1.19
 	go.uber.org/zap v1.21.0
-	gorm.io/driver/sqlite v1.3.6
 	gorm.io/gorm v1.23.8
 )
 
@@ -19,6 +18,7 @@ require (
 	github.com/casbin/casbin/v2 v2.37.4
 	github.com/casbin/gorm-adapter/v3 v3.7.4
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
+	github.com/glebarez/sqlite v1.4.3
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-pkgz/auth v1.19.0
 	github.com/go-pkgz/repeater v1.1.3
@@ -27,6 +27,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/mymmrac/telego v0.15.3
 	github.com/spf13/viper v1.10.1
+	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 )
 
@@ -45,7 +46,6 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
 	github.com/glebarez/go-sqlite v1.16.0 // indirect
-	github.com/glebarez/sqlite v1.4.3 // indirect
 	github.com/go-oauth2/oauth2/v4 v4.4.3 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
@@ -79,7 +79,6 @@ require (
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/mattn/go-sqlite3 v1.14.12 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.18 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/nullrocks/identicon v0.0.0-20180626043057-7875f45b0022 // indirect
@@ -109,7 +108,6 @@ require (
 	go.mongodb.org/mongo-driver v1.9.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898 // indirect
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
