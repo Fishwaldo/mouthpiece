@@ -16,3 +16,9 @@
 config.yaml
 .gitignore
 .gitignore
+mouthpiece
+test.db
+frontend/node_modules/
+frontend/dist/
+dist/
+test.db-journal

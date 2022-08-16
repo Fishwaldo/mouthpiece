@@ -10,4 +10,20 @@ updates:
     schedule:
       interval: "daily"
     labels:
-      - "type: dependencies"
+      - "dependencies"
+      - "backend"
+    reviewers:
+      - "fishwaldo"
+    commit-message:
+      prefix: "chore"
+  - package-ecosystem: "npm"
+    directory: "/frontend/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "dependencies"
+      - "frontend"
+    reviewers:
+      - "fishwaldo"
+    commit-message:
+      prefix: "chore"

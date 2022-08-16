@@ -2,32 +2,39 @@ package auth
 
 import (
 	"time"
-//	"strings"
-	"os"
-	"fmt"
-	"net/http"
+	//	"strings"
 	"context"
 	"crypto/sha1"
+	"fmt"
+	"net/http"
+	"os"
+//	"strings"
 
+	dbauth "github.com/Fishwaldo/mouthpiece/internal/auth/db"
+	telegramauth "github.com/Fishwaldo/mouthpiece/internal/auth/telegram"
+	"github.com/Fishwaldo/mouthpiece/internal/db"
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
-//	"github.com/Fishwaldo/mouthpiece/internal"
-	"github.com/Fishwaldo/mouthpiece/internal/user"
-	"github.com/Fishwaldo/mouthpiece/internal/auth/telegram"
 
 	"github.com/spf13/viper"
 
 	pkauth "github.com/go-pkgz/auth"
 	"github.com/go-pkgz/auth/avatar"
-	//"github.com/go-pkgz/auth/middleware"
 	"github.com/go-pkgz/auth/provider"
 	"github.com/go-pkgz/auth/token"
-	//"github.com/go-pkgz/auth/logger"
+
+	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2/util"
+
+	//"github.com/casbin/casbin/v2/log"
+	defaultrolemanager "github.com/casbin/casbin/v2/rbac/default-role-manager"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
 
 	"golang.org/x/oauth2/github"
 )
 
 type Auth struct {
-	Service *pkauth.Service
+	Service      *pkauth.Service
+	AuthEnforcer *casbin.Enforcer
 }
 
 var AuthService *Auth
@@ -41,6 +48,13 @@ func (AL AuthLogger) Logf(format string, args ...interface{}) {
 	Log.WithName("Auth").Info("Authentication", "message", fmt.Sprintf(format, args...))
 }
 
+type AuthConfig struct {
+	CredChecker func(username string, password string) (ok bool, err error)
+	MapClaimsToUser token.ClaimsUpdFunc
+	Validator token.ValidatorFunc
+	Host string
+}
+
 func init() {
 	viper.SetDefault("auth.github.enabled", false)
 	viper.SetDefault("auth.github.signups", true)
@@ -50,17 +64,21 @@ func init() {
 	viper.SetDefault("auth.github.fields.FullName", "name")
 	viper.SetDefault("auth.dev.enabled", false)
 	viper.SetDefault("auth.email.enabled", false)
+	viper.SetDefault("auth.microsoft.signups", false)
+	viper.SetDefault("auth.secret", "secret")
+	viper.SetDefault("auth.debug", false)
+	//viper.SetDefault("auth.avatar.cachedir", os.MkdirTemp("", "mouthpiece_avatar"))
 }
 
 func customGitHubProvider() (cred pkauth.Client, ch provider.CustomHandlerOpt) {
-	ch = provider.CustomHandlerOpt {
+	ch = provider.CustomHandlerOpt{
 		Endpoint: github.Endpoint,
-		InfoURL: "https://api.github.com/user",
+		InfoURL:  "https://api.github.com/user",
 		MapUserFn: func(data provider.UserData, _ []byte) token.User {
 			userInfo := token.User{
-				ID: "github_" + token.HashID(sha1.New(), data.Value(viper.GetString("auth.github.fields.UserName"))),
-				Name: data.Value(viper.GetString("auth.github.fields.UserName")),
-				Email: data.Value(viper.GetString("auth.github.fields.Email")),
+				ID:      "github_" + token.HashID(sha1.New(), data.Value(viper.GetString("auth.github.fields.UserName"))),
+				Name:    data.Value(viper.GetString("auth.github.fields.UserName")),
+				Email:   data.Value(viper.GetString("auth.github.fields.Email")),
 				Picture: data.Value(viper.GetString("auth.github.fields.Avatar")),
 			}
 			userInfo.SetStrAttr("fullname", data.Value(viper.GetString("auth.github.fields.FullName")))
@@ -70,66 +88,40 @@ func customGitHubProvider() (cred pkauth.Client, ch provider.CustomHandlerOpt) {
 		Scopes: []string{},
 	}
 	cred = pkauth.Client{
-		Cid: viper.GetString("auth.github.client_id"),
+		Cid:     viper.GetString("auth.github.client_id"),
 		Csecret: viper.GetString("auth.github.client_secret"),
 	}
 
 	return cred, ch
 }
 
-func mapClaimsToUser(claims token.Claims) token.Claims {
-	if claims.User != nil { 
-		if user, err := user.GetUser(claims.User.Name); err != nil {
-			Log.Info("User not found", "user", claims.User.Name)
-			claims.User.SetBoolAttr("valid", false)
-		} else {
-			claims.User.SetStrAttr("backenduser", user.Username)
-			claims.User.SetBoolAttr("valid", true)
-		}
-	}
-	fmt.Printf("Update Claims %+v\n", claims)
-	return claims
-}
 
-
-
-func InitAuth(host string) {
+func InitAuth(Config AuthConfig) {
 	AL = &AuthLogger{}
 	AuthService = &Auth{}
 
+	var avatarcachedir string
+	if viper.IsSet("auth.avatar.cachedir") {
+		avatarcachedir = viper.GetString("auth.avatar.cachedir")
+	} else { 
+		avatarcachedir, _ = os.MkdirTemp("", "mouthpiece_avatar")
+	}
 	options := pkauth.Opts{
 		SecretReader: token.SecretFunc(func(_ string) (string, error) { // secret key for JWT, ignores aud
-			return "secret", nil
+			return viper.GetString("auth.secret"), nil
 		}),
-		TokenDuration:     time.Minute,                                 // short token, refreshed automatically
-		CookieDuration:    time.Hour * 24,                              // cookie fine to keep for long time
-		DisableXSRF:       true,                                        // don't disable XSRF in real-life applications!
-		Issuer:            "my-demo-service",                           // part of token, just informational
-		URL:               host,                     					// base url of the protected service
-		AdminPasswd:       "password",												  // admin password
-		AvatarStore:       avatar.NewLocalFS("/tmp/demo-auth-service"), // stores avatars locally
+		TokenDuration:  time.Minute * 5, // short token, refreshed automatically
+		CookieDuration: time.Hour * 24,  // cookie fine to keep for long time
+		DisableXSRF:    true,            // don't disable XSRF in real-life applications!
+		Issuer:         "mouthpiece",    // part of token, just informational
+		URL:            Config.Host,            // base url of the protected service
+		//AdminPasswd:       "password",												  // admin password
+		AvatarStore:       avatar.NewLocalFS(avatarcachedir), // stores avatars locally
 		AvatarResizeLimit: 200,                                         // resizes avatars to 200x200
-		ClaimsUpd: token.ClaimsUpdFunc(mapClaimsToUser),
-//		Validator: token.ValidatorFunc(func(_ string, claims token.Claims) bool { // rejects some tokens
-//			if claims.User != nil {
-//				if strings.HasPrefix(claims.User.ID, "github_") { // allow all users with github auth
-//					return true
-//				}
-//				if strings.HasPrefix(claims.User.ID, "microsoft_") { // allow all users with ms auth
-//					return true
-//				}
-//				if strings.HasPrefix(claims.User.ID, "patreon_") { // allow all users with ms auth
-//					return true
-//				}
-//				if strings.HasPrefix(claims.User.Name, "dev_") { // non-guthub allow only dev_* names
-//					return true
-//				}
-//				return strings.HasPrefix(claims.User.Name, "custom123_")
-//			}
-//			return false
-//		}),
-		Logger:      AL, 			// optional logger for auth library
-		UseGravatar: true,          // for verified provider use gravatar service
+		ClaimsUpd: token.ClaimsUpdFunc(Config.MapClaimsToUser),
+		Validator: Config.Validator,
+		Logger:      AL,   // optional logger for auth library
+		UseGravatar: true, // for verified provider use gravatar service
 	}
 
 	// create auth service
@@ -137,6 +129,18 @@ func InitAuth(host string) {
 	if viper.GetBool("auth.dev.enabled") {
 		Log.Info("Auth Dev Mode Enabled!")
 		AuthService.Service.AddProvider("dev", "", "")
+		// run dev/test oauth2 server on :8084
+		go func() {
+			devAuthServer, err := AuthService.Service.DevAuth() // peak dev oauth2 server
+			devAuthServer.GetEmailFn = func(username string) string {
+				return "admin@example.com"
+			}
+			if err != nil {
+				Log.Error(err, "[PANIC] failed to start dev oauth2 server")
+			}
+			devAuthServer.Run(context.Background())
+
+		}()
 	}
 	if viper.GetBool("auth.github.enabled") {
 		if !viper.IsSet("auth.github.client_id") {
@@ -144,15 +148,27 @@ func InitAuth(host string) {
 		} else {
 			if !viper.IsSet("auth.github.client_secret") {
 				Log.Error(nil, "Github auth is enabled but client_secret is not set")
-			} else { 					
+			} else {
 				Log.Info("Auth Github Enabled!")
 				gcred, gch := customGitHubProvider()
 				AuthService.Service.AddCustomProvider("github", gcred, gch)
 			}
 		}
 	}
-	AuthService.Service.AddProvider("microsoft", os.Getenv("AEXMPL_MS_APIKEY"), os.Getenv("AEXMPL_MS_APISEC"))
-
+	if viper.GetBool("auth.microsoft.enabled") {
+		Log.Info("Auth Microsoft Enabled!")
+		AuthService.Service.AddProvider("microsoft", os.Getenv("AEXMPL_MS_APIKEY"), os.Getenv("AEXMPL_MS_APISEC"))
+	}
+	/* direct loging (username/password) is always handled */
+	dbprovider := dbauth.DirectHandler{
+		L:            AL,
+		ProviderName: "direct",
+		Issuer:       options.Issuer,
+		TokenService: AuthService.Service.TokenService(),
+		AvatarSaver:  AuthService.Service.AvatarProxy(),
+		CredChecker:  Config.CredChecker,
+	}
+	AuthService.Service.AddCustomHandler(dbprovider)
 
 	if viper.GetBool("auth.email.enabled") {
 		Log.Info("Auth Email Enabled!")
@@ -191,42 +207,61 @@ func InitAuth(host string) {
 			Log.Error(nil, "Telegram auth is enabled but token is not set")
 		}
 	}
-
-	// run dev/test oauth2 server on :8084
-	go func() {
-		devAuthServer, err := AuthService.Service.DevAuth() // peak dev oauth2 server
-		devAuthServer.GetEmailFn = func(username string) string {
-			return username + "@dynam.com"
-		}
-		if err != nil {
-			Log.Error(err, "[PANIC] failed to start dev oauth2 server")
-		}
-		devAuthServer.Run(context.Background())
-	}()
+	InitCasbin()
 	Log.Info("Auth service started")
 }
+func InitCasbin() {
+	cdb, err := gormadapter.NewAdapterByDB(db.Db)
+	if err != nil {
+		Log.Error(err, "Failed to Setup Casbin Auth Adapter")
+	}
 
+	AuthService.AuthEnforcer, err = casbin.NewEnforcer("config/auth_model.conf", cdb)
+	if err != nil {
+		Log.Error(err, "Failed to setup Casbin")
+	}
+	AuthService.AuthEnforcer.EnableLog(viper.GetBool("auth.debug"))
+	AuthService.AuthEnforcer.EnableAutoSave(true)
+	AuthService.AuthEnforcer.SetRoleManager(defaultrolemanager.NewRoleManager(10))
+	if err := AuthService.AuthEnforcer.LoadModel(); err != nil {
+		Log.Error(err, "Failed to load Casbin model")
+	}
 
-// UpdateAuthContext defines interface adding extras or modifying UserInfo in request context
-type UpdateAuthContext struct {
+	if err := AuthService.AuthEnforcer.LoadPolicy(); err != nil {
+		Log.Error(err, "Failed to Load Casbin Policy")
+	}
+	if !AuthService.AuthEnforcer.AddNamedMatchingFunc("g2", "KeyMatch3", util.KeyMatch3) {
+		Log.Error(nil, "Failed to add g2 matching function")
+	}
+	AuthService.AuthEnforcer.AddPolicy("role:admin", "apigroup:apps", "PUT")
+	AuthService.AuthEnforcer.AddPolicy("role:user", "apigroup:apps", "GET")
+	AuthService.AuthEnforcer.AddPolicy("role:admin", "apigroup:message", "PUT")
+	AuthService.AuthEnforcer.AddPolicy("role:user", "apigroup:message", "GET")
+	AuthService.AuthEnforcer.AddPolicy("role:admin", "apigroup:users", "PUT")
+	AuthService.AuthEnforcer.AddPolicy("role:user", "apigroup:users", "GET")
+	AuthService.AuthEnforcer.AddPolicy("role:admin", "apigroup:transports", "PUT")
+	AuthService.AuthEnforcer.AddPolicy("role:user", "apigroup:transports", "GET")
+
+	//	AuthService.AuthEnforcer.AddPolicy("role:user", "apigroup:apps", "GET")
+	AuthService.AuthEnforcer.AddRoleForUser("role:admin", "role:user")
+
+	//	AuthService.AuthEnforcer.AddRoleForUser("admin", "role:admin")
+	//	AuthService.AuthEnforcer.AddRoleForUser("dev_user", "role:admin")
+	p, _ := AuthService.AuthEnforcer.GetImplicitPermissionsForUser("admin@example.com")
+	fmt.Printf("Admin Permissions: %+v\n", p)
+
+	AuthService.AuthEnforcer.SavePolicy()
+	rm := AuthService.AuthEnforcer.GetPolicy()
+	Log.Info("Casbin Policy", "policy", rm)
+	Log.Info("Casbin User Roles", "Roles", AuthService.AuthEnforcer.GetGroupingPolicy())
+	Log.Info("Casbin API Groups", "API Groups", AuthService.AuthEnforcer.GetNamedGroupingPolicy("g2"))
+
 }
 
-
-type CtxUserValue struct{}
-
-// Update user info in request context from go-pkgz/auth token.User to mouthpiece.User
-func (a *UpdateAuthContext) Update() func(http.Handler) http.Handler {
-	f := func(h http.Handler) http.Handler {
-		fn := func(w http.ResponseWriter, r *http.Request) {
-			// call update only if user info exists, otherwise do nothing
-			if user, err := token.GetUserInfo(r); err == nil {
-				/* find out DB User */
-
-				r = r.WithContext(context.WithValue(r.Context(), CtxUserValue{}, user))
-			}
-			h.ServeHTTP(w, r)
-		}
-		return http.HandlerFunc(fn)
+func (a *Auth) AddResourceURL(url string, group string) bool {
+	ok, err := a.AuthEnforcer.AddNamedGroupingPolicy("g2", url, group)
+	if err != nil {
+		Log.Error(err, "Failed to add g2 policy", "url", url, "group", group)
 	}
-	return f
+	return ok
 }

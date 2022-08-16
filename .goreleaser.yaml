@@ -1,0 +1,40 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # Build html frontend
+    - go generate ./...
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/Fishwaldo/mouthpiece/internal.gitVersion={{.Version}} -X github.com/Fishwaldo/mouthpiece/internal.gitCommit={{.ShortCommit}} -X github.com/Fishwaldo/mouthpiece/internal.buildDate={{.Date}} 
+    asmflags:
+      #- all=-trimpath
+    gcflags:
+      #- all=-trimpath
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

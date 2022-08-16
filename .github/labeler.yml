@@ -1,21 +1,21 @@
 version: v1
 
 labels:
-  - label: "type: feature"
+  - label: "feature"
     sync: true
     matcher:
       title: "^feat: .*"
       commits: "^feat: .*"
       body: "(\\n|.)*- \\[x\\] feature(\\n|.)*"
 
-  - label: "type: fix"
+  - label: "fix"
     sync: true
     matcher:
       title: "^fix: .*"
       commits: "^fix: .*"
       body: "(\\n|.)*- \\[x\\] (fix|bug)(\\n|.)*"
 
-  - label: "type: chore"
+  - label: "chore"
     sync: true
     matcher:
       title: "^chore: .*"
@@ -23,7 +23,7 @@ labels:
       body: "(\\n|.)*- \\[x\\] chore(\\n|.)*"
       files: [ ".github/*" ]
 
-  - label: "type: documentation"
+  - label: "documentation"
     sync: true
     matcher:
       title: "^docs: .*"
@@ -38,8 +38,8 @@ checks:
       failure: Missing semantic label for merge.
     labels:
       any:
-        - 'type: feature'
-        - 'type: fix'
-        - 'type: chore'
-        - 'type: documentation'
-        - 'type: dependencies'
+        - 'feature'
+        - 'fix'
+        - 'chore'
+        - 'documentation'
+        - 'dependencies'
