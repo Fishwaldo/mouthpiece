@@ -29,14 +29,16 @@ import (
 	//	"context"
 	"fmt"
 	"net/http"
+	"io/fs"
 
 	//	"reflect"
 	"strings"
 	//	"unsafe"
-	"runtime/debug"
 	"encoding/json"
 	"os"
+	"runtime/debug"
 
+	"github.com/Fishwaldo/mouthpiece/frontend"
 	_ "github.com/Fishwaldo/mouthpiece/frontend"
 	mouthpiece "github.com/Fishwaldo/mouthpiece/internal"
 	"github.com/Fishwaldo/mouthpiece/internal/app"
@@ -62,6 +64,11 @@ import (
 	"github.com/danielgtaylor/huma/responses"
 	"github.com/spf13/viper"
 )
+
+func init() {
+	viper.SetDefault("frontend.path", "frontend/dist")
+	viper.SetDefault("frontend.external", false)
+}
 
 // FileServer conveniently sets up a http.FileServer handler to serve static files from a http.FileSystem.
 // Borrowed from https://github.com/go-chi/chi/blob/master/_examples/fileserver/main.go
@@ -132,7 +139,7 @@ func main() {
 	// Create a new router & CLI with default middleware.
 	InitLogger()
 	db.InitializeDB()
-	humucli := cli.NewRouter("MouthPiece", "0.0.1")
+	humucli := cli.NewRouter(bi.Name, bi.GitVersion)
 	humucli.DisableSchemaProperty()
 	humucli.PreStart(transport.InitializeTransports)
 	humucli.PreStart(msg.InitializeMessage)
@@ -156,7 +163,19 @@ func main() {
 	mux.Mount("/auth", authRoutes)
 	mux.Mount("/avatar", avaRoutes)
 
-	fileServer(mux, "/static", http.Dir("frontend/dist/"))
+	var httpfiles http.FileSystem
+	if viper.GetBool("frontend.external") {
+		Log.Info("Serving frontend from external location", "path", viper.GetString("frontend.path"))
+		httpfiles = http.Dir(viper.GetString("frontend.path"))
+	} else {
+		Log.Info("Serving frontend from Bundled Files")
+		subdir, err := fs.Sub(frontend.FrontEndFiles, "dist")
+		if err != nil {
+			Log.Error(err, "Failed to get subdir")
+		}
+		httpfiles = http.FS(subdir)
+	}
+	fileServer(mux, "/static", httpfiles)
 
 	// Declare the root resource and a GET operation on it.
 	humucli.Resource("/health").Get("get-health", "Get Health of the Service",

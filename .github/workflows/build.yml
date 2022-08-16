@@ -49,7 +49,7 @@ jobs:
           with:
             node-version: 16
         - name: Build Frontend
-          run: cd frontend && npm run build
+          run: cd frontend && npm install && npm run build
         - name: Initialize CodeQL
           uses: github/codeql-action/init@v1
           with:
@@ -63,13 +63,20 @@ jobs:
         runs-on: ubuntu-latest
         needs: [ test ]
         steps:
-            -   name: Install Go
+            - name: Install Go
                 if: success()
                 uses: actions/setup-go@v1
                 with:
                     go-version: 1.18.x
-            -   name: Checkout code
+            - name: Checkout code
                 uses: actions/checkout@v1
+            - name: Install NPM
+                if: success()
+                uses: actions/setup-node@v3
+                with:
+                    node-version: 16
+            - name: Build Frontend
+                run: cd frontend && npm install && npm run build
             -   name: Run tests
                 run: go mod tidy && go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
             -   name: CodeCov
