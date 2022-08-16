@@ -59,7 +59,7 @@
     "sass": "^1.32.7",
     "sass-loader": "^13.0.2",
     "ts-jest": "^27.0.4",
-    "typescript": "~4.5.5"
+    "typescript": "~4.7.4"
   },
   "bugs": {
     "url": "https://github.com/coreui/coreui-free-vue-admin-template/issues"
