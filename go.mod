@@ -1,6 +1,6 @@
 module github.com/Fishwaldo/mouthpiece
 
-go 1.17
+go 1.18
 
 require (
 	github.com/alexliesenfeld/health v0.6.0
