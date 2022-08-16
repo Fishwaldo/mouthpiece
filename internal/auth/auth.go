@@ -6,9 +6,11 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
-//	"strings"
+
+	//	"strings"
 
 	dbauth "github.com/Fishwaldo/mouthpiece/internal/auth/db"
 	telegramauth "github.com/Fishwaldo/mouthpiece/internal/auth/telegram"
@@ -23,6 +25,7 @@ import (
 	"github.com/go-pkgz/auth/token"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/util"
 
 	//"github.com/casbin/casbin/v2/log"
@@ -53,6 +56,7 @@ type AuthConfig struct {
 	MapClaimsToUser token.ClaimsUpdFunc
 	Validator token.ValidatorFunc
 	Host string
+	ConfigDir fs.FS
 }
 
 func init() {
@@ -207,25 +211,34 @@ func InitAuth(Config AuthConfig) {
 			Log.Error(nil, "Telegram auth is enabled but token is not set")
 		}
 	}
-	InitCasbin()
+	InitCasbin(Config)
 	Log.Info("Auth service started")
 }
-func InitCasbin() {
+func InitCasbin(config AuthConfig) {
 	cdb, err := gormadapter.NewAdapterByDB(db.Db)
 	if err != nil {
 		Log.Error(err, "Failed to Setup Casbin Auth Adapter")
 	}
 
-	AuthService.AuthEnforcer, err = casbin.NewEnforcer("config/auth_model.conf", cdb)
+	casbinmodel, err := fs.ReadFile(config.ConfigDir, "config/auth_model.conf")
+	if err != nil {
+		Log.Error(err, "Failed to read casbin model")
+	}
+	m, err := model.NewModelFromString(string(casbinmodel))
+	if err != nil {
+		Log.Error(err, "Failed to parse casbin model")
+	}
+	AuthService.AuthEnforcer, err = casbin.NewEnforcer(m, cdb)
 	if err != nil {
 		Log.Error(err, "Failed to setup Casbin")
 	}
+
 	AuthService.AuthEnforcer.EnableLog(viper.GetBool("auth.debug"))
 	AuthService.AuthEnforcer.EnableAutoSave(true)
 	AuthService.AuthEnforcer.SetRoleManager(defaultrolemanager.NewRoleManager(10))
-	if err := AuthService.AuthEnforcer.LoadModel(); err != nil {
-		Log.Error(err, "Failed to load Casbin model")
-	}
+	//if err := AuthService.AuthEnforcer.LoadModel(); err != nil {
+	//	Log.Error(err, "Failed to load Casbin model")
+	//}
 
 	if err := AuthService.AuthEnforcer.LoadPolicy(); err != nil {
 		Log.Error(err, "Failed to Load Casbin Policy")

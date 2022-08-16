@@ -37,6 +37,7 @@ import (
 	"encoding/json"
 	"os"
 	"runtime/debug"
+	"embed"
 
 	"github.com/Fishwaldo/mouthpiece/frontend"
 	_ "github.com/Fishwaldo/mouthpiece/frontend"
@@ -64,6 +65,11 @@ import (
 	"github.com/danielgtaylor/huma/responses"
 	"github.com/spf13/viper"
 )
+
+
+//go:embed config
+var ConfigFiles embed.FS
+
 
 func init() {
 	viper.SetDefault("frontend.path", "frontend/dist")
@@ -154,6 +160,7 @@ func main() {
 	humucli.GatewayBasicAuth("basic")
 
 	user.AuthConfig.Host = fmt.Sprintf("http://arm64-1.dmz.dynam.ac:%v", viper.Get("Port"))
+	user.AuthConfig.ConfigDir = ConfigFiles
 	auth.InitAuth(user.AuthConfig)
 	m := auth.AuthService.Service.Middleware()
 	p := middleware.Middleware{}
