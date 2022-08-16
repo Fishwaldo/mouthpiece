@@ -3,35 +3,35 @@ package app
 import (
 	"errors"
 
+	"github.com/Fishwaldo/mouthpiece/internal/db"
+	"github.com/Fishwaldo/mouthpiece/internal/errors"
+	"github.com/Fishwaldo/mouthpiece/internal/filter"
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/message"
 	"github.com/Fishwaldo/mouthpiece/internal/user"
-	"github.com/Fishwaldo/mouthpiece/internal/filter"
-	"github.com/Fishwaldo/mouthpiece/internal/db"
-	"github.com/Fishwaldo/mouthpiece/internal/errors"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
 type AppDetails struct {
-	AppName string	`doc:"Application Name" pattern:"^[a-z0-9]+$" gorm:"unique;uniqueIndex"`
-	Status string 	`doc:"Status of Application" enum:"Enabled,Disabled" default:"Enabled"`
+	AppName     string `doc:"Application Name" pattern:"^[a-z0-9]+$" gorm:"unique;uniqueIndex"`
+	Status      string `doc:"Status of Application" enum:"Enabled,Disabled" default:"Enabled"`
 	Description string `doc:"Description of Application"`
-	Icon string `doc:"Icon of Application"`
-	URL string `doc:"URL of Application"`
+	Icon        string `doc:"Icon of Application"`
+	URL         string `doc:"URL of Application"`
 }
 
 type ApplicationFilters struct {
-	gorm.Model 	`json:"-"`
-	AppID uint `json:"-"`
-	Name string
+	gorm.Model `json:"-"`
+	AppID      uint `json:"-"`
+	Name       string
 }
 
 type App struct {
-	gorm.Model		`json:"-"`
+	gorm.Model `json:"-"`
 	AppDetails
 	AssociatedUsers []*user.User `gorm:"many2many:app_user;"`
-	Filters []ApplicationFilters	
+	Filters         []ApplicationFilters
 }
 
 func InitializeApps() {
@@ -50,14 +50,14 @@ func FindApp(app_name string) (app *App, err error) {
 	return app, tx.Error
 }
 
-func AppExists(app_name string) (bool) {
+func AppExists(app_name string) bool {
 	var app App
 	tx := db.Db.First(&app, "app_name = ?", app_name)
 	return tx.Error == nil
 }
 
 func CreateApp(app AppDetails) (newapp *App, err error) {
-	newapp, err = FindApp(app.AppName);
+	newapp, err = FindApp(app.AppName)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		Log.Info("Creating New App", "App", app)
 		var dbApp App
@@ -66,10 +66,10 @@ func CreateApp(app AppDetails) (newapp *App, err error) {
 		dbApp.AssociatedUsers = append(dbApp.AssociatedUsers, adminuser)
 		normaluser, _ := user.GetUser("user@example.com")
 		dbApp.AssociatedUsers = append(dbApp.AssociatedUsers, normaluser)
-		if (filter.FindFilter("CopyShortMessage") != nil) {
+		if filter.FindFilter("CopyShortMessage") != nil {
 			dbApp.Filters = append(dbApp.Filters, ApplicationFilters{Name: "CopyShortMessage"})
 		}
-		if (filter.FindFilter("FindSeverity") != nil) {
+		if filter.FindFilter("FindSeverity") != nil {
 			dbApp.Filters = append(dbApp.Filters, ApplicationFilters{Name: "FindSeverity"})
 		}
 		result := db.Db.Create(&dbApp)
@@ -82,7 +82,7 @@ func CreateApp(app AppDetails) (newapp *App, err error) {
 	return newapp, mperror.ErrAppExists
 }
 
-func (app App) ProcessMessage(msg *msg.Message) (error) {
+func (app App) ProcessMessage(msg *msg.Message) error {
 	Log.V(1).Info("App Processing Message", "App", app.AppName, "MessageID", msg.ID)
 	/* populate Message Fields with App Data */
 	msg.Body.Fields["app_description"] = app.Description
@@ -90,10 +90,10 @@ func (app App) ProcessMessage(msg *msg.Message) (error) {
 	msg.Body.Fields["app_url"] = app.URL
 	for _, appfilter := range app.Filters {
 		flt := filter.FindFilter(appfilter.Name)
-		if (flt != nil) {
+		if flt != nil {
 			Log.V(1).Info("App Processing Message with Filter", "Filter", appfilter)
-			ok, _ := flt.ProcessMessage(msg);
-			if (!ok) {
+			ok, _ := flt.ProcessMessage(msg)
+			if !ok {
 				Log.Info("App Filter Blocked Message", "App", app.AppName, "Filter", appfilter, "Message", msg)
 				return nil
 			}
@@ -102,7 +102,7 @@ func (app App) ProcessMessage(msg *msg.Message) (error) {
 		}
 	}
 	for _, user := range app.AssociatedUsers {
-			user.ProcessMessage(*msg)
+		user.ProcessMessage(*msg)
 	}
 	return nil
 }

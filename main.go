@@ -28,16 +28,16 @@ import (
 	//"fmt"
 	//	"context"
 	"fmt"
-	"net/http"
 	"io/fs"
+	"net/http"
 
 	//	"reflect"
 	"strings"
 	//	"unsafe"
+	"embed"
 	"encoding/json"
 	"os"
 	"runtime/debug"
-	"embed"
 
 	"github.com/Fishwaldo/mouthpiece/frontend"
 	_ "github.com/Fishwaldo/mouthpiece/frontend"
@@ -66,10 +66,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-
 //go:embed config
 var ConfigFiles embed.FS
-
 
 func init() {
 	viper.SetDefault("frontend.path", "frontend/dist")
@@ -103,14 +101,13 @@ func printBuildInfo() {
 		fmt.Println("Getting build info failed (not in module mode?)!")
 		return
 	}
-	
+
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(bi); err != nil {
 		panic(err)
 	}
 }
-
 
 func main() {
 	viper.SetConfigName("config")
@@ -140,7 +137,6 @@ func main() {
 	}
 
 	fmt.Println(bi.String())
-
 
 	// Create a new router & CLI with default middleware.
 	InitLogger()

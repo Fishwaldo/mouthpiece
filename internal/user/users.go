@@ -3,46 +3,44 @@ package user
 import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
-	
+
+	"github.com/Fishwaldo/mouthpiece/internal/auth"
+	"github.com/Fishwaldo/mouthpiece/internal/db"
+	"github.com/Fishwaldo/mouthpiece/internal/errors"
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/message"
 	"github.com/Fishwaldo/mouthpiece/internal/transport"
-	"github.com/Fishwaldo/mouthpiece/internal/db"
-	"github.com/Fishwaldo/mouthpiece/internal/auth"
-	"github.com/Fishwaldo/mouthpiece/internal/errors"
 
-
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"github.com/go-playground/validator/v10"
 )
 
-
 type User struct {
-	gorm.Model	`json:"-"`
-	ID        uint `gorm:"primarykey"`
-	Email string `validate:"required,email"`
-	FirstName string `validate:"required"`
-	LastName string `validate:"required"`
-	Password string `json:"-" writeOnly:"true" validate:"required"`
+	gorm.Model       `json:"-"`
+	ID               uint                        `gorm:"primarykey"`
+	Email            string                      `validate:"required,email"`
+	FirstName        string                      `validate:"required"`
+	LastName         string                      `validate:"required"`
+	Password         string                      `json:"-" writeOnly:"true" validate:"required"`
 	TransportConfigs []transport.TransportConfig `json:"transports,omitempty" gorm:"many2many:user_transports;" validate:"-"`
 }
 
 var AuthConfig auth.AuthConfig
+
 func init() {
-	AuthConfig = auth.AuthConfig {
-		CredChecker: dbAuthProvider,
+	AuthConfig = auth.AuthConfig{
+		CredChecker:     dbAuthProvider,
 		MapClaimsToUser: MapClaimsToUser,
-		Validator: UserValidator,
+		Validator:       UserValidator,
 	}
 }
-
 
 func CreateUser(user *User) error {
 	validate := validator.New()
 	if err := validate.Struct(user); err != nil {
 		Log.Info("User Validation Error", "Error", err)
-		return err;
+		return err
 	}
 	tx := db.Db.Omit("Password").Create(&user)
 	if tx.Error != nil {
@@ -53,7 +51,7 @@ func CreateUser(user *User) error {
 		if err := dbuser.SetPassword(user.Password); err != nil {
 			if tx := db.Db.Delete(&dbuser); tx.Error != nil {
 				Log.Info("Error Deleting User after failed Password", "Error", tx.Error)
-				return err;
+				return err
 			}
 			return err
 		}
@@ -69,11 +67,11 @@ func CreateUser(user *User) error {
 
 func (u *User) addUserRole(role string) bool {
 	_, err := auth.AuthService.AuthEnforcer.AddRoleForUser(u.Email, fmt.Sprintf("role:%s", role))
-	if err != nil { 
+	if err != nil {
 		Log.Info("Failed to add role for user", "email", u.Email, "role", role, "error", err)
 		return false
 	}
-	return true;
+	return true
 }
 
 func (u *User) CheckPassword(password string) bool {
@@ -89,7 +87,7 @@ func (u *User) CheckPassword(password string) bool {
 func (u *User) SetPassword(password string) error {
 	Log.Info("Setting Password", "Email", u.Email)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if (err != nil) {
+	if err != nil {
 		Log.Info("Error Generating SetPassword Hash", "Error", err)
 		return err
 	}
@@ -105,7 +103,7 @@ func InitializeUsers() {
 	var count int64
 	db.Db.Model(&User{}).Count(&count)
 	Log.V(1).Info("Initializing Users", "count", count)
-	if (count == 0) {
+	if count == 0 {
 		Log.Info("Creating Default Users")
 		admin := &User{FirstName: "Admin", LastName: "User", Email: "admin@example.com", Password: "password"}
 		if err := CreateUser(admin); err == nil {
@@ -116,7 +114,7 @@ func InitializeUsers() {
 			Log.Info("Created Default User user@example.com")
 		}
 	}
-} 
+}
 
 func GetUsers() []User {
 	var users []User
@@ -139,8 +137,6 @@ func GetUserByID(id uint) (user *User, err error) {
 	return
 }
 
-
-
 func (u User) ProcessMessage(msg msg.Message) (err error) {
 	/* add User Fields to Message */
 	msg.Body.Fields["first_name"] = u.FirstName
@@ -148,7 +144,7 @@ func (u User) ProcessMessage(msg msg.Message) (err error) {
 	msg.Body.Fields["email"] = u.Email
 	Log.V(1).Info("User Processing Message", "Email", u.Email, "MessageID", msg.ID)
 	for _, tc := range u.TransportConfigs {
-		t, err := transport.GetTransport(tc.Transport); 
+		t, err := transport.GetTransport(tc.Transport)
 		if err != nil {
 			Log.Info("Cant find Transport", "Transport", tc.Transport)
 		}

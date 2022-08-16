@@ -4,7 +4,6 @@ import (
 	"fmt"
 	//	"os"
 
-
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/message"
 	"github.com/Fishwaldo/mouthpiece/internal/transport"
@@ -16,9 +15,7 @@ import (
 	"github.com/mymmrac/telego/telegoutil"
 )
 
-
 type TelegramTransport struct {
-
 }
 
 func init() {
@@ -76,11 +73,11 @@ func (t TelegramTransport) Start() {
 	Log.Info("Transport Started", "name", t.GetName())
 }
 
-func (t TelegramTransport) NewTransportConfig(){
-//	user.TransportConfigs = append(user.TransportConfigs, mouthpiece.TransportConfig{
-//		Transport: t.GetName(),
-//		Config: user.Username,
-//	})
+func (t TelegramTransport) NewTransportConfig() {
+	//	user.TransportConfigs = append(user.TransportConfigs, mouthpiece.TransportConfig{
+	//		Transport: t.GetName(),
+	//		Config: user.Username,
+	//	})
 }
 
 func (t TelegramTransport) SendMessage(config transport.TransportConfig, msg msg.Message) (err error) {

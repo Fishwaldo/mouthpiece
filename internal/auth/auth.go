@@ -52,11 +52,11 @@ func (AL AuthLogger) Logf(format string, args ...interface{}) {
 }
 
 type AuthConfig struct {
-	CredChecker func(username string, password string) (ok bool, err error)
+	CredChecker     func(username string, password string) (ok bool, err error)
 	MapClaimsToUser token.ClaimsUpdFunc
-	Validator token.ValidatorFunc
-	Host string
-	ConfigDir fs.FS
+	Validator       token.ValidatorFunc
+	Host            string
+	ConfigDir       fs.FS
 }
 
 func init() {
@@ -99,7 +99,6 @@ func customGitHubProvider() (cred pkauth.Client, ch provider.CustomHandlerOpt) {
 	return cred, ch
 }
 
-
 func InitAuth(Config AuthConfig) {
 	AL = &AuthLogger{}
 	AuthService = &Auth{}
@@ -107,7 +106,7 @@ func InitAuth(Config AuthConfig) {
 	var avatarcachedir string
 	if viper.IsSet("auth.avatar.cachedir") {
 		avatarcachedir = viper.GetString("auth.avatar.cachedir")
-	} else { 
+	} else {
 		avatarcachedir, _ = os.MkdirTemp("", "mouthpiece_avatar")
 	}
 	options := pkauth.Opts{
@@ -118,14 +117,14 @@ func InitAuth(Config AuthConfig) {
 		CookieDuration: time.Hour * 24,  // cookie fine to keep for long time
 		DisableXSRF:    true,            // don't disable XSRF in real-life applications!
 		Issuer:         "mouthpiece",    // part of token, just informational
-		URL:            Config.Host,            // base url of the protected service
+		URL:            Config.Host,     // base url of the protected service
 		//AdminPasswd:       "password",												  // admin password
 		AvatarStore:       avatar.NewLocalFS(avatarcachedir), // stores avatars locally
-		AvatarResizeLimit: 200,                                         // resizes avatars to 200x200
-		ClaimsUpd: token.ClaimsUpdFunc(Config.MapClaimsToUser),
-		Validator: Config.Validator,
-		Logger:      AL,   // optional logger for auth library
-		UseGravatar: true, // for verified provider use gravatar service
+		AvatarResizeLimit: 200,                               // resizes avatars to 200x200
+		ClaimsUpd:         token.ClaimsUpdFunc(Config.MapClaimsToUser),
+		Validator:         Config.Validator,
+		Logger:            AL,   // optional logger for auth library
+		UseGravatar:       true, // for verified provider use gravatar service
 	}
 
 	// create auth service

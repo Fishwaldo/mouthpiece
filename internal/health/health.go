@@ -5,9 +5,8 @@ import (
 	_ "fmt"
 	"time"
 
-
-	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/db"
+	. "github.com/Fishwaldo/mouthpiece/internal/log"
 
 	"github.com/alexliesenfeld/health"
 

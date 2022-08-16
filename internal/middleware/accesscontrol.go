@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-//	"fmt"
+	//	"fmt"
 	"net/http"
 
 	"github.com/Fishwaldo/mouthpiece/internal/auth"
@@ -17,7 +17,6 @@ import (
 type Middleware struct {
 }
 
-
 type CtxUserValue struct{}
 
 // Update user info in request context from go-pkgz/auth token.User to mouthpiece.User
@@ -30,21 +29,21 @@ func (a *Middleware) Update() func(http.Handler) http.Handler {
 				if dbUser, err := user.GetUser(tknuser.Email); err != nil {
 					Log.Info("DBUser Not Found", "token", tknuser, "error", err)
 					ctx := huma.ContextFromRequest(w, r)
-				    /* do Something */
+					/* do Something */
 					ctx.WriteError(http.StatusForbidden, "User not found", err)
 					return
 				} else {
 					ok, res, err := auth.AuthService.AuthEnforcer.EnforceEx(dbUser.Email, r.URL.Path, r.Method)
 					Log.V(1).Info("Access Control", "result", ok, "Policy", res, "Error", err)
-					if (!ok) {
+					if !ok {
 						huma.ContextFromRequest(w, r).WriteError(http.StatusForbidden, "Access Denied", err)
-						return;
+						return
 					}
 					r = r.WithContext(context.WithValue(r.Context(), CtxUserValue{}, tknuser))
 				}
 				h.ServeHTTP(w, r)
-				return;
-			} else {	
+				return
+			} else {
 				ctx := huma.ContextFromRequest(w, r)
 				ctx.WriteError(http.StatusUnauthorized, "Access Denied")
 			}

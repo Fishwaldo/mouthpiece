@@ -3,17 +3,17 @@ package transport
 import (
 	"errors"
 
+	"github.com/Fishwaldo/mouthpiece/internal/db"
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/message"
-	"github.com/Fishwaldo/mouthpiece/internal/db"
 	"gorm.io/gorm"
 )
 
 type TransportConfig struct {
-	gorm.Model	`json:"-"`
-	UserID uint	`json:"-"`
-	Transport string
-	Config string
+	gorm.Model `json:"-"`
+	UserID     uint `json:"-"`
+	Transport  string
+	Config     string
 }
 
 type ITransport interface {

@@ -1,11 +1,11 @@
 package msg
 
 import (
-	"time"
-	. "github.com/Fishwaldo/mouthpiece/internal/log"
-	"github.com/Fishwaldo/mouthpiece/internal/errors"
 	"github.com/Fishwaldo/mouthpiece/internal/db"
+	"github.com/Fishwaldo/mouthpiece/internal/errors"
+	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"gorm.io/gorm"
+	"time"
 )
 
 func InitializeMessage() {
@@ -15,21 +15,21 @@ func InitializeMessage() {
 
 type Message struct {
 	gorm.Model
-	AppName string	`path:"application" doc:"Application Name" Example:"MyApp"`
-	Body struct {
-		Message string	`json:"message" doc:"Message to be Sent"`
-		ShortMsg string `json:"shortmessage,omitempty" doc:"Short Message to be Sent"`
-		Topic string	`json:"topic,omitempty" doc:"Topic of Message"`
-		Severity string	`json:"severity,omitempty" doc:"Severity of Message" default:"INFO"`
-		Timestamp time.Time `json:"timestamp,omitempty" doc:"Timestamp of Message"`
-		Fields map[string]interface{} `json:"fields,omitempty" doc:"Additional Fields" gorm:"-"`
-	}	`json:"body" doc:"Message Body" gorm:"embedded"`
+	AppName string `path:"application" doc:"Application Name" Example:"MyApp"`
+	Body    struct {
+		Message   string                 `json:"message" doc:"Message to be Sent"`
+		ShortMsg  string                 `json:"shortmessage,omitempty" doc:"Short Message to be Sent"`
+		Topic     string                 `json:"topic,omitempty" doc:"Topic of Message"`
+		Severity  string                 `json:"severity,omitempty" doc:"Severity of Message" default:"INFO"`
+		Timestamp time.Time              `json:"timestamp,omitempty" doc:"Timestamp of Message"`
+		Fields    map[string]interface{} `json:"fields,omitempty" doc:"Additional Fields" gorm:"-"`
+	} `json:"body" doc:"Message Body" gorm:"embedded"`
 	Result *MessageResult `json:"result,omitempty" doc:"Result of Message"`
 }
 
 type MessageResult struct {
-	MessageID uint	`json:"message_id" doc:"Message ID"`
-	Status string `json:"status" doc:"Status of Message"`
+	MessageID uint   `json:"message_id" doc:"Message ID"`
+	Status    string `json:"status" doc:"Status of Message"`
 }
 
 func (msg *Message) ProcessMessage() (err error) {

@@ -9,9 +9,9 @@ import (
 	"embed"
 	"fmt"
 
+	"github.com/Fishwaldo/mouthpiece/internal/db"
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/message"
-	"github.com/Fishwaldo/mouthpiece/internal/db"
 
 	"github.com/skx/evalfilter/v2"
 	"github.com/skx/evalfilter/v2/object"
@@ -20,7 +20,6 @@ import (
 
 //go:embed scripts
 var ScriptFiles embed.FS
-
 
 type FilterType int
 
@@ -35,14 +34,14 @@ func (ft FilterType) String() string {
 }
 
 type Filter struct {
-	gorm.Model					`json:"-"`
-	Name      string	
-	Content   string
-	Type 	  FilterType
-	Enabled	  bool
-	script    *evalfilter.Eval	`gorm:"-" json:"-"`
-	ok        bool				`gorm:"-"`
-	processedMessage *msg.Message	`gorm:"-" json:"-"`
+	gorm.Model       `json:"-"`
+	Name             string
+	Content          string
+	Type             FilterType
+	Enabled          bool
+	script           *evalfilter.Eval `gorm:"-" json:"-"`
+	ok               bool             `gorm:"-"`
+	processedMessage *msg.Message     `gorm:"-" json:"-"`
 }
 
 var Filters []*Filter
@@ -82,9 +81,9 @@ func loadScriptFiles(files []string, scripttype FilterType) {
 			// Create an evalfilter, with the script inside it.
 			//
 			flt = &Filter{
-				Name: trimFileExtension(filepath.Base(script)), 
-				Content: string(content), 
-				Type: scripttype,
+				Name:    trimFileExtension(filepath.Base(script)),
+				Content: string(content),
+				Type:    scripttype,
 			}
 		} else {
 			Log.Info("Loading Filter Script from Databse", "type", scripttype, "filter", flt.Name)
@@ -176,12 +175,12 @@ func (ev *Filter) fnSetField(args []object.Object) object.Object {
 	return &object.Void{}
 }
 
-func (ev *Filter) fnClearField(args[] object.Object) object.Object {
-	if (len(args) != 1) {
+func (ev *Filter) fnClearField(args []object.Object) object.Object {
+	if len(args) != 1 {
 		return &object.Null{}
 	}
 	// Type-check
-	if (args[0].Type() != object.STRING) {
+	if args[0].Type() != object.STRING {
 		return &object.Null{}
 	}
 	fld := args[0].(*object.String).Value
@@ -194,12 +193,12 @@ func (ev *Filter) fnClearField(args[] object.Object) object.Object {
 	return &object.Void{}
 }
 
-func (ev *Filter) fnSetShortMessage(arg[] object.Object) object.Object {
-	if (len(arg) != 1) {
+func (ev *Filter) fnSetShortMessage(arg []object.Object) object.Object {
+	if len(arg) != 1 {
 		return &object.Null{}
 	}
 	// Type-check
-	if (arg[0].Type() != object.STRING) {
+	if arg[0].Type() != object.STRING {
 		return &object.Null{}
 	}
 	msg := arg[0].(*object.String).Value
@@ -208,12 +207,12 @@ func (ev *Filter) fnSetShortMessage(arg[] object.Object) object.Object {
 	return &object.Void{}
 }
 
-func (ev *Filter) fnSetSeverity(arg[] object.Object) object.Object {
-	if (len(arg) != 1) {
+func (ev *Filter) fnSetSeverity(arg []object.Object) object.Object {
+	if len(arg) != 1 {
 		return &object.Null{}
 	}
 	// Type-check
-	if (arg[0].Type() != object.STRING) {
+	if arg[0].Type() != object.STRING {
 		return &object.Null{}
 	}
 	msg := arg[0].(*object.String).Value
@@ -231,14 +230,14 @@ func (ev *Filter) ProcessMessage(msg *msg.Message) (bool, error) {
 			Log.Error(err.(error), "Filter Script Error", "filter", ev.Name)
 		}
 	}()
-	if (!ev.ok) {
+	if !ev.ok {
 		Log.Info("Filter Script Not ready", "filter", ev.Name)
 		return true, nil
 	}
 	ev.processedMessage = msg
 	ok, err := ev.script.Run(msg.Body)
 	ev.processedMessage = nil
-	if err != nil { 
+	if err != nil {
 		Log.Info("Filter Run Failed", "filter", ev.Name, "result", ok, "Error", err)
 		return true, err
 	}
