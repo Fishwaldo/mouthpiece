@@ -6,7 +6,7 @@
           <CCardGroup>
             <CCard class="p-4">
               <CCardBody>
-                <CForm @submit="handleLogin">
+                <CForm novalidate @submit="handleLogin">
                   <h1>Login</h1>
                   <p class="text-medium-emphasis">Sign In to your account</p>
                   <CInputGroup class="mb-3">
@@ -17,8 +17,13 @@
                       type="email"
                       placeholder="Username"
                       autocomplete="username"
-                      v-model="user.username"
+                      v-bind:valid="this.v$.user.username.$dirty ? !this.v$.user.username.$error : null"
+                      v-bind:invalid="this.v$.user.username.$dirty ? this.v$.user.username.$error : null"
+                      v-model="this.v$.user.username.$model"
                     />
+                    <CFormFeedback v-for="msg in this.v$.user.username.$errors" :key="msg.id" invalid>
+                      {{ msg.$message }}
+                    </CFormFeedback>
                   </CInputGroup>
                   <CInputGroup class="mb-4">
                     <CInputGroupText>
@@ -28,12 +33,19 @@
                       type="password"
                       placeholder="Password"
                       autocomplete="current-password"
-                      v-model="user.password"
+                      v-bind:valid="this.v$.user.password.$dirty ? !this.v$.user.password.$error : null"
+                      v-bind:invalid="this.v$.user.password.$error"
+                      v-model="this.v$.user.password.$model"
                     />
+                    <CFormFeedback v-for="msg in this.v$.user.password.$errors" :key="msg.id" invalid>
+                      {{ msg.$message }}
+                    </CFormFeedback>
                   </CInputGroup>
+
                   <CRow>
+                    <CAlert v-if="formresult" color="danger">{{ formresult }}</CAlert>
                     <CCol :xs="6">
-                      <CButton color="primary" class="px-4" type="submit">
+                      <CButton color="primary" class="px-4" type="submit" :disabled="this.v$.$invalid">
                         Login
                       </CButton>
                     </CCol>
@@ -100,15 +112,30 @@
 //import { Form, Field, ErrorMessage } from 'vee-validate'
 import User from '@/models/user'
 import SSOProviders from '@/models/ssoproviders'
+import useVuelidate from '@vuelidate/core'
+import { required, email } from '@vuelidate/validators'
+
 export default {
   name: 'Login',
-  //props: {
-  //  show: SSOProviders 
-  //},
+  setup: () => ({ v$: useVuelidate() }),
   data() {
     return {
       user: new User('', ''),
-      show: new SSOProviders(Array(0))
+      show: new SSOProviders(Array(0)),
+      formresult: ""
+    }
+  },
+  validations () {
+    return {
+      user: {
+        username: {
+          required,
+          email
+        },
+        password: {
+          required
+        }
+      }
     }
   },
   mounted() {
@@ -132,27 +159,26 @@ export default {
   created() {
     if (this.loggedIn) {
       console.log('Logged In')
-      //this.$router.push('/profile')
     }
   },
   methods: {
-    handleLogin() {
+    async  handleLogin() {
+      const isValid = await this.v$.$validate()
+      if (!isValid) { 
+        return
+      }
       this.loading = true
       this.$store.dispatch('auth/login', this.user).then(
         () => {
-          this.$router.push('/profile')
+          this.$router.push('/dashboard')
         },
         (error) => {
-          console.log(error.response)
-          this.loading = false
-          this.message =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString()
+          this.formresult = error.response.data.error
         },
       )
+    },
+    handleProviderAuth(provider) {
+        this.$auth.authenticate(provider)
     },
   },
 }

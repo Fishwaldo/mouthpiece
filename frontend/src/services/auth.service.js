@@ -1,10 +1,11 @@
 import axios from 'axios'
 //import User from '../models/user'
 import SSOProviders from '@/models/ssoproviders'
+import { DefaultService } from '@/generated/'
+import router from '@/router'
 //const API_URL = 'http://10.11.5.10:8080/auth/'
 class AuthService {
   login(user) {
-    console.log(user)
     return axios
       .get('/auth/direct/login', {
         params: {
@@ -16,17 +17,25 @@ class AuthService {
         if (response.status == 403) {
           return Promise.reject(response.data)
         }
-        console.log(response.data)
         if (response.status == 200) {
           localStorage.setItem('user', JSON.stringify(response.data))
+          router.push({ path: '/dashboard'})
         }
         return response.data
       })
   }
   logout() {
-    return axios.get('/auth/logout').then((response) => {
+    return axios.get('/auth/logout')
+    .then((response) => {
       localStorage.removeItem('user')
+      router.push({ path: '/pages/login'})
       return response.data
+    })
+    .catch(function (error) {
+      console.log(JSON.stringify(error))
+      localStorage.removeItem('user')
+      console.log(this)
+      router.push({ path: '/pages/login'})
     })
   }
   providers() {
@@ -37,9 +46,16 @@ class AuthService {
     })
   }
   feconfig() {
-    return axios.get('/config/frontend')
+    return DefaultService.getConfig()
     .then((response) => {
-      return response.data
+      return response
+    })
+  }
+  status() {
+    return axios.get('/auth/status')
+    .then((response) => {
+      console.log("status" + response.data)
+      return response
     })
   }
 }

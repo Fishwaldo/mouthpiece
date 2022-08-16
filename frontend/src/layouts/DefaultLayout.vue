@@ -26,5 +26,9 @@ export default {
     AppSidebar,
     CContainer,
   },
+  mounted() {
+    if (!this.$store.state.auth.status.loggedIn)
+      this.$router.push('/pages/login')
+  }
 }
 </script>

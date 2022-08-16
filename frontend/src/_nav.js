@@ -4,10 +4,6 @@ export default [
     name: 'Dashboard',
     to: '/dashboard',
     icon: 'cil-speedometer',
-    badge: {
-      color: 'primary',
-      text: 'NEW',
-    },
   },
   {
     component: 'CNavTitle',
@@ -15,8 +11,8 @@ export default [
   },
   {
     component: 'CNavItem',
-    name: 'Colors',
-    to: '/apps/',
+    name: 'Applications',
+    to: '/apps',
     icon: 'cil-puzzle',
   },
   {
@@ -30,40 +26,31 @@ export default [
     icon: 'cil-puzzle',
   },
   {
+    component: 'CNavTitle',
+    name: 'Transports',
+  },
+  {
     component: 'CNavItem',
     name: 'Transports',
     to: '/transports',
     icon: 'cil-cursor',
   },
   {
-    component: 'CNavGroup',
+    component: 'CNavTitle',
+    name: 'Notifications',
+  },
+  {
+    component: 'CNavItem',
     name: 'Notifications',
     to: '/notifications',
     icon: 'cil-bell',
-    items: [
-      {
-        component: 'CNavItem',
-        name: 'Alerts',
-        to: '/notifications/alerts',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Badges',
-        to: '/notifications/badges',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Modals',
-        to: '/notifications/modals',
-      },
-    ],
   },
   {
     component: 'CNavTitle',
     name: 'Settings',
   },
   {
-    component: 'CNavGroup',
+    component: 'CNavItem',
     name: 'Settings',
     to: '/settings',
     icon: 'cil-star',

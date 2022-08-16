@@ -10,8 +10,7 @@ import { OpenAPI, DefaultService } from './generated'
 
 OpenAPI.BASE = ''
 
-DefaultService.getHealth().then(console.log)
-DefaultService.getConfig().then(console.log)
+
 
 const app = createApp(App)
 app.use(store)

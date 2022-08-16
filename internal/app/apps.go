@@ -62,9 +62,9 @@ func CreateApp(app AppDetails) (newapp *App, err error) {
 		Log.Info("Creating New App", "App", app)
 		var dbApp App
 		copier.Copy(&dbApp, &app)
-		adminuser, _ := user.GetUser("admin")
+		adminuser, _ := user.GetUser("admin@example.com")
 		dbApp.AssociatedUsers = append(dbApp.AssociatedUsers, adminuser)
-		normaluser, _ := user.GetUser("user")
+		normaluser, _ := user.GetUser("user@example.com")
 		dbApp.AssociatedUsers = append(dbApp.AssociatedUsers, normaluser)
 		if (filter.FindFilter("CopyShortMessage") != nil) {
 			dbApp.Filters = append(dbApp.Filters, ApplicationFilters{Name: "CopyShortMessage"})

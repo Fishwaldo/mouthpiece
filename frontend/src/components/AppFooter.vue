@@ -1,9 +1,9 @@
 <template>
   <CFooter>
     <div>
-      <a href="https://coreui.io" target="_blank">CoreUI</a>
+      <a href="https://github.com/Fishwaldo/mouthpiece" target="_blank">MouthPiece</a>
       <span class="ms-1"
-        >&copy; {{ new Date().getFullYear() }} creativeLabs.</span
+        >&copy; {{ new Date().getFullYear() }} Justin Hammond.</span
       >
     </div>
     <div class="ms-auto">

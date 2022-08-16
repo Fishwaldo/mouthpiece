@@ -1,6 +1,5 @@
 package telegramauth
 
-//go:generate moq -out telegram_moq_test.go . TelegramAPI
 
 import (
 	"context"

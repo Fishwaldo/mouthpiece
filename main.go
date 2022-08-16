@@ -33,7 +33,11 @@ import (
 	//	"reflect"
 	"strings"
 	//	"unsafe"
+	"runtime/debug"
+	"encoding/json"
+	"os"
 
+	_ "github.com/Fishwaldo/mouthpiece/frontend"
 	mouthpiece "github.com/Fishwaldo/mouthpiece/internal"
 	"github.com/Fishwaldo/mouthpiece/internal/app"
 	"github.com/Fishwaldo/mouthpiece/internal/auth"
@@ -80,6 +84,21 @@ func fileServer(r chi.Router, path string, root http.FileSystem) {
 	})
 }
 
+func printBuildInfo() {
+	bi, ok := debug.ReadBuildInfo()
+	if !ok {
+		fmt.Println("Getting build info failed (not in module mode?)!")
+		return
+	}
+	
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(bi); err != nil {
+		panic(err)
+	}
+}
+
+
 func main() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -99,6 +118,17 @@ func main() {
 			panic(fmt.Errorf("fatal error config file: %w \n", err))
 		}
 	}
+
+	bi := mouthpiece.GetVersionInfo()
+	bi.Name = "MouthPiece"
+	bi.Description = "Messaging Server"
+	if bi.CheckFontName("starwars") {
+		bi.FontName = "starwars"
+	}
+
+	fmt.Println(bi.String())
+
+
 	// Create a new router & CLI with default middleware.
 	InitLogger()
 	db.InitializeDB()

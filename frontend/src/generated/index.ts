@@ -29,7 +29,6 @@ export { $ErrorModel } from './schemas/$ErrorModel';
 export { $FEConfig } from './schemas/$FEConfig';
 export { $MessageResult } from './schemas/$MessageResult';
 export { $post_message_request } from './schemas/$post_message_request';
-export { $string } from './schemas/$string';
 export { $stringList } from './schemas/$stringList';
 export { $TransportConfig } from './schemas/$TransportConfig';
 export { $User } from './schemas/$User';

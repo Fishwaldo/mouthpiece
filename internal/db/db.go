@@ -2,10 +2,12 @@ package db
 
 import (
 	_ "fmt"
-		"gorm.io/gorm"
-		"gorm.io/driver/sqlite"
-		. "github.com/Fishwaldo/mouthpiece/internal/log"
-	)
+
+	. "github.com/Fishwaldo/mouthpiece/internal/log"
+	//"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
+)
 
 var Db *gorm.DB
 
