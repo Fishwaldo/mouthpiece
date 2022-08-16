@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/message"
@@ -43,13 +44,23 @@ func CreateUser(user *User) error {
 		Log.Info("User Validation Error", "Error", err)
 		return err;
 	}
-	tx := db.Db.Create(&user)
+	tx := db.Db.Omit("Password").Create(&user)
 	if tx.Error != nil {
 		return tx.Error
 	}
-	/* New Users all Start with User Role */
-	if user, err := GetUser(user.Email); err == nil {
-		user.addUserRole("user")
+	if dbuser, err := GetUser(user.Email); err == nil {
+		/* Set the Users Initial Password */
+		if err := dbuser.SetPassword(user.Password); err != nil {
+			if tx := db.Db.Delete(&dbuser); tx.Error != nil {
+				Log.Info("Error Deleting User after failed Password", "Error", tx.Error)
+				return err;
+			}
+			return err
+		}
+		/* New Users all Start with User Role */
+		if !dbuser.addUserRole("user") {
+			Log.Info("Error Adding User Role", "Error", err)
+		}
 		return nil
 	} else {
 		return err
@@ -65,11 +76,27 @@ func (u *User) addUserRole(role string) bool {
 	return true;
 }
 
-func (u *User) CheckPassword(string) bool {
+func (u *User) CheckPassword(password string) bool {
+	Log.Info("Checking Password", "email", u.Email)
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	if err != nil {
+		Log.Info("Password Check Failed", "Error", err)
+		return false
+	}
 	return true
 }
 
-func (u *User) SetPassword(string) error {
+func (u *User) SetPassword(password string) error {
+	Log.Info("Setting Password", "Email", u.Email)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if (err != nil) {
+		Log.Info("Error Generating SetPassword Hash", "Error", err)
+		return err
+	}
+	if tx := db.Db.Model(&u).Update("password", string(hashedPassword)); tx.Error != nil {
+		Log.Info("Error Setting Password", "Error", tx.Error)
+		return tx.Error
+	}
 	return nil
 }
 

@@ -69,8 +69,8 @@ func (p DirectHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sessOnly := r.URL.Query().Get("sess") == "1"
-	ok := true
-	ok, err = p.CredChecker(creds.User, creds.Password)
+
+	ok, err := p.CredChecker(creds.User, creds.Password)
 	if err != nil {
 		rest.SendErrorJSON(w, r, p.L, http.StatusInternalServerError, err, "failed to check user credentials")
 		return
