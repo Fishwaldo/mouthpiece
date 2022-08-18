@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	//	"fmt"
+	"strconv"
 	"net/http"
 
 	"github.com/Fishwaldo/mouthpiece/internal/auth"
@@ -17,7 +17,7 @@ import (
 type Middleware struct {
 }
 
-type CtxUserValue struct{}
+
 
 // Update user info in request context from go-pkgz/auth token.User to mouthpiece.User
 func (a *Middleware) Update() func(http.Handler) http.Handler {
@@ -26,11 +26,13 @@ func (a *Middleware) Update() func(http.Handler) http.Handler {
 			// call update only if user info exists, otherwise do nothing
 			if tknuser, err := token.GetUserInfo(r); err == nil {
 				/* find out DB User */
-				if dbUser, err := user.GetUser(tknuser.Email); err != nil {
+				id, _ := strconv.Atoi(tknuser.ID)
+				ctx := huma.ContextFromRequest(w, r)
+				if dbUser, err := user.GetUserByID(ctx, uint(id)); err != nil {
 					Log.Info("DBUser Not Found", "token", tknuser, "error", err)
-					ctx := huma.ContextFromRequest(w, r)
+					
 					/* do Something */
-					ctx.WriteError(http.StatusForbidden, "User not found", err)
+					ctx.WriteError(http.StatusUnauthorized, "User not found", err)
 					return
 				} else {
 					ok, res, err := auth.AuthService.AuthEnforcer.EnforceEx(dbUser.Email, r.URL.Path, r.Method)
@@ -39,7 +41,7 @@ func (a *Middleware) Update() func(http.Handler) http.Handler {
 						huma.ContextFromRequest(w, r).WriteError(http.StatusForbidden, "Access Denied", err)
 						return
 					}
-					r = r.WithContext(context.WithValue(r.Context(), CtxUserValue{}, tknuser))
+					r = r.WithContext(context.WithValue(r.Context(), user.CtxUserValue{}, tknuser))
 				}
 				h.ServeHTTP(w, r)
 				return
@@ -52,3 +54,4 @@ func (a *Middleware) Update() func(http.Handler) http.Handler {
 	}
 	return f
 }
+

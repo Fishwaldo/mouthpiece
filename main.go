@@ -25,28 +25,25 @@ SOFTWARE.
 package main
 
 import (
-	//"fmt"
-	//	"context"
+	"embed"
 	"fmt"
 	"io/fs"
 	"net/http"
-
-	//	"reflect"
-	"strings"
-	//	"unsafe"
-	"embed"
-	"encoding/json"
 	"os"
-	"runtime/debug"
+	"os/signal"
+	"strings"
+	"syscall"
+	"time"
+	"context"
+	"path/filepath"
 
 	"github.com/Fishwaldo/mouthpiece/frontend"
-	_ "github.com/Fishwaldo/mouthpiece/frontend"
 	mouthpiece "github.com/Fishwaldo/mouthpiece/internal"
 	"github.com/Fishwaldo/mouthpiece/internal/app"
 	"github.com/Fishwaldo/mouthpiece/internal/auth"
 	"github.com/Fishwaldo/mouthpiece/internal/db"
 	"github.com/Fishwaldo/mouthpiece/internal/filter"
-	. "github.com/Fishwaldo/mouthpiece/internal/log"
+	"github.com/Fishwaldo/mouthpiece/internal/log"
 	msg "github.com/Fishwaldo/mouthpiece/internal/message"
 	"github.com/Fishwaldo/mouthpiece/internal/middleware"
 	"github.com/Fishwaldo/mouthpiece/internal/transport"
@@ -61,13 +58,49 @@ import (
 	"github.com/go-chi/chi"
 
 	"github.com/danielgtaylor/huma"
-	"github.com/danielgtaylor/huma/cli"
+	hmw "github.com/danielgtaylor/huma/middleware"
 	"github.com/danielgtaylor/huma/responses"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 //go:embed config
 var ConfigFiles embed.FS
+
+type mpserver struct {
+	*huma.Router
+	root *cobra.Command
+	prestart []func()
+}
+
+var Server mpserver
+
+func (c *mpserver) Flag(name, short, description string, defaultValue interface{}) {
+	viper.SetDefault(name, defaultValue)
+
+	flags := c.root.PersistentFlags()
+	switch v := defaultValue.(type) {
+	case bool:
+		flags.BoolP(name, short, viper.GetBool(name), description)
+	case int, int16, int32, int64, uint16, uint32, uint64:
+		flags.IntP(name, short, viper.GetInt(name), description)
+	case float32, float64:
+		flags.Float64P(name, short, viper.GetFloat64(name), description)
+	default:
+		flags.StringP(name, short, fmt.Sprintf("%v", v), description)
+	}
+	viper.BindPFlag(name, flags.Lookup(name))
+}
+
+func (c *mpserver) PreStart(f func()) {
+	c.prestart = append(c.prestart, f)
+}
+
+func (c *mpserver) Run() {
+	if err := c.root.Execute(); err != nil {
+		panic(err)
+	}
+}
 
 func init() {
 	viper.SetDefault("frontend.path", "frontend/dist")
@@ -81,7 +114,7 @@ func fileServer(r chi.Router, path string, root http.FileSystem) {
 		panic("FileServer does not permit URL parameters.")
 	}
 
-	//log.Printf("[INFO] serving static files from %v", root)
+	//log.Log.Printf("[INFO] serving static files from %v", root)
 	fs := http.StripPrefix(path, http.FileServer(root))
 
 	if path != "/" && path[len(path)-1] != '/' {
@@ -95,21 +128,12 @@ func fileServer(r chi.Router, path string, root http.FileSystem) {
 	})
 }
 
-func printBuildInfo() {
-	bi, ok := debug.ReadBuildInfo()
-	if !ok {
-		fmt.Println("Getting build info failed (not in module mode?)!")
-		return
-	}
 
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "  ")
-	if err := enc.Encode(bi); err != nil {
-		panic(err)
-	}
-}
 
 func main() {
+	viper.SetEnvPrefix("MP")
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	viper.AutomaticEnv()
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
@@ -139,21 +163,51 @@ func main() {
 	fmt.Println(bi.String())
 
 	// Create a new router & CLI with default middleware.
-	InitLogger()
+
+	Server = mpserver{
+		Router: huma.New(bi.Name, bi.GitVersion),
+	}
+	hmw.Defaults(Server.Router)
+	Server.root = &cobra.Command{
+		Use: filepath.Base(os.Args[0]),
+		Version: bi.GitVersion,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Printf("Starting %s (%s)\n", bi.Name, bi.GitVersion)
+			for _, f := range Server.prestart {
+				f()
+			}
+			go func() {
+				if err := Server.Listen(fmt.Sprintf("%s:%v", viper.Get("host"), viper.Get("port"))); err != nil && err != http.ErrServerClosed {
+					panic(err)
+				}
+			}()
+			quit := make(chan os.Signal, 1)
+			signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+			<-quit
+			fmt.Println("Shutting down...")
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			Server.Shutdown(ctx)
+		},
+	}
+	Server.Flag("host", "", "Hostname", "0.0.0.0")
+	Server.Flag("port", "p", "Port", 8888)
+
+
+	log.InitLogger()
 	db.InitializeDB()
-	humucli := cli.NewRouter(bi.Name, bi.GitVersion)
-	humucli.DisableSchemaProperty()
-	humucli.PreStart(transport.InitializeTransports)
-	humucli.PreStart(msg.InitializeMessage)
-	humucli.PreStart(user.InitializeUsers)
-	humucli.PreStart(app.InitializeApps)
-	humucli.PreStart(transport.StartTransports)
-	humucli.PreStart(filter.InitFilter)
-	//	app.PreStart()
-	humucli.PreStart(healthChecker.StartHealth)
-	humucli.GatewayClientCredentials("mouthpiece", "/oauth2/token", nil)
-	humucli.GatewayAuthCode("mouthpiece2", "/oauth2/token", "/oauth2/token", nil)
-	humucli.GatewayBasicAuth("basic")
+	hmw.NewLogger = log.GetZapLogger
+	Server.DisableSchemaProperty()
+	Server.PreStart(transport.InitializeTransports)
+	Server.PreStart(msg.InitializeMessage)
+	Server.PreStart(user.InitializeUsers)
+	Server.PreStart(app.InitializeApps)
+	Server.PreStart(transport.StartTransports)
+	Server.PreStart(filter.InitFilter)
+	Server.PreStart(healthChecker.StartHealth)
+	Server.GatewayClientCredentials("mouthpiece", "/oauth2/token", nil)
+	Server.GatewayAuthCode("mouthpiece2", "/oauth2/token", "/oauth2/token", nil)
+	Server.GatewayBasicAuth("basic")
 
 	user.AuthConfig.Host = fmt.Sprintf("http://arm64-1.dmz.dynam.ac:%v", viper.Get("Port"))
 	user.AuthConfig.ConfigDir = ConfigFiles
@@ -162,26 +216,26 @@ func main() {
 	p := middleware.Middleware{}
 
 	authRoutes, avaRoutes := auth.AuthService.Service.Handlers()
-	mux := humucli.Resource("/").GetMux()
+	mux := Server.Resource("/").GetMux()
 	mux.Mount("/auth", authRoutes)
 	mux.Mount("/avatar", avaRoutes)
 
 	var httpfiles http.FileSystem
 	if viper.GetBool("frontend.external") {
-		Log.Info("Serving frontend from external location", "path", viper.GetString("frontend.path"))
+		log.Log.Info("Serving frontend from external location", "path", viper.GetString("frontend.path"))
 		httpfiles = http.Dir(viper.GetString("frontend.path"))
 	} else {
-		Log.Info("Serving frontend from Bundled Files")
+		log.Log.Info("Serving frontend from Bundled Files")
 		subdir, err := fs.Sub(frontend.FrontEndFiles, "dist")
 		if err != nil {
-			Log.Error(err, "Failed to get subdir")
+			log.Log.Error(err, "Failed to get subdir")
 		}
 		httpfiles = http.FS(subdir)
 	}
 	fileServer(mux, "/static", httpfiles)
 
 	// Declare the root resource and a GET operation on it.
-	humucli.Resource("/health").Get("get-health", "Get Health of the Service",
+	Server.Resource("/health").Get("get-health", "Get Health of the Service",
 		responses.OK().ContentType("application/json"),
 		responses.OK().Headers("Content-Type"),
 		responses.OK().Model(health.CheckerResult{}),
@@ -197,7 +251,7 @@ func main() {
 		ctx.WriteModel(status, test)
 	})
 
-	humucli.Resource("/config/frontend").Get("get-config", "Get Config of the Service",
+	Server.Resource("/config/frontend").Get("get-config", "Get Config of the Service",
 		responses.OK().ContentType("application/json"),
 		responses.OK().Headers("Content-Type"),
 		responses.OK().Model(&mouthpiece.FEConfig{}),
@@ -205,7 +259,7 @@ func main() {
 		ctx.WriteModel(http.StatusOK, mouthpiece.GetFEConfig())
 	})
 
-	v1api := humucli.Resource("/v1")
+	v1api := Server.Resource("/v1")
 	v1api.Middleware(m.Trace)
 	v1api.Middleware(p.Update())
 
@@ -215,10 +269,10 @@ func main() {
 		responses.OK().Model(&msg.MessageResult{}),
 		responses.NotFound().ContentType("application/json"),
 	).Run(func(ctx huma.Context, input msg.Message) {
-		Log.Info("Recieved Message", "message", input)
-		if app.AppExists(input.AppName) {
+		log.Log.Info("Recieved Message", "message", input)
+		if app.AppExists(ctx, input.AppName) {
 			if err := input.ProcessMessage(); err == nil {
-				mouthpiece.RouteMessage(&input)
+				mouthpiece.RouteMessage(ctx, &input)
 				ctx.WriteModel(http.StatusOK, input.Result)
 			} else {
 				ctx.WriteError(http.StatusInternalServerError, err.Error())
@@ -228,30 +282,11 @@ func main() {
 		}
 	})
 
-	auth.AuthService.AddResourceURL("/v1/apps/", "apigroup:apps")
-	appapi := v1api.SubResource("/apps/")
-	appapi.Get("get-apps", "Get A List of Applications",
-		responses.OK().ContentType("application/json"),
-		responses.OK().Headers("Set-Cookie"),
-		responses.OK().Model([]app.App{}),
-	).Run(func(ctx huma.Context) {
-		ctx.WriteModel(http.StatusOK, app.GetApps())
-	})
-	appapi.Put("create-app", "Create a Application",
-		responses.OK().ContentType("application/json"),
-		responses.OK().Headers("Set-Cookie"),
-		responses.OK().Model(&app.App{}),
-		responses.NotAcceptable().ContentType("application/json"),
-		responses.NotAcceptable().Headers("Set-Cookie"),
-	).Run(func(ctx huma.Context, input struct {
-		Body app.AppDetails
-	}) {
-		if app, err := app.CreateApp(input.Body); err != nil {
-			ctx.WriteError(http.StatusNotAcceptable, "Database Error", err)
-		} else {
-			ctx.WriteModel(http.StatusOK, app)
-		}
-	})
+	
+	if err := app.InitializeAppRestAPI(v1api); err != nil {
+		log.Log.Error(err, "Failed to initialize App Rest API")
+	}
+
 
 	auth.AuthService.AddResourceURL("/v1/users/", "apigroup:users")
 	userapi := v1api.SubResource("/users/")
@@ -260,7 +295,7 @@ func main() {
 		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model([]user.User{}),
 	).Run(func(ctx huma.Context) {
-		ctx.WriteModel(http.StatusOK, user.GetUsers())
+		ctx.WriteModel(http.StatusOK, user.GetUsers(ctx))
 	})
 
 	auth.AuthService.AddResourceURL("/v1/users/{userid}/transports/", "apigroup:users")
@@ -273,7 +308,7 @@ func main() {
 	).Run(func(ctx huma.Context, input struct {
 		User uint `path:"userid"`
 	}) {
-		if user, err := user.GetUserByID(input.User); err != nil {
+		if user, err := user.GetUserByID(ctx, input.User); err != nil {
 			ctx.WriteError(http.StatusNotFound, "User Not Found", err)
 		} else {
 			var transport []string
@@ -290,11 +325,12 @@ func main() {
 		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model(transport.TransportConfig{}),
 		responses.NotFound().ContentType("application/json"),
+		responses.NotFound().Headers("Set-Cookie"),
 	).Run(func(ctx huma.Context, input struct {
 		User      uint   `path:"userid"`
 		Transport string `path:"transportid"`
 	}) {
-		if user, err := user.GetUserByID(input.User); err != nil {
+		if user, err := user.GetUserByID(ctx, input.User); err != nil {
 			ctx.WriteError(http.StatusNotFound, "User Not Found", err)
 		} else {
 			ok := false
@@ -316,9 +352,9 @@ func main() {
 		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model([]string{}),
 	).Run(func(ctx huma.Context) {
-		ctx.WriteModel(http.StatusOK, transport.GetTransports())
+		ctx.WriteModel(http.StatusOK, transport.GetTransports(ctx))
 	})
 
 	// Run the CLI. When passed no arguments, it starts the server.
-	humucli.Run()
+	Server.Run()
 }

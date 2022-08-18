@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"context"
 
 	"github.com/Fishwaldo/mouthpiece/internal/db"
 	"github.com/Fishwaldo/mouthpiece/internal/errors"
@@ -39,32 +40,32 @@ func InitializeApps() {
 	db.Db.AutoMigrate(&ApplicationFilters{})
 }
 
-func GetApps() []App {
+func GetApps(ctx context.Context) []App {
 	var apps []App
-	db.Db.Preload("AssociatedUsers").Preload("AssociatedUsers.TransportConfigs").Preload("Filters").Find(&apps)
+	db.Db.WithContext(ctx).Preload("AssociatedUsers").Preload("AssociatedUsers.TransportConfigs").Preload("Filters").Find(&apps)
 	return apps
 }
-func FindApp(app_name string) (app *App, err error) {
-	tx := db.Db.Debug().Preload("AssociatedUsers").Preload("AssociatedUsers.TransportConfigs").Preload("Filters").First(&app, "app_name = ?", app_name)
+func FindApp(ctx context.Context, app_name string) (app *App, err error) {
+	tx := db.Db.WithContext(ctx).Preload("AssociatedUsers").Preload("AssociatedUsers.TransportConfigs").Preload("Filters").First(&app, "app_name = ?", app_name)
 	Log.V(1).Info("Finding App", "App", app_name, "Result", tx, "app", app)
 	return app, tx.Error
 }
 
-func AppExists(app_name string) bool {
+func AppExists(ctx context.Context, app_name string) bool {
 	var app App
-	tx := db.Db.First(&app, "app_name = ?", app_name)
+	tx := db.Db.WithContext(ctx).First(&app, "app_name = ?", app_name)
 	return tx.Error == nil
 }
 
-func CreateApp(app AppDetails) (newapp *App, err error) {
-	newapp, err = FindApp(app.AppName)
+func CreateApp(ctx context.Context, app AppDetails) (newapp *App, err error) {
+	newapp, err = FindApp(ctx, app.AppName)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		Log.Info("Creating New App", "App", app)
 		var dbApp App
 		copier.Copy(&dbApp, &app)
-		adminuser, _ := user.GetUser("admin@example.com")
+		adminuser, _ := user.GetUser(ctx, "admin@example.com")
 		dbApp.AssociatedUsers = append(dbApp.AssociatedUsers, adminuser)
-		normaluser, _ := user.GetUser("user@example.com")
+		normaluser, _ := user.GetUser(ctx, "user@example.com")
 		dbApp.AssociatedUsers = append(dbApp.AssociatedUsers, normaluser)
 		if filter.FindFilter("CopyShortMessage") != nil {
 			dbApp.Filters = append(dbApp.Filters, ApplicationFilters{Name: "CopyShortMessage"})
@@ -72,17 +73,17 @@ func CreateApp(app AppDetails) (newapp *App, err error) {
 		if filter.FindFilter("FindSeverity") != nil {
 			dbApp.Filters = append(dbApp.Filters, ApplicationFilters{Name: "FindSeverity"})
 		}
-		result := db.Db.Create(&dbApp)
+		result := db.Db.WithContext(ctx).Create(&dbApp)
 		if result.Error != nil {
 			return newapp, result.Error
 		}
-		return FindApp(app.AppName)
+		return FindApp(ctx, app.AppName)
 	}
 	Log.Error(err, "App Already Exists", "App", newapp)
 	return newapp, mperror.ErrAppExists
 }
 
-func (app App) ProcessMessage(msg *msg.Message) error {
+func (app App) ProcessMessage(ctx context.Context, msg *msg.Message) error {
 	Log.V(1).Info("App Processing Message", "App", app.AppName, "MessageID", msg.ID)
 	/* populate Message Fields with App Data */
 	msg.Body.Fields["app_description"] = app.Description
@@ -92,7 +93,7 @@ func (app App) ProcessMessage(msg *msg.Message) error {
 		flt := filter.FindFilter(appfilter.Name)
 		if flt != nil {
 			Log.V(1).Info("App Processing Message with Filter", "Filter", appfilter)
-			ok, _ := flt.ProcessMessage(msg)
+			ok, _ := flt.ProcessMessage(ctx, msg)
 			if !ok {
 				Log.Info("App Filter Blocked Message", "App", app.AppName, "Filter", appfilter, "Message", msg)
 				return nil
@@ -102,7 +103,7 @@ func (app App) ProcessMessage(msg *msg.Message) error {
 		}
 	}
 	for _, user := range app.AssociatedUsers {
-		user.ProcessMessage(*msg)
+		user.ProcessMessage(ctx, *msg)
 	}
 	return nil
 }

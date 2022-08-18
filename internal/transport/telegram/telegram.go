@@ -2,7 +2,7 @@ package telegram
 
 import (
 	"fmt"
-	//	"os"
+	"context"
 
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/message"
@@ -73,17 +73,17 @@ func (t TelegramTransport) Start() {
 	Log.Info("Transport Started", "name", t.GetName())
 }
 
-func (t TelegramTransport) NewTransportConfig() {
+func (t TelegramTransport) NewTransportConfig(ctx context.Context) {
 	//	user.TransportConfigs = append(user.TransportConfigs, mouthpiece.TransportConfig{
 	//		Transport: t.GetName(),
 	//		Config: user.Username,
 	//	})
 }
 
-func (t TelegramTransport) SendMessage(config transport.TransportConfig, msg msg.Message) (err error) {
+func (t TelegramTransport) SendMessage(ctx context.Context, config transport.TransportConfig, msg msg.Message) (err error) {
 	fmt.Println("=========================================================")
 	fmt.Printf("Message: %s\n", msg.Body.Message)
 	fmt.Println("=========================================================")
-	transport.UpdateTransportStatus(t, msg, "sent")
+	transport.UpdateTransportStatus(ctx, t, msg, "sent")
 	return nil
 }

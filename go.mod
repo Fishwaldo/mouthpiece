@@ -29,6 +29,7 @@ require (
 	github.com/spf13/viper v1.12.0
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
 require (
