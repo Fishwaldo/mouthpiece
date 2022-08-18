@@ -18,14 +18,14 @@ require (
 	github.com/casbin/casbin/v2 v2.51.2
 	github.com/casbin/gorm-adapter/v3 v3.7.4
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
-	github.com/glebarez/sqlite v1.4.3
+	github.com/glebarez/sqlite v1.4.6
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-pkgz/auth v1.19.0
 	github.com/go-pkgz/repeater v1.1.3
 	github.com/go-pkgz/rest v1.15.6
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/mymmrac/telego v0.15.3
+	github.com/mymmrac/telego v0.16.0
 	github.com/spf13/viper v1.12.0
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
@@ -41,12 +41,12 @@ require (
 	github.com/danielgtaylor/casing v0.0.0-20210126043903-4e55e6373ac3 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.0 // indirect
 	github.com/dghubble/oauth1 v0.7.1 // indirect
-	github.com/fasthttp/router v1.4.10 // indirect
+	github.com/fasthttp/router v1.4.11 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
-	github.com/glebarez/go-sqlite v1.16.0 // indirect
+	github.com/glebarez/go-sqlite v1.17.3 // indirect
 	github.com/go-oauth2/oauth2/v4 v4.4.3 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
@@ -125,10 +125,10 @@ require (
 	gorm.io/driver/postgres v1.3.4 // indirect
 	gorm.io/driver/sqlserver v1.3.2 // indirect
 	gorm.io/plugin/dbresolver v1.1.0 // indirect
-	modernc.org/libc v1.15.1 // indirect
+	modernc.org/libc v1.16.8 // indirect
 	modernc.org/mathutil v1.4.1 // indirect
-	modernc.org/memory v1.0.7 // indirect
-	modernc.org/sqlite v1.16.0 // indirect
+	modernc.org/memory v1.1.1 // indirect
+	modernc.org/sqlite v1.17.3 // indirect
 )
 
 replace github.com/danielgtaylor/huma => github.com/Fishwaldo/huma v1.8.1-0.20220803065139-017c8e9c60a9
