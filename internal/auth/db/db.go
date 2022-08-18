@@ -1,8 +1,8 @@
 package dbauth
 
 import (
-	"crypto/sha1" //nolint
 	"crypto/rand"
+	"crypto/sha1" //nolint
 	"encoding/json"
 	"fmt"
 	"mime"
@@ -13,15 +13,14 @@ import (
 	"github.com/golang-jwt/jwt"
 
 	"github.com/go-pkgz/auth/logger"
-	"github.com/go-pkgz/auth/token"
 	"github.com/go-pkgz/auth/provider"
+	"github.com/go-pkgz/auth/token"
 )
 
 const (
 	// MaxHTTPBodySize defines max http body size
 	MaxHTTPBodySize = 1024 * 1024
 )
-
 
 type ICredChecker func(user string, password string) (ok bool, err error)
 
@@ -83,8 +82,8 @@ func (p DirectHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	userID := p.ProviderName + "_" + token.HashID(sha1.New(), creds.User)
 
 	u := token.User{
-		Name: creds.User,
-		ID:   userID,
+		Name:  creds.User,
+		ID:    userID,
 		Email: creds.User,
 	}
 	u, err = setAvatar(p.AvatarSaver, u, &http.Client{Timeout: 5 * time.Second})

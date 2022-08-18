@@ -5,19 +5,18 @@ import (
 	_ "fmt"
 	"time"
 
-
-	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/db"
-
+	"github.com/Fishwaldo/mouthpiece/internal/log"
+	"github.com/go-logr/logr"
 	"github.com/alexliesenfeld/health"
 
 	httpCheck "github.com/hellofresh/health-go/v4/checks/http"
 )
-
+var llog logr.Logger
 var HealthChecker health.Checker
 
 func StartHealth() {
-
+	llog = log.Log.WithName("health")
 	HealthChecker = health.NewChecker(
 		health.WithTimeout(10*time.Second),
 		//health.WithInterceptors(interceptors.BasicLogger()),
@@ -49,7 +48,7 @@ func BasicLogger() health.Interceptor {
 		return func(ctx context.Context, name string, state health.CheckState) health.CheckState {
 			now := time.Now()
 			result := next(ctx, name, state)
-			Log.V(1).Info("processed health check request",
+			llog.V(1).Info("processed health check request",
 				"check", name, "seconds", time.Now().Sub(now).Seconds(), "result", result.Status)
 			return result
 		}

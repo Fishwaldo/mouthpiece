@@ -2,25 +2,26 @@ package transport
 
 import (
 	"errors"
+	"context"
 
+	"github.com/Fishwaldo/mouthpiece/internal/db"
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
 	"github.com/Fishwaldo/mouthpiece/internal/message"
-	"github.com/Fishwaldo/mouthpiece/internal/db"
 	"gorm.io/gorm"
 )
 
 type TransportConfig struct {
-	gorm.Model	`json:"-"`
-	UserID uint	`json:"-"`
-	Transport string
-	Config string
+	gorm.Model `json:"-"`
+	UserID     uint `json:"-"`
+	Transport  string
+	Config     string
 }
 
 type ITransport interface {
 	GetName() string
 	Start()
-	SendMessage(config TransportConfig, message msg.Message) (err error)
-	NewTransportConfig()
+	SendMessage(ctx context.Context, config TransportConfig, message msg.Message) (err error)
+	NewTransportConfig(ctx context.Context)
 }
 
 var transports map[string]ITransport
@@ -43,14 +44,14 @@ func StartTransports() {
 	}
 }
 
-func GetTransport(name string) (ITransport, error) {
+func GetTransport(ctx context.Context, name string) (ITransport, error) {
 	if t, ok := transports[name]; ok {
 		return t, nil
 	}
 	return nil, errors.New("Transport Not Found")
 }
 
-func GetTransports() []string {
+func GetTransports(ctx context.Context) []string {
 	var a []string
 	for k := range transports {
 		a = append(a, k)
@@ -58,6 +59,6 @@ func GetTransports() []string {
 	return a
 }
 
-func UpdateTransportStatus(t ITransport, m msg.Message, status string) {
+func UpdateTransportStatus(ctx context.Context, t ITransport, m msg.Message, status string) {
 	Log.Info("Transport Status", "status", status, "MessageID", m.ID, "Transport", t.GetName())
 }

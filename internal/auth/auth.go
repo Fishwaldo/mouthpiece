@@ -6,14 +6,17 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
-//	"strings"
+
+	//	"strings"
 
 	dbauth "github.com/Fishwaldo/mouthpiece/internal/auth/db"
 	telegramauth "github.com/Fishwaldo/mouthpiece/internal/auth/telegram"
 	"github.com/Fishwaldo/mouthpiece/internal/db"
 	. "github.com/Fishwaldo/mouthpiece/internal/log"
+	"github.com/go-logr/logr"
 
 	"github.com/spf13/viper"
 
@@ -23,6 +26,7 @@ import (
 	"github.com/go-pkgz/auth/token"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/util"
 
 	//"github.com/casbin/casbin/v2/log"
@@ -38,21 +42,22 @@ type Auth struct {
 }
 
 var AuthService *Auth
+var alog *authLogger
+var llog logr.Logger
 
-type AuthLogger struct {
+type authLogger struct {
 }
 
-var AL *AuthLogger
-
-func (AL AuthLogger) Logf(format string, args ...interface{}) {
-	Log.WithName("Auth").Info("Authentication", "message", fmt.Sprintf(format, args...))
+func (AL authLogger) Logf(format string, args ...interface{}) {
+	llog.V(1).Info("Authentication", "message", fmt.Sprintf(format, args...))
 }
 
 type AuthConfig struct {
-	CredChecker func(username string, password string) (ok bool, err error)
+	CredChecker     func(username string, password string) (ok bool, err error)
 	MapClaimsToUser token.ClaimsUpdFunc
-	Validator token.ValidatorFunc
-	Host string
+	Validator       token.ValidatorFunc
+	Host            string
+	ConfigDir       fs.FS
 }
 
 func init() {
@@ -95,15 +100,16 @@ func customGitHubProvider() (cred pkauth.Client, ch provider.CustomHandlerOpt) {
 	return cred, ch
 }
 
-
 func InitAuth(Config AuthConfig) {
-	AL = &AuthLogger{}
+	llog = Log.WithName("Auth")
+	alog = &authLogger{}
+
 	AuthService = &Auth{}
 
 	var avatarcachedir string
 	if viper.IsSet("auth.avatar.cachedir") {
 		avatarcachedir = viper.GetString("auth.avatar.cachedir")
-	} else { 
+	} else {
 		avatarcachedir, _ = os.MkdirTemp("", "mouthpiece_avatar")
 	}
 	options := pkauth.Opts{
@@ -114,20 +120,20 @@ func InitAuth(Config AuthConfig) {
 		CookieDuration: time.Hour * 24,  // cookie fine to keep for long time
 		DisableXSRF:    true,            // don't disable XSRF in real-life applications!
 		Issuer:         "mouthpiece",    // part of token, just informational
-		URL:            Config.Host,            // base url of the protected service
+		URL:            Config.Host,     // base url of the protected service
 		//AdminPasswd:       "password",												  // admin password
 		AvatarStore:       avatar.NewLocalFS(avatarcachedir), // stores avatars locally
-		AvatarResizeLimit: 200,                                         // resizes avatars to 200x200
-		ClaimsUpd: token.ClaimsUpdFunc(Config.MapClaimsToUser),
-		Validator: Config.Validator,
-		Logger:      AL,   // optional logger for auth library
-		UseGravatar: true, // for verified provider use gravatar service
+		AvatarResizeLimit: 200,                               // resizes avatars to 200x200
+		ClaimsUpd:         token.ClaimsUpdFunc(Config.MapClaimsToUser),
+		Validator:         Config.Validator,
+		Logger:            alog,   // optional logger for auth library
+		UseGravatar:       true, // for verified provider use gravatar service
 	}
 
 	// create auth service
 	AuthService.Service = pkauth.NewService(options)
 	if viper.GetBool("auth.dev.enabled") {
-		Log.Info("Auth Dev Mode Enabled!")
+		llog.Info("Auth Dev Mode Enabled!")
 		AuthService.Service.AddProvider("dev", "", "")
 		// run dev/test oauth2 server on :8084
 		go func() {
@@ -136,7 +142,7 @@ func InitAuth(Config AuthConfig) {
 				return "admin@example.com"
 			}
 			if err != nil {
-				Log.Error(err, "[PANIC] failed to start dev oauth2 server")
+				llog.Error(err, "[PANIC] failed to start dev oauth2 server")
 			}
 			devAuthServer.Run(context.Background())
 
@@ -144,24 +150,24 @@ func InitAuth(Config AuthConfig) {
 	}
 	if viper.GetBool("auth.github.enabled") {
 		if !viper.IsSet("auth.github.client_id") {
-			Log.Error(nil, "Github auth is enabled but client_id is not set")
+			llog.Error(nil, "Github auth is enabled but client_id is not set")
 		} else {
 			if !viper.IsSet("auth.github.client_secret") {
-				Log.Error(nil, "Github auth is enabled but client_secret is not set")
+				llog.Error(nil, "Github auth is enabled but client_secret is not set")
 			} else {
-				Log.Info("Auth Github Enabled!")
+				llog.Info("Auth Github Enabled!")
 				gcred, gch := customGitHubProvider()
 				AuthService.Service.AddCustomProvider("github", gcred, gch)
 			}
 		}
 	}
 	if viper.GetBool("auth.microsoft.enabled") {
-		Log.Info("Auth Microsoft Enabled!")
+		llog.Info("Auth Microsoft Enabled!")
 		AuthService.Service.AddProvider("microsoft", os.Getenv("AEXMPL_MS_APIKEY"), os.Getenv("AEXMPL_MS_APISEC"))
 	}
 	/* direct loging (username/password) is always handled */
 	dbprovider := dbauth.DirectHandler{
-		L:            AL,
+		L:            alog,
 		ProviderName: "direct",
 		Issuer:       options.Issuer,
 		TokenService: AuthService.Service.TokenService(),
@@ -171,7 +177,7 @@ func InitAuth(Config AuthConfig) {
 	AuthService.Service.AddCustomHandler(dbprovider)
 
 	if viper.GetBool("auth.email.enabled") {
-		Log.Info("Auth Email Enabled!")
+		llog.Info("Auth Email Enabled!")
 		AuthService.Service.AddVerifProvider("email",
 			"To confirm use {{.Token}}\nor follow http://arm64-1.dmz.dynam.ac:8888/auth/email/login?token={{.Token}}",
 			provider.SenderFunc(func(address string, text string) error { // sender just prints token
@@ -183,14 +189,14 @@ func InitAuth(Config AuthConfig) {
 
 	if viper.GetBool("auth.telegram.enabled") {
 		if viper.IsSet("auth.telegram.token") {
-			Log.Info("Auth Telegram Enabled!")
+			llog.Info("Auth Telegram Enabled!")
 			// add telegram provider
 			telegram := telegramauth.TelegramHandler{
 				ProviderName: "telegram",
 				ErrorMsg:     "❌ Invalid auth request. Please try clicking link again.",
 				SuccessMsg:   "✅ You have successfully authenticated!",
 				Telegram:     telegramauth.NewTelegramAPI(viper.GetString("auth.telegram.token"), http.DefaultClient),
-				L:            AL,
+				L:            alog,
 				TokenService: AuthService.Service.TokenService(),
 				AvatarSaver:  AuthService.Service.AvatarProxy(),
 			}
@@ -198,40 +204,49 @@ func InitAuth(Config AuthConfig) {
 			go func() {
 				err := telegram.Run(context.Background())
 				if err != nil {
-					Log.Error(err, "[PANIC] failed to start telegram")
+					llog.Error(err, "[PANIC] failed to start telegram")
 				}
 			}()
 
 			AuthService.Service.AddCustomHandler(&telegram)
 		} else {
-			Log.Error(nil, "Telegram auth is enabled but token is not set")
+			llog.Error(nil, "Telegram auth is enabled but token is not set")
 		}
 	}
-	InitCasbin()
-	Log.Info("Auth service started")
+	InitCasbin(Config)
+	llog.Info("Auth service started")
 }
-func InitCasbin() {
+func InitCasbin(config AuthConfig) {
 	cdb, err := gormadapter.NewAdapterByDB(db.Db)
 	if err != nil {
-		Log.Error(err, "Failed to Setup Casbin Auth Adapter")
+		llog.Error(err, "Failed to Setup Casbin Auth Adapter")
 	}
 
-	AuthService.AuthEnforcer, err = casbin.NewEnforcer("config/auth_model.conf", cdb)
+	casbinmodel, err := fs.ReadFile(config.ConfigDir, "config/auth_model.conf")
 	if err != nil {
-		Log.Error(err, "Failed to setup Casbin")
+		llog.Error(err, "Failed to read casbin model")
 	}
+	m, err := model.NewModelFromString(string(casbinmodel))
+	if err != nil {
+		llog.Error(err, "Failed to parse casbin model")
+	}
+	AuthService.AuthEnforcer, err = casbin.NewEnforcer(m, cdb)
+	if err != nil {
+		llog.Error(err, "Failed to setup Casbin")
+	}
+
 	AuthService.AuthEnforcer.EnableLog(viper.GetBool("auth.debug"))
 	AuthService.AuthEnforcer.EnableAutoSave(true)
 	AuthService.AuthEnforcer.SetRoleManager(defaultrolemanager.NewRoleManager(10))
-	if err := AuthService.AuthEnforcer.LoadModel(); err != nil {
-		Log.Error(err, "Failed to load Casbin model")
-	}
+	//if err := AuthService.AuthEnforcer.LoadModel(); err != nil {
+	//	llog.Error(err, "Failed to load Casbin model")
+	//}
 
 	if err := AuthService.AuthEnforcer.LoadPolicy(); err != nil {
-		Log.Error(err, "Failed to Load Casbin Policy")
+		llog.Error(err, "Failed to Load Casbin Policy")
 	}
 	if !AuthService.AuthEnforcer.AddNamedMatchingFunc("g2", "KeyMatch3", util.KeyMatch3) {
-		Log.Error(nil, "Failed to add g2 matching function")
+		llog.Error(nil, "Failed to add g2 matching function")
 	}
 	AuthService.AuthEnforcer.AddPolicy("role:admin", "apigroup:apps", "PUT")
 	AuthService.AuthEnforcer.AddPolicy("role:user", "apigroup:apps", "GET")
@@ -247,21 +262,20 @@ func InitCasbin() {
 
 	//	AuthService.AuthEnforcer.AddRoleForUser("admin", "role:admin")
 	//	AuthService.AuthEnforcer.AddRoleForUser("dev_user", "role:admin")
-	p, _ := AuthService.AuthEnforcer.GetImplicitPermissionsForUser("admin@example.com")
-	fmt.Printf("Admin Permissions: %+v\n", p)
+
 
 	AuthService.AuthEnforcer.SavePolicy()
 	rm := AuthService.AuthEnforcer.GetPolicy()
-	Log.Info("Casbin Policy", "policy", rm)
-	Log.Info("Casbin User Roles", "Roles", AuthService.AuthEnforcer.GetGroupingPolicy())
-	Log.Info("Casbin API Groups", "API Groups", AuthService.AuthEnforcer.GetNamedGroupingPolicy("g2"))
+	llog.Info("Casbin Policy", "policy", rm)
+	llog.Info("Casbin User Roles", "Roles", AuthService.AuthEnforcer.GetGroupingPolicy())
+	llog.Info("Casbin API Groups", "API Groups", AuthService.AuthEnforcer.GetNamedGroupingPolicy("g2"))
 
 }
 
 func (a *Auth) AddResourceURL(url string, group string) bool {
 	ok, err := a.AuthEnforcer.AddNamedGroupingPolicy("g2", url, group)
 	if err != nil {
-		Log.Error(err, "Failed to add g2 policy", "url", url, "group", group)
+		llog.Error(err, "Failed to add g2 policy", "url", url, "group", group)
 	}
 	return ok
 }

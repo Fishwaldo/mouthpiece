@@ -1,8 +1,8 @@
 package telegramauth
 
-
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
@@ -13,7 +13,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"crypto/rand"
 
 	"github.com/go-pkgz/repeater"
 	"github.com/go-pkgz/rest"
@@ -146,7 +145,7 @@ func (th *TelegramHandler) ProcessUpdate(ctx context.Context, textUpdate string)
 		th.requests.data = make(map[string]tgAuthRequest)
 	}
 	th.requests.Unlock()
-	
+
 	fmt.Printf("Processing update: %s\n", textUpdate)
 
 	var updates telegramUpdate
