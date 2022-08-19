@@ -5,13 +5,14 @@ import (
 	_ "fmt"
 	"time"
 
-	"github.com/Fishwaldo/mouthpiece/internal/db"
-	"github.com/Fishwaldo/mouthpiece/internal/log"
-	"github.com/go-logr/logr"
+	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/log"
 	"github.com/alexliesenfeld/health"
+	"github.com/go-logr/logr"
 
 	httpCheck "github.com/hellofresh/health-go/v4/checks/http"
 )
+
 var llog logr.Logger
 var HealthChecker health.Checker
 
