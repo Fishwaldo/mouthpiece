@@ -3,16 +3,19 @@ package apps
 import (
 	//	"errors"
 	"context"
+//	"fmt"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/db"
 	"github.com/Fishwaldo/mouthpiece/pkg/filter"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 	"github.com/Fishwaldo/mouthpiece/pkg/message"
+	"github.com/Fishwaldo/mouthpiece/pkg/validate"
 
-	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
+
+
 
 type ApplicationFilters struct {
 	gorm.Model `json:"-"`
@@ -25,6 +28,26 @@ type App struct {
 	Filters []ApplicationFilters
 }
 
+func (app App) validateSaveField(val interfaces.AppDetails, fields...string) error {
+	if len(fields) > 0 { 
+		if err := validate.Get().StructPartial(val, fields...); err != nil {
+			log.Log.Info("Validation Error", "Error", err)
+			return err;
+		}
+	} else {
+		if err := validate.Get().Struct(val); err != nil {
+			log.Log.Info("Validation Error", "Error", err)
+			return err;
+		}
+	}
+	app.AppDetails = val
+	if tx := db.Db.Model(&app).Updates(app); tx.Error != nil {
+		log.Log.Error(tx.Error, "Error updating application details", "AppName", app.AppName)
+		return tx.Error
+	}
+	return nil
+}
+
 func (app App) GetName() string {
 	return app.AppName
 }
@@ -32,7 +55,7 @@ func (app App) GetName() string {
 func (app App) SetName(name string) error {
 	var details interfaces.AppDetails = app.AppDetails
 	details.AppName = name
-	return app.SetDetails(details)
+	return app.validateSaveField(details, "AppName")
 }
 
 func (app App) GetID() uint {
@@ -42,19 +65,8 @@ func (app App) GetID() uint {
 func (app App) GetDetails() interfaces.AppDetails {
 	return app.AppDetails
 }
-func (app *App) SetDetails(details interfaces.AppDetails) error {
-	validate := validator.New()
-	if err := validate.Struct(details); err != nil {
-		log.Log.Info("SetDetails Validation Error", "Error", err)
-		return err
-	}
-	if tx := db.Db.Model(&app).Updates(details); tx.Error != nil {
-		log.Log.Error(tx.Error, "Error updating application details", "AppName", app.AppName)
-		return tx.Error
-	} else {
-		app.AppDetails = details
-	}
-	return nil
+func (app App) SetDetails(details interfaces.AppDetails) error {
+	return app.validateSaveField(details)
 }
 
 func (app App) GetDescription() string {
@@ -62,9 +74,9 @@ func (app App) GetDescription() string {
 }
 
 func (app App) SetDescription(description string) error {
-	var details interfaces.AppDetails = app.AppDetails
+	var details interfaces.AppDetails = app.GetDetails()
 	details.Description = description
-	return app.SetDetails(details)
+	return app.validateSaveField(details, "Description")	
 }
 
 func (app App) GetIcon() string {
@@ -74,7 +86,7 @@ func (app App) GetIcon() string {
 func (app App) SetIcon(icon string) error {
 	var details interfaces.AppDetails = app.AppDetails
 	details.Icon = icon
-	return app.SetDetails(details)
+	return app.validateSaveField(details, "Icon")
 }
 
 func (app App) GetURL() string {
@@ -84,7 +96,7 @@ func (app App) GetURL() string {
 func (app App) SetURL(icon string) error {
 	var details interfaces.AppDetails = app.AppDetails
 	details.Icon = icon
-	return app.SetDetails(details)
+	return app.validateSaveField(details, "URL")
 }
 
 func (app App) ProcessMessage(ctx context.Context, us interfaces.UserServicierI, msg *msg.Message) error {

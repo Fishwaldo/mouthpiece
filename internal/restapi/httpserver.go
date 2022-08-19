@@ -11,9 +11,8 @@ import (
 	"time"
 
 	"github.com/Fishwaldo/mouthpiece/frontend"
-	"github.com/Fishwaldo/mouthpiece/internal"
+	mpserver "github.com/Fishwaldo/mouthpiece/internal"
 	mouthpiece "github.com/Fishwaldo/mouthpiece/pkg"
-
 
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 
@@ -23,7 +22,9 @@ import (
 
 	//	"github.com/danielgtaylor/huma/responses"
 	"github.com/go-chi/chi"
-	//	"github.com/go-chi/chi/middleware"
+	//"github.com/go-chi/chi/middleware"
+
+	"github.com/go-pkgz/rest"
 
 	"github.com/spf13/viper"
 )
@@ -39,23 +40,56 @@ type RestAPI struct {
 }
 
 func NewRestAPI(mps *mouthpiece.MouthPiece) *RestAPI {
-	restapi := &RestAPI{}
-	restapi.huma = huma.New("test", "test")
+	bi := mouthpiece.GetVersionInfo()
 
+	restapi := &RestAPI{}
+	restapi.huma = huma.New(bi.Name, bi.GitVersion)
+	huma.AddAllowedHeaders("App-Name", "Author", "App-Version", "X-Request-Id", "Set-Cookie")
 	restapi.huma.DisableSchemaProperty()
 	restapi.mux = chi.NewRouter()
 
 	hmw.NewLogger = mpserver.GetHumaLogger
 
 	restapi.mux.Use(hmw.DefaultChain)
+	restapi.mux.Use(rest.AppInfo(bi.Name, "Fishwaldo", bi.GitVersion))
+	restapi.mux.Use(rest.Ping)
+	restapi.mux.Use(rest.RealIP)
+	restapi.mux.Use(rest.Trace)
+	restapi.mux.Use(CleanPath)
+
+	if viper.GetBool("debug") {
+		log.Log.Info("Enabling Debug Endpoints")
+		bench := rest.NewBenchmarks()
+		bench.WithTimeRange(time.Hour)
+		restapi.mux.Use(bench.Handler)
+		restapi.mux.Use(rest.Metrics("10.0.0.0/8"))
+		restapi.mux.Mount("/debug", rest.Profiler("10.0.0.0/8"))
+		restapi.mux.Get("/bench", func(w http.ResponseWriter, r *http.Request) {
+			resp := struct {
+				OneMin     rest.BenchmarkStats `json:"1min"`
+				FiveMin    rest.BenchmarkStats `json:"5min"`
+				FifteenMin rest.BenchmarkStats `json:"15min"`
+				Hourly	   rest.BenchmarkStats `json:"hourly"`
+			}{
+				bench.Stats(time.Minute),
+				bench.Stats(time.Minute * 5),
+				bench.Stats(time.Minute * 15),
+				bench.Stats(time.Hour),
+			}
+			rest.RenderJSON(w, resp)
+		})
+	}
 
 	restapi.fileServer("/static", getFrontendFiles())
+	restapi.mux.Handle("/", http.RedirectHandler("/static/", http.StatusMovedPermanently))
 
 	restapi.mux.Handle("/*", restapi.huma)
 	setupHealth(restapi.huma)
 	v1api := restapi.huma.Resource("/v1")
-	setupApps(v1api, mps)
+	//mw := NewMiddleware()
+	//v1api.Middleware(mw.Update(mps.GetUserService().GetUser))
 
+	setupApps(v1api, mps)
 	return restapi
 }
 

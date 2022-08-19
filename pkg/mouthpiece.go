@@ -35,3 +35,6 @@ func NewMouthPiece(dbconn gorm.Dialector, logger logr.Logger) *MouthPiece {
 func (mp MouthPiece) GetAppService() interfaces.AppServiceI {
 	return mp.appService
 }
+func (mp MouthPiece) GetUserService() interfaces.UserServicierI {
+	return mp.userService
+}

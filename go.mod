@@ -130,4 +130,4 @@ require (
 	modernc.org/sqlite v1.17.3 // indirect
 )
 
-replace github.com/danielgtaylor/huma => github.com/Fishwaldo/huma v1.8.1-0.20220803065139-017c8e9c60a9
+replace github.com/danielgtaylor/huma => github.com/Fishwaldo/huma v1.8.1-0.20220819155156-3e550a6f97f9

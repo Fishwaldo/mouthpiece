@@ -3,8 +3,10 @@ package restapi
 import (
 	"net/http"
 
-	"github.com/Fishwaldo/mouthpiece/pkg"
+	mouthpiece "github.com/Fishwaldo/mouthpiece/pkg"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
+
+
 
 	"github.com/danielgtaylor/huma"
 	"github.com/danielgtaylor/huma/responses"
@@ -38,13 +40,14 @@ func setupApps(res *huma.Resource, mps *mouthpiece.MouthPiece) error {
 		Body interfaces.AppDetails
 	}) {
 		if app, err := mps.GetAppService().CreateApp(ctx, input.Body); err != nil {
-			ctx.WriteError(http.StatusNotAcceptable, "Create Failed", err)
+			checkErrors(ctx, err)
+			ctx.WriteError(http.StatusNotAcceptable, "Create Failed")
 		} else {
 			ctx.WriteModel(http.StatusOK, app.GetDetails())
 		}
 	})
 
-	app := appapi.SubResource("/{appid}/")
+	app := appapi.SubResource("/{appid}")
 	app.Get("get-app", "Get Application Details",
 		responses.OK().ContentType("application/json"),
 		responses.OK().Headers("Set-Cookie"),
@@ -55,7 +58,7 @@ func setupApps(res *huma.Resource, mps *mouthpiece.MouthPiece) error {
 		Appid uint `path:"appid"`
 	}) {
 		if app, err := mps.GetAppService().GetApp(ctx, input.Appid); err != nil {
-			//			ctx.WriteError(http.StatusNotFound, "Not Found", err)
+			checkErrors(ctx, err)
 			ctx.WriteHeader(http.StatusNotFound)
 		} else {
 			ctx.WriteModel(http.StatusOK, app.GetDetails())

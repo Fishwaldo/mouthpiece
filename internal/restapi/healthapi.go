@@ -16,6 +16,7 @@ func setupHealth(Server *huma.Router) {
 	healthapi.Get("get-health", "Get Health of the Service",
 		responses.OK().ContentType("application/json"),
 		responses.OK().Headers("Content-Type"),
+		//responses.OK().Headers("Author"),
 		responses.OK().Model(health.CheckerResult{}),
 		responses.InternalServerError().ContentType("application/json"),
 		responses.InternalServerError().Headers("Content-Type"),

@@ -112,7 +112,7 @@ func getKey(bi *debug.BuildInfo, key string) string {
 }
 
 // GetVersionInfo represents known information on how this binary was built.
-func GetVersionInfo() Info {
+func GetVersionInfo() *Info {
 	buildInfo := getBuildInfo()
 	gitVersion = getGitVersion(buildInfo)
 	if gitCommit == unknown {
@@ -139,7 +139,7 @@ func GetVersionInfo() Info {
 		platform = fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
 	}
 
-	return Info{
+	return &Info{
 		ASCIIName:    asciiName,
 		GitVersion:   gitVersion,
 		GitCommit:    gitCommit,

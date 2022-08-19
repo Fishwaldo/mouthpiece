@@ -9,10 +9,14 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/filter"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
+	"github.com/Fishwaldo/mouthpiece/pkg/validate"
+
+	"github.com/go-playground/validator/v10"
 
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
+
 
 type AppService struct {
 }
@@ -25,10 +29,13 @@ func NewAppsService() *AppService {
 
 func (a AppService) GetApps(ctx context.Context) map[uint]interfaces.AppI {
 	var apps []App
-	db.Db.WithContext(ctx).Find(&apps)
+	
 	appMap := make(map[uint]interfaces.AppI)
+	if tx := db.Db.WithContext(ctx).Find(&apps); tx.Error != nil {
+		log.Log.Error(tx.Error, "Error Finding Apps")
+	}
 	for _, app := range apps {
-		appMap[app.ID] = &app
+		appMap[app.ID] = app
 	}
 	return appMap
 }
@@ -39,6 +46,7 @@ func (a AppService) GetAppByName(ctx context.Context, app_name string) (app inte
 	log.Log.V(1).Info("Finding App", "App", app_name, "Result", tx, "app", dbapp)
 	return &dbapp, tx.Error
 }
+
 func (a AppService) GetApp(ctx context.Context, appid uint) (app interfaces.AppI, err error) {
 	var dbApp App
 	tx := db.Db.WithContext(ctx).Preload("Filters").First(&dbApp, "id = ?", appid)
@@ -58,11 +66,17 @@ func (a AppService) CreateApp(ctx context.Context, app interfaces.AppDetails) (n
 		if filter.FindFilter("FindSeverity") != nil {
 			dbApp.Filters = append(dbApp.Filters, ApplicationFilters{Name: "FindSeverity"})
 		}
+		if err := validate.Get().Struct(dbApp); err != nil {
+			for _, e := range err.(validator.ValidationErrors) {
+				log.Log.Info("CreateApp: Validation Error", "Error", e)
+			}
+			return nil, err.(validator.ValidationErrors)
+		}
 		result := db.Db.WithContext(ctx).Create(&dbApp)
 		if result.Error != nil {
 			return newapp, result.Error
 		}
-		return a.GetApp(ctx, app.ID)
+		return a.GetApp(ctx, dbApp.ID)
 	}
 	log.Log.Error(err, "App Already Exists", "App", newapp)
 	return nil, mperror.ErrAppExists
