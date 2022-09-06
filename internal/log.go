@@ -22,7 +22,6 @@ func GetZapLogger() (*zap.Logger, error) {
 	return zapLog, nil
 }
 
-
 func InitLogger() logr.Logger {
 	var cfg zap.Config
 	var lvl zapcore.Level

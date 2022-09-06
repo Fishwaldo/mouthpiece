@@ -25,6 +25,7 @@ SOFTWARE.
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
 
@@ -38,8 +39,9 @@ import (
 	// "github.com/Fishwaldo/mouthpiece/pkg/apps"
 	// "github.com/Fishwaldo/mouthpiece/pkg/db"
 	// "github.com/Fishwaldo/mouthpiece/pkg/filter"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
-	// "github.com/Fishwaldo/mouthpiece/pkg/message"
+	"github.com/Fishwaldo/mouthpiece/pkg/msg"
 	// "github.com/Fishwaldo/mouthpiece/pkg/transport"
 	// "github.com/Fishwaldo/mouthpiece/pkg/users"
 
@@ -117,7 +119,16 @@ func main() {
 
 	fmt.Println(bi.String())
 
-	mps := mouthpiece.NewMouthPiece(sqlite.Open("test.db"), mpserver.InitLogger())
+	ctx := interfaces.NewContext(context.Background())
+	db := sqlite.Open("test.db?cache=shared&mode=rwc")
+	mps := mouthpiece.NewMouthPiece(ctx, db, mpserver.InitLogger())
+	mps.Start()
+	mps.SeedMouthPieceApp(context.Background())
+
+	msg := msg.NewMessage("MouthPiece")
+	msg.Body.Message = "Hello World"
+	msg.ProcessMessage()
+	mps.RouteMessage(context.Background(), msg)
 
 	restapi := restapi.NewRestAPI(mps)
 
@@ -126,7 +137,6 @@ func main() {
 	log.Log.Info("Server Shut Down")
 	zl, _ := mpserver.GetZapLogger()
 	zl.Sync()
-
 
 	// Create a new router & CLI with default middleware.
 

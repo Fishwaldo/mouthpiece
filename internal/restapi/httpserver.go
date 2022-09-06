@@ -69,7 +69,7 @@ func NewRestAPI(mps *mouthpiece.MouthPiece) *RestAPI {
 				OneMin     rest.BenchmarkStats `json:"1min"`
 				FiveMin    rest.BenchmarkStats `json:"5min"`
 				FifteenMin rest.BenchmarkStats `json:"15min"`
-				Hourly	   rest.BenchmarkStats `json:"hourly"`
+				Hourly     rest.BenchmarkStats `json:"hourly"`
 			}{
 				bench.Stats(time.Minute),
 				bench.Stats(time.Minute * 5),

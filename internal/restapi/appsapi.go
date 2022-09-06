@@ -6,8 +6,6 @@ import (
 	mouthpiece "github.com/Fishwaldo/mouthpiece/pkg"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 
-
-
 	"github.com/danielgtaylor/huma"
 	"github.com/danielgtaylor/huma/responses"
 )
@@ -22,12 +20,11 @@ func setupApps(res *huma.Resource, mps *mouthpiece.MouthPiece) error {
 		responses.OK().Headers("Set-Cookie"),
 		responses.OK().Model([]interfaces.AppDetails{}),
 	).Run(func(ctx huma.Context) {
-		apps := mps.GetAppService().GetApps(ctx)
-		var newapps []interfaces.AppDetails
-		for _, app := range apps {
-			newapps = append(newapps, app.GetDetails())
+		if apps, err := mps.GetAppService().GetApps(ctx); err != nil {
+			ctx.WriteError(http.StatusInternalServerError, "Internal Error", err)
+		} else {
+			ctx.WriteModel(http.StatusOK, apps)
 		}
-		ctx.WriteModel(http.StatusOK, newapps)
 	})
 
 	appapi.Put("create-app", "Create a Application",

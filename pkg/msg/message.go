@@ -2,8 +2,8 @@ package msg
 
 import (
 	"github.com/Fishwaldo/mouthpiece/pkg/db"
-	"github.com/Fishwaldo/mouthpiece/pkg/errors"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
+	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
 	"gorm.io/gorm"
 	"time"
 )
@@ -30,6 +30,14 @@ type Message struct {
 type MessageResult struct {
 	MessageID uint   `json:"message_id" doc:"Message ID"`
 	Status    string `json:"status" doc:"Status of Message"`
+}
+
+func NewMessage(appname string) *Message {
+	msg := &Message{
+		AppName: appname,
+	}
+	msg.Body.Fields = make(map[string]interface{})
+	return msg
 }
 
 func (msg *Message) ProcessMessage() (err error) {

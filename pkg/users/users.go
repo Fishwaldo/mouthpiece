@@ -9,14 +9,19 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
-	"github.com/Fishwaldo/mouthpiece/pkg/message"
-	"github.com/Fishwaldo/mouthpiece/pkg/transport"
+	"github.com/Fishwaldo/mouthpiece/pkg/msg"
 	"github.com/go-playground/validator/v10"
 )
 
 type User struct {
 	interfaces.UserDetails
-	TransportConfigs []transport.TransportConfig `json:"transports,omitempty" gorm:"many2many:user_transports;" validate:"-"`
+	TransportRecipient []uint `gorm:"-"`
+}
+
+// TableName Override the table name for the Users table
+// to ensure its consistant with the table name defined in the Interfaces Package
+func (User) TableName() string {
+	return "users"
 }
 
 func (u User) AddRoleToUser(ctx context.Context, role string) bool {
@@ -106,18 +111,18 @@ func (u User) SetLastName(lname string) error {
 	return u.SetDetails(details)
 }
 
-func (u User) ProcessMessage(ctx context.Context, msg *msg.Message) (err error) {
+func (u User) ProcessMessage(ctx context.Context, msg msg.Message) (err error) {
 	/* add User Fields to Message */
 	msg.Body.Fields["first_name"] = u.FirstName
 	msg.Body.Fields["last_name"] = u.LastName
 	msg.Body.Fields["email"] = u.Email
 	log.Log.V(1).Info("User Processing Message", "Email", u.Email, "MessageID", msg.ID)
-	for _, tc := range u.TransportConfigs {
-		t, err := transport.GetTransport(ctx, tc.Transport)
-		if err != nil {
-			log.Log.Info("Cant find Transport", "Transport", tc.Transport)
-		}
-		go t.SendMessage(ctx, tc, *msg)
-	}
+//	for _, tc := range u.TransportConfigs {
+//		t, err := transport.GetTransport(ctx, tc.Transport)
+//		if err != nil {
+//			log.Log.Info("Cant find Transport", "Transport", tc.Transport)
+//		}
+//		go t.SendMessage(ctx, tc, *msg)
+//	}
 	return
 }

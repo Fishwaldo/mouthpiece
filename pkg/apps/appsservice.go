@@ -5,10 +5,9 @@ import (
 	"errors"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/db"
-	"github.com/Fishwaldo/mouthpiece/pkg/errors"
-	"github.com/Fishwaldo/mouthpiece/pkg/filter"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
+	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
 	"github.com/Fishwaldo/mouthpiece/pkg/validate"
 
 	"github.com/go-playground/validator/v10"
@@ -17,55 +16,65 @@ import (
 	"gorm.io/gorm"
 )
 
-
 type AppService struct {
+	ctx *interfaces.MPContext
 }
 
 func NewAppsService() *AppService {
-	db.Db.AutoMigrate(&App{})
-	db.Db.AutoMigrate(&ApplicationFilters{})
-	return &AppService{}
+	return &AppService{
+	}
 }
 
-func (a AppService) GetApps(ctx context.Context) map[uint]interfaces.AppI {
+func (a *AppService) Start(ctx *interfaces.MPContext) error {
+	db.Db.AutoMigrate(&App{})
+	a.ctx = ctx
+	return nil
+}
+
+func (a *AppService) GetApps(ctx context.Context) ([]interfaces.AppDetails, error) {
 	var apps []App
-	
-	appMap := make(map[uint]interfaces.AppI)
+
+	var appDetails []interfaces.AppDetails
 	if tx := db.Db.WithContext(ctx).Find(&apps); tx.Error != nil {
 		log.Log.Error(tx.Error, "Error Finding Apps")
+		return appDetails, tx.Error
 	}
 	for _, app := range apps {
-		appMap[app.ID] = app
+		appDetails = append(appDetails, app.AppDetails)
 	}
-	return appMap
+	return appDetails, nil
 }
 
-func (a AppService) GetAppByName(ctx context.Context, app_name string) (app interfaces.AppI, err error) {
+func (a *AppService) GetAppByName(ctx context.Context, app_name string) (app interfaces.AppI, err error) {
 	var dbapp App
 	tx := db.Db.WithContext(ctx).Preload("Filters").First(&dbapp, "app_name = ?", app_name)
-	log.Log.V(1).Info("Finding App", "App", app_name, "Result", tx, "app", dbapp)
+	if tx.Error != nil {
+		log.Log.V(1).Error(tx.Error, "GetAppByName", "App", app_name)
+	}
+	dbapp.SetSvcCtx(a.ctx)
 	return &dbapp, tx.Error
 }
 
-func (a AppService) GetApp(ctx context.Context, appid uint) (app interfaces.AppI, err error) {
+func (a *AppService) GetApp(ctx context.Context, appid uint) (app interfaces.AppI, err error) {
 	var dbApp App
 	tx := db.Db.WithContext(ctx).Preload("Filters").First(&dbApp, "id = ?", appid)
-	log.Log.V(1).Info("Finding App", "App", appid, "Result", tx, "app", dbApp)
+	if tx.Error != nil {
+		log.Log.V(1).Error(tx.Error, "GetApp", "App", appid)
+	}
+	dbApp.SetSvcCtx(a.ctx)
 	return &dbApp, tx.Error
 }
 
-func (a AppService) CreateApp(ctx context.Context, app interfaces.AppDetails) (newapp interfaces.AppI, err error) {
+func (a *AppService) GetAppObj(ctx context.Context, appDet interfaces.AppDetails) (app interfaces.AppI, err error) {
+	return a.GetApp(ctx, appDet.ID)
+}
+
+func (a *AppService) CreateApp(ctx context.Context, app interfaces.AppDetails) (newapp interfaces.AppI, err error) {
 	newapp, err = a.GetAppByName(ctx, app.AppName)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Log.Info("Creating New App", "App", app)
 		var dbApp App
 		copier.Copy(&dbApp, &app)
-		if filter.FindFilter("CopyShortMessage") != nil {
-			dbApp.Filters = append(dbApp.Filters, ApplicationFilters{Name: "CopyShortMessage"})
-		}
-		if filter.FindFilter("FindSeverity") != nil {
-			dbApp.Filters = append(dbApp.Filters, ApplicationFilters{Name: "FindSeverity"})
-		}
 		if err := validate.Get().Struct(dbApp); err != nil {
 			for _, e := range err.(validator.ValidationErrors) {
 				log.Log.Info("CreateApp: Validation Error", "Error", e)
@@ -74,7 +83,7 @@ func (a AppService) CreateApp(ctx context.Context, app interfaces.AppDetails) (n
 		}
 		result := db.Db.WithContext(ctx).Create(&dbApp)
 		if result.Error != nil {
-			return newapp, result.Error
+			return nil, result.Error
 		}
 		return a.GetApp(ctx, dbApp.ID)
 	}

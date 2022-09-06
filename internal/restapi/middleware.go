@@ -3,15 +3,15 @@ package restapi
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"path"
+	"strconv"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 
 	"github.com/danielgtaylor/huma"
-	"github.com/go-pkgz/auth/token"
 	"github.com/go-chi/chi"
+	"github.com/go-pkgz/auth/token"
 )
 
 // UpdateAuthContext defines interface adding extras or modifying UserInfo in request context

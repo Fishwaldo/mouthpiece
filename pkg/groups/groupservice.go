@@ -6,18 +6,28 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/db"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
-	"github.com/Fishwaldo/mouthpiece/pkg/message"
+	"github.com/Fishwaldo/mouthpiece/pkg/msg"
+
+	"github.com/jinzhu/copier"
 )
 
 type GroupsService struct {
+	ctx *interfaces.MPContext
 }
 
 func NewGroupsService() *GroupsService {
-	db.Db.Debug().AutoMigrate(&Group{})
-	return &GroupsService{}
+	return &GroupsService{
+	}
+}
+
+func (gs *GroupsService) Start(ctx *interfaces.MPContext) error {
+	gs.ctx = ctx
+	db.Db.AutoMigrate(&Group{}, &GroupAppMember{}, &GroupUserMember{}, &GroupTransportMember{})
+	return nil
 }
 
 func (gs GroupsService) CreateGroup(ctx context.Context, name string) (interfaces.GroupI, error) {
+	log.Log.Info("Group: Creating Group", "name", name)
 	var group = Group{
 		Name: name,
 	}
@@ -29,7 +39,8 @@ func (gs GroupsService) CreateGroup(ctx context.Context, name string) (interface
 	return group, tx.Error
 }
 
-func (gs GroupsService) DeleteGroup(ctx context.Context, group Group) error {
+func (gs GroupsService) DeleteGroup(ctx context.Context, group interfaces.GroupI) error {
+	log.Log.Info("Group: Deleting Group", "name", group.GetName())
 	tx := db.Db.WithContext(ctx).First(&group, group.GetID())
 	if tx.Error != nil {
 		return tx.Error
@@ -38,36 +49,56 @@ func (gs GroupsService) DeleteGroup(ctx context.Context, group Group) error {
 	return tx.Error
 }
 
-func (gs GroupsService) GetGroup(ctx context.Context, id uint) (interfaces.GroupI, error) {
+func (gs GroupsService) GetGroupByID(ctx context.Context, id uint) (interfaces.GroupI, error) {
 	var group Group
-	tx := db.Db.WithContext(ctx).First(&group, id)
+	tx := db.Db.WithContext(ctx).Preload("Apps").Preload("Users").Preload("Transports").Find(&group, id)
 	return group, tx.Error
 }
 
-func (g GroupsService) GetGroupsForApp(ctx context.Context, app uint) ([]interfaces.GroupI, error) {
-	var groups []Group
-	tx := db.Db.WithContext(ctx).Where("apps = ?", app).Find(&groups)
-	var groupList []interfaces.GroupI
-	for _, group := range groups {
-		groupList = append(groupList, group)
-	}
-	return groupList, tx.Error
+func (gs GroupsService) GetGroup(ctx context.Context, name string) (interfaces.GroupI, error) {
+	var group Group
+	tx := db.Db.WithContext(ctx).Preload("Apps").Preload("Users").Preload("Transports").First(&group, "name = ?", name)
+	return group, tx.Error
 }
 
-func (g GroupsService) GetGroupsForUser(ctx context.Context, id uint) ([]interfaces.GroupI, error) {
+func (g GroupsService) GetGroupsForApp(ctx context.Context, app interfaces.AppI) ([]interfaces.GroupI, error) {
 	var groups []Group
-	tx := db.Db.WithContext(ctx).Where("users = ?", id).Find(&groups)
+	tx := db.Db.WithContext(ctx).Preload("Apps", "id = ?", app.GetID()).Find(&groups).Error
 	var groupList []interfaces.GroupI
 	for _, group := range groups {
-		groupList = append(groupList, group)
+		gp, _ := g.GetGroupByID(ctx, group.GetID())
+		groupList = append(groupList, gp)
 	}
-	return groupList, tx.Error
+	return groupList, tx
 }
 
-func (g GroupsService) SendMessageToUsers(ctx context.Context, msg msg.Message, appid uint, sender interfaces.UserSender) error {
+func (g GroupsService) GetGroupsForUser(ctx context.Context, user interfaces.UserI) ([]interfaces.GroupI, error) {
+	var groups []Group
+	tx := db.Db.WithContext(ctx).Preload("Users", "id = ?", user.GetID()).Find(&groups).Error
+	var groupList []interfaces.GroupI
+	for _, group := range groups {
+		gp, _ := g.GetGroupByID(ctx, group.GetID())
+		groupList = append(groupList, gp)
+	}
+	return groupList, tx
+}
+
+func (g GroupsService) GetGroupsForTransport(ctx context.Context, tid uint) ([]interfaces.GroupI, error) {
+	var groups []Group
+	tx := db.Db.WithContext(ctx).Preload("Transports", "id = ?", tid).Find(&groups).Error
+	var groupList []interfaces.GroupI
+	for _, group := range groups {
+		gp, _ := g.GetGroupByID(ctx, group.GetID())
+		groupList = append(groupList, gp)
+	}
+	return groupList, tx
+}
+
+func (g GroupsService) SendMessageToUsers(ctx context.Context, sendmsg *msg.Message, app interfaces.AppI) error {
+	log.Log.V(1).Info("Group: Sending Message to Users", "app", app.GetName())
 	var sendto []uint
-	if groups, err := g.GetGroupsForApp(ctx, appid); err != nil {
-		log.Log.Error(err, "Error Getting Groups for App", "appid", appid)
+	if groups, err := g.GetGroupsForApp(ctx, app); err != nil {
+		log.Log.Error(err, "Error Getting Groups for App", "app", app.GetName())
 		return err
 	} else {
 		for _, group := range groups {
@@ -75,18 +106,27 @@ func (g GroupsService) SendMessageToUsers(ctx context.Context, msg msg.Message, 
 		}
 	}
 	sendto = removeDuplicate(sendto)
+	log.Log.V(1).Info("Group: Sending Message to Users", "app", app.GetName(), "userid", sendto)
 	for _, userid := range sendto {
-		if err := sender(ctx, msg, userid); err != nil {
-			log.Log.Error(err, "Error Sending Message to User", "userid", userid)
+		if user, err := g.ctx.GetUserService().GetUser(ctx, userid); err != nil {
+			log.Log.Error(err, "Error Getting User", "userid", userid)
+		} else {
+			var usrmsg msg.Message
+			usrmsg.Body.Fields = make(map[string]interface{})
+			copier.Copy(usrmsg, sendmsg)
+			if err := user.ProcessMessage(ctx, usrmsg); err != nil {
+				log.Log.Error(err, "Error Processing Message for User", "userid", userid)
+			}
 		}
 	}
 	return nil
 }
 
-func (g GroupsService) SendMessageToTransports(ctx context.Context, msg msg.Message, appid uint, sender interfaces.UserSender) error {
+func (g GroupsService) SendMessageToTransports(ctx context.Context, sendmsg *msg.Message, app interfaces.AppI) error {
+	log.Log.V(1).Info("Group: Sending Message to Transports", "app", app.GetName())
 	var sendto []uint
-	if groups, err := g.GetGroupsForApp(ctx, appid); err != nil {
-		log.Log.Error(err, "Error Getting Groups for App", "appid", appid)
+	if groups, err := g.GetGroupsForApp(ctx, app); err != nil {
+		log.Log.Error(err, "Error Getting Groups for App", "app", app.GetName())
 		return err
 	} else {
 		for _, group := range groups {
@@ -94,9 +134,17 @@ func (g GroupsService) SendMessageToTransports(ctx context.Context, msg msg.Mess
 		}
 	}
 	sendto = removeDuplicate(sendto)
-	for _, userid := range sendto {
-		if err := sender(ctx, msg, userid); err != nil {
-			log.Log.Error(err, "Error Sending Message to Transports", "userid", userid)
+	log.Log.V(1).Info("Group: Sending Message to Transports", "app", app.GetName(), "transportid", sendto)
+	for _, tid := range sendto {
+		if transport, err := g.ctx.GetTransportService().GetTransportReciepient(ctx, tid); err != nil {
+			log.Log.Error(err, "Error Getting Transport", "transportid", tid)
+		} else {
+			var usrmsg msg.Message
+			usrmsg.Body.Fields = make(map[string]interface{})
+			copier.Copy(usrmsg, sendmsg)
+			if err := transport.ProcessGroupMessage(ctx, usrmsg); err != nil {
+				log.Log.Error(err, "Error Processing Message for Group Transport", "transportid", tid)
+			}
 		}
 	}
 	return nil

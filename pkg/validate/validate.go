@@ -8,7 +8,6 @@ var (
 	Validate *validator.Validate
 )
 
-
 func Get() *validator.Validate {
 	if Validate == nil {
 		Validate = validator.New()
