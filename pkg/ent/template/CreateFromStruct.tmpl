@@ -1,0 +1,22 @@
+
+{{/* gotype: entgo.io/ent/entc/gen.Type */}}
+
+{{ define "create/additional/createstruct" }}
+{{ $builder := $.CreateName }}
+{{ $receiver := receiver $builder }}
+
+    func ({{ $receiver }} *{{ $builder }}) Set{{ $.Name }}FromStruct(input *{{ $.Name }}) ( *{{ $builder }} ) {
+        {{- range $f := $.Fields }}
+            {{- $setter := print "Set" $f.StructField }}
+            {{ if $f.NillableValue }}
+            if input.{{ $f.StructField }} != nil {
+                {{ $receiver }}.{{ $setter }}(*input.{{ $f.StructField }})
+            }
+            {{ else }}
+            {{ $receiver }}.{{ $setter }}(input.{{ $f.StructField }})
+            {{ end }}
+        {{- end }}
+        return {{$receiver}}
+    }
+
+{{ end }}

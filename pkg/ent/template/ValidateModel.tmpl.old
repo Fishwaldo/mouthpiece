@@ -1,0 +1,9 @@
+{{ define "model/additional/validate" }}
+
+    func ({{ $.Receiver }} *{{ $.Name }}) Validate{{ $.Name }}() ( error ) {
+		if err := validate.Get().Struct({{ $.Receiver }}); err != nil {
+			return err
+		}
+        return nil
+    }
+{{ end }}
