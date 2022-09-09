@@ -56,7 +56,7 @@ func IDNEQ(id int) predicate.App {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...int) predicate.App {
 	return predicate.App(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -67,7 +67,7 @@ func IDIn(ids ...int) predicate.App {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...int) predicate.App {
 	return predicate.App(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -154,7 +154,7 @@ func TenantIDNEQ(v int) predicate.App {
 
 // TenantIDIn applies the In predicate on the "tenant_id" field.
 func TenantIDIn(vs ...int) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -165,7 +165,7 @@ func TenantIDIn(vs ...int) predicate.App {
 
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -190,7 +190,7 @@ func NameNEQ(v string) predicate.App {
 
 // NameIn applies the In predicate on the "Name" field.
 func NameIn(vs ...string) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -201,7 +201,7 @@ func NameIn(vs ...string) predicate.App {
 
 // NameNotIn applies the NotIn predicate on the "Name" field.
 func NameNotIn(vs ...string) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -289,7 +289,7 @@ func StatusNEQ(v Status) predicate.App {
 
 // StatusIn applies the In predicate on the "Status" field.
 func StatusIn(vs ...Status) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -300,7 +300,7 @@ func StatusIn(vs ...Status) predicate.App {
 
 // StatusNotIn applies the NotIn predicate on the "Status" field.
 func StatusNotIn(vs ...Status) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -325,7 +325,7 @@ func DescriptionNEQ(v string) predicate.App {
 
 // DescriptionIn applies the In predicate on the "Description" field.
 func DescriptionIn(vs ...string) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -336,7 +336,7 @@ func DescriptionIn(vs ...string) predicate.App {
 
 // DescriptionNotIn applies the NotIn predicate on the "Description" field.
 func DescriptionNotIn(vs ...string) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -424,7 +424,7 @@ func IconNEQ(v string) predicate.App {
 
 // IconIn applies the In predicate on the "icon" field.
 func IconIn(vs ...string) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -435,7 +435,7 @@ func IconIn(vs ...string) predicate.App {
 
 // IconNotIn applies the NotIn predicate on the "icon" field.
 func IconNotIn(vs ...string) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -523,7 +523,7 @@ func URLNEQ(v string) predicate.App {
 
 // URLIn applies the In predicate on the "url" field.
 func URLIn(vs ...string) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -534,7 +534,7 @@ func URLIn(vs ...string) predicate.App {
 
 // URLNotIn applies the NotIn predicate on the "url" field.
 func URLNotIn(vs ...string) predicate.App {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}

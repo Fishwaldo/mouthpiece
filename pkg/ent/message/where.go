@@ -59,7 +59,7 @@ func IDNEQ(id uuid.UUID) predicate.Message {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uuid.UUID) predicate.Message {
 	return predicate.Message(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -70,7 +70,7 @@ func IDIn(ids ...uuid.UUID) predicate.Message {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uuid.UUID) predicate.Message {
 	return predicate.Message(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -164,7 +164,7 @@ func TenantIDNEQ(v int) predicate.Message {
 
 // TenantIDIn applies the In predicate on the "tenant_id" field.
 func TenantIDIn(vs ...int) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -175,7 +175,7 @@ func TenantIDIn(vs ...int) predicate.Message {
 
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -200,7 +200,7 @@ func MessageNEQ(v string) predicate.Message {
 
 // MessageIn applies the In predicate on the "Message" field.
 func MessageIn(vs ...string) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -211,7 +211,7 @@ func MessageIn(vs ...string) predicate.Message {
 
 // MessageNotIn applies the NotIn predicate on the "Message" field.
 func MessageNotIn(vs ...string) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -299,7 +299,7 @@ func ShortMsgNEQ(v string) predicate.Message {
 
 // ShortMsgIn applies the In predicate on the "ShortMsg" field.
 func ShortMsgIn(vs ...string) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -310,7 +310,7 @@ func ShortMsgIn(vs ...string) predicate.Message {
 
 // ShortMsgNotIn applies the NotIn predicate on the "ShortMsg" field.
 func ShortMsgNotIn(vs ...string) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -412,7 +412,7 @@ func TopicNEQ(v string) predicate.Message {
 
 // TopicIn applies the In predicate on the "Topic" field.
 func TopicIn(vs ...string) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -423,7 +423,7 @@ func TopicIn(vs ...string) predicate.Message {
 
 // TopicNotIn applies the NotIn predicate on the "Topic" field.
 func TopicNotIn(vs ...string) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -525,7 +525,7 @@ func SeverityNEQ(v int) predicate.Message {
 
 // SeverityIn applies the In predicate on the "Severity" field.
 func SeverityIn(vs ...int) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -536,7 +536,7 @@ func SeverityIn(vs ...int) predicate.Message {
 
 // SeverityNotIn applies the NotIn predicate on the "Severity" field.
 func SeverityNotIn(vs ...int) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -603,7 +603,7 @@ func TimestampNEQ(v time.Time) predicate.Message {
 
 // TimestampIn applies the In predicate on the "Timestamp" field.
 func TimestampIn(vs ...time.Time) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -614,7 +614,7 @@ func TimestampIn(vs ...time.Time) predicate.Message {
 
 // TimestampNotIn applies the NotIn predicate on the "Timestamp" field.
 func TimestampNotIn(vs ...time.Time) predicate.Message {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}

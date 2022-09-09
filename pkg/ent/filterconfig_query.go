@@ -433,10 +433,10 @@ func (fcq *FilterConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, filterconfig.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]any, error) {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*FilterConfig).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []any) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &FilterConfig{config: fcq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -532,14 +532,11 @@ func (fcq *FilterConfigQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (fcq *FilterConfigQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := fcq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
+	n, err := fcq.sqlCount(ctx)
+	if err != nil {
 		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
 	}
+	return n > 0, nil
 }
 
 func (fcq *FilterConfigQuery) querySpec() *sqlgraph.QuerySpec {
@@ -640,7 +637,7 @@ func (fcgb *FilterConfigGroupBy) Aggregate(fns ...AggregateFunc) *FilterConfigGr
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (fcgb *FilterConfigGroupBy) Scan(ctx context.Context, v any) error {
+func (fcgb *FilterConfigGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := fcgb.path(ctx)
 	if err != nil {
 		return err
@@ -649,7 +646,7 @@ func (fcgb *FilterConfigGroupBy) Scan(ctx context.Context, v any) error {
 	return fcgb.sqlScan(ctx, v)
 }
 
-func (fcgb *FilterConfigGroupBy) sqlScan(ctx context.Context, v any) error {
+func (fcgb *FilterConfigGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 	for _, f := range fcgb.fields {
 		if !filterconfig.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -696,7 +693,7 @@ type FilterConfigSelect struct {
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (fcs *FilterConfigSelect) Scan(ctx context.Context, v any) error {
+func (fcs *FilterConfigSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := fcs.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -704,7 +701,7 @@ func (fcs *FilterConfigSelect) Scan(ctx context.Context, v any) error {
 	return fcs.sqlScan(ctx, v)
 }
 
-func (fcs *FilterConfigSelect) sqlScan(ctx context.Context, v any) error {
+func (fcs *FilterConfigSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
 	query, args := fcs.sql.Query()
 	if err := fcs.driver.Query(ctx, query, args, rows); err != nil {

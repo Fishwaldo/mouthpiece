@@ -125,8 +125,8 @@ func (e AppEdges) TransportRecipientsOrErr() ([]*TransportRecipient, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*App) scanValues(columns []string) ([]any, error) {
-	values := make([]any, len(columns))
+func (*App) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
 		case app.FieldID, app.FieldTenantID:
@@ -142,7 +142,7 @@ func (*App) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the App fields.
-func (a *App) assignValues(columns []string, values []any) error {
+func (a *App) assignValues(columns []string, values []interface{}) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}

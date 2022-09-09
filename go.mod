@@ -15,7 +15,7 @@ require (
 )
 
 require (
-	entgo.io/ent v0.11.3-0.20220908172944-366aaaad7a5a
+	entgo.io/ent v0.11.2
 	github.com/casbin/casbin/v2 v2.51.2
 	github.com/casbin/gorm-adapter/v3 v3.7.4
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be

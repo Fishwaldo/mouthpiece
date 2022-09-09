@@ -545,10 +545,10 @@ func (trq *TransportRecipientQuery) sqlAll(ctx context.Context, hooks ...queryHo
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, transportrecipient.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]any, error) {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*TransportRecipient).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []any) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &TransportRecipient{config: trq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -680,14 +680,14 @@ func (trq *TransportRecipientQuery) loadAppRecipient(ctx context.Context, query 
 	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
 		assign := spec.Assign
 		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
+		spec.ScanValues = func(columns []string) ([]interface{}, error) {
 			values, err := values(columns[1:])
 			if err != nil {
 				return nil, err
 			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
+			return append([]interface{}{new(sql.NullInt64)}, values...), nil
 		}
-		spec.Assign = func(columns []string, values []any) error {
+		spec.Assign = func(columns []string, values []interface{}) error {
 			outValue := int(values[0].(*sql.NullInt64).Int64)
 			inValue := int(values[1].(*sql.NullInt64).Int64)
 			if nids[inValue] == nil {
@@ -738,14 +738,14 @@ func (trq *TransportRecipientQuery) loadGroupRecipient(ctx context.Context, quer
 	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
 		assign := spec.Assign
 		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
+		spec.ScanValues = func(columns []string) ([]interface{}, error) {
 			values, err := values(columns[1:])
 			if err != nil {
 				return nil, err
 			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
+			return append([]interface{}{new(sql.NullInt64)}, values...), nil
 		}
-		spec.Assign = func(columns []string, values []any) error {
+		spec.Assign = func(columns []string, values []interface{}) error {
 			outValue := int(values[0].(*sql.NullInt64).Int64)
 			inValue := int(values[1].(*sql.NullInt64).Int64)
 			if nids[inValue] == nil {
@@ -796,14 +796,14 @@ func (trq *TransportRecipientQuery) loadUserRecipient(ctx context.Context, query
 	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
 		assign := spec.Assign
 		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
+		spec.ScanValues = func(columns []string) ([]interface{}, error) {
 			values, err := values(columns[1:])
 			if err != nil {
 				return nil, err
 			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
+			return append([]interface{}{new(sql.NullInt64)}, values...), nil
 		}
-		spec.Assign = func(columns []string, values []any) error {
+		spec.Assign = func(columns []string, values []interface{}) error {
 			outValue := int(values[0].(*sql.NullInt64).Int64)
 			inValue := int(values[1].(*sql.NullInt64).Int64)
 			if nids[inValue] == nil {
@@ -839,14 +839,11 @@ func (trq *TransportRecipientQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (trq *TransportRecipientQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := trq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
+	n, err := trq.sqlCount(ctx)
+	if err != nil {
 		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
 	}
+	return n > 0, nil
 }
 
 func (trq *TransportRecipientQuery) querySpec() *sqlgraph.QuerySpec {
@@ -947,7 +944,7 @@ func (trgb *TransportRecipientGroupBy) Aggregate(fns ...AggregateFunc) *Transpor
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (trgb *TransportRecipientGroupBy) Scan(ctx context.Context, v any) error {
+func (trgb *TransportRecipientGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := trgb.path(ctx)
 	if err != nil {
 		return err
@@ -956,7 +953,7 @@ func (trgb *TransportRecipientGroupBy) Scan(ctx context.Context, v any) error {
 	return trgb.sqlScan(ctx, v)
 }
 
-func (trgb *TransportRecipientGroupBy) sqlScan(ctx context.Context, v any) error {
+func (trgb *TransportRecipientGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 	for _, f := range trgb.fields {
 		if !transportrecipient.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -1003,7 +1000,7 @@ type TransportRecipientSelect struct {
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (trs *TransportRecipientSelect) Scan(ctx context.Context, v any) error {
+func (trs *TransportRecipientSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := trs.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -1011,7 +1008,7 @@ func (trs *TransportRecipientSelect) Scan(ctx context.Context, v any) error {
 	return trs.sqlScan(ctx, v)
 }
 
-func (trs *TransportRecipientSelect) sqlScan(ctx context.Context, v any) error {
+func (trs *TransportRecipientSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
 	query, args := trs.sql.Query()
 	if err := trs.driver.Query(ctx, query, args, rows); err != nil {

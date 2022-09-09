@@ -472,10 +472,10 @@ func (mq *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, message.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]any, error) {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*Message).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []any) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &Message{config: mq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -609,14 +609,11 @@ func (mq *MessageQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (mq *MessageQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := mq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
+	n, err := mq.sqlCount(ctx)
+	if err != nil {
 		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
 	}
+	return n > 0, nil
 }
 
 func (mq *MessageQuery) querySpec() *sqlgraph.QuerySpec {
@@ -717,7 +714,7 @@ func (mgb *MessageGroupBy) Aggregate(fns ...AggregateFunc) *MessageGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (mgb *MessageGroupBy) Scan(ctx context.Context, v any) error {
+func (mgb *MessageGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := mgb.path(ctx)
 	if err != nil {
 		return err
@@ -726,7 +723,7 @@ func (mgb *MessageGroupBy) Scan(ctx context.Context, v any) error {
 	return mgb.sqlScan(ctx, v)
 }
 
-func (mgb *MessageGroupBy) sqlScan(ctx context.Context, v any) error {
+func (mgb *MessageGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 	for _, f := range mgb.fields {
 		if !message.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -773,7 +770,7 @@ type MessageSelect struct {
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ms *MessageSelect) Scan(ctx context.Context, v any) error {
+func (ms *MessageSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := ms.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -781,7 +778,7 @@ func (ms *MessageSelect) Scan(ctx context.Context, v any) error {
 	return ms.sqlScan(ctx, v)
 }
 
-func (ms *MessageSelect) sqlScan(ctx context.Context, v any) error {
+func (ms *MessageSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
 	query, args := ms.sql.Query()
 	if err := ms.driver.Query(ctx, query, args, rows); err != nil {

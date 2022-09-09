@@ -426,10 +426,10 @@ func (tiq *TransportInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 			tiq.withTransportRecipients != nil,
 		}
 	)
-	_spec.ScanValues = func(columns []string) ([]any, error) {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*TransportInstance).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []any) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &TransportInstance{config: tiq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -530,14 +530,11 @@ func (tiq *TransportInstanceQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (tiq *TransportInstanceQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := tiq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
+	n, err := tiq.sqlCount(ctx)
+	if err != nil {
 		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
 	}
+	return n > 0, nil
 }
 
 func (tiq *TransportInstanceQuery) querySpec() *sqlgraph.QuerySpec {
@@ -638,7 +635,7 @@ func (tigb *TransportInstanceGroupBy) Aggregate(fns ...AggregateFunc) *Transport
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (tigb *TransportInstanceGroupBy) Scan(ctx context.Context, v any) error {
+func (tigb *TransportInstanceGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := tigb.path(ctx)
 	if err != nil {
 		return err
@@ -647,7 +644,7 @@ func (tigb *TransportInstanceGroupBy) Scan(ctx context.Context, v any) error {
 	return tigb.sqlScan(ctx, v)
 }
 
-func (tigb *TransportInstanceGroupBy) sqlScan(ctx context.Context, v any) error {
+func (tigb *TransportInstanceGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 	for _, f := range tigb.fields {
 		if !transportinstance.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -694,7 +691,7 @@ type TransportInstanceSelect struct {
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (tis *TransportInstanceSelect) Scan(ctx context.Context, v any) error {
+func (tis *TransportInstanceSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := tis.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -702,7 +699,7 @@ func (tis *TransportInstanceSelect) Scan(ctx context.Context, v any) error {
 	return tis.sqlScan(ctx, v)
 }
 
-func (tis *TransportInstanceSelect) sqlScan(ctx context.Context, v any) error {
+func (tis *TransportInstanceSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
 	query, args := tis.sql.Query()
 	if err := tis.driver.Query(ctx, query, args, rows); err != nil {

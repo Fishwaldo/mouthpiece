@@ -56,7 +56,7 @@ func IDNEQ(id int) predicate.UserMetaData {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...int) predicate.UserMetaData {
 	return predicate.UserMetaData(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -67,7 +67,7 @@ func IDIn(ids ...int) predicate.UserMetaData {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...int) predicate.UserMetaData {
 	return predicate.UserMetaData(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -140,7 +140,7 @@ func TenantIDNEQ(v int) predicate.UserMetaData {
 
 // TenantIDIn applies the In predicate on the "tenant_id" field.
 func TenantIDIn(vs ...int) predicate.UserMetaData {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -151,7 +151,7 @@ func TenantIDIn(vs ...int) predicate.UserMetaData {
 
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.UserMetaData {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -176,7 +176,7 @@ func NameNEQ(v string) predicate.UserMetaData {
 
 // NameIn applies the In predicate on the "Name" field.
 func NameIn(vs ...string) predicate.UserMetaData {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -187,7 +187,7 @@ func NameIn(vs ...string) predicate.UserMetaData {
 
 // NameNotIn applies the NotIn predicate on the "Name" field.
 func NameNotIn(vs ...string) predicate.UserMetaData {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -275,7 +275,7 @@ func ValueNEQ(v string) predicate.UserMetaData {
 
 // ValueIn applies the In predicate on the "Value" field.
 func ValueIn(vs ...string) predicate.UserMetaData {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -286,7 +286,7 @@ func ValueIn(vs ...string) predicate.UserMetaData {
 
 // ValueNotIn applies the NotIn predicate on the "Value" field.
 func ValueNotIn(vs ...string) predicate.UserMetaData {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}

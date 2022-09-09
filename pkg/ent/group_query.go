@@ -537,10 +537,10 @@ func (gq *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 			gq.withApps != nil,
 		}
 	)
-	_spec.ScanValues = func(columns []string) ([]any, error) {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*Group).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []any) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &Group{config: gq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -646,14 +646,14 @@ func (gq *GroupQuery) loadTransportRecipients(ctx context.Context, query *Transp
 	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
 		assign := spec.Assign
 		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
+		spec.ScanValues = func(columns []string) ([]interface{}, error) {
 			values, err := values(columns[1:])
 			if err != nil {
 				return nil, err
 			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
+			return append([]interface{}{new(sql.NullInt64)}, values...), nil
 		}
-		spec.Assign = func(columns []string, values []any) error {
+		spec.Assign = func(columns []string, values []interface{}) error {
 			outValue := int(values[0].(*sql.NullInt64).Int64)
 			inValue := int(values[1].(*sql.NullInt64).Int64)
 			if nids[inValue] == nil {
@@ -704,14 +704,14 @@ func (gq *GroupQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*
 	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
 		assign := spec.Assign
 		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
+		spec.ScanValues = func(columns []string) ([]interface{}, error) {
 			values, err := values(columns[1:])
 			if err != nil {
 				return nil, err
 			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
+			return append([]interface{}{new(sql.NullInt64)}, values...), nil
 		}
-		spec.Assign = func(columns []string, values []any) error {
+		spec.Assign = func(columns []string, values []interface{}) error {
 			outValue := int(values[0].(*sql.NullInt64).Int64)
 			inValue := int(values[1].(*sql.NullInt64).Int64)
 			if nids[inValue] == nil {
@@ -762,14 +762,14 @@ func (gq *GroupQuery) loadFilters(ctx context.Context, query *FilterQuery, nodes
 	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
 		assign := spec.Assign
 		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
+		spec.ScanValues = func(columns []string) ([]interface{}, error) {
 			values, err := values(columns[1:])
 			if err != nil {
 				return nil, err
 			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
+			return append([]interface{}{new(sql.NullInt64)}, values...), nil
 		}
-		spec.Assign = func(columns []string, values []any) error {
+		spec.Assign = func(columns []string, values []interface{}) error {
 			outValue := int(values[0].(*sql.NullInt64).Int64)
 			inValue := int(values[1].(*sql.NullInt64).Int64)
 			if nids[inValue] == nil {
@@ -820,14 +820,14 @@ func (gq *GroupQuery) loadApps(ctx context.Context, query *AppQuery, nodes []*Gr
 	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
 		assign := spec.Assign
 		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
+		spec.ScanValues = func(columns []string) ([]interface{}, error) {
 			values, err := values(columns[1:])
 			if err != nil {
 				return nil, err
 			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
+			return append([]interface{}{new(sql.NullInt64)}, values...), nil
 		}
-		spec.Assign = func(columns []string, values []any) error {
+		spec.Assign = func(columns []string, values []interface{}) error {
 			outValue := int(values[0].(*sql.NullInt64).Int64)
 			inValue := int(values[1].(*sql.NullInt64).Int64)
 			if nids[inValue] == nil {
@@ -863,14 +863,11 @@ func (gq *GroupQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (gq *GroupQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := gq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
+	n, err := gq.sqlCount(ctx)
+	if err != nil {
 		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
 	}
+	return n > 0, nil
 }
 
 func (gq *GroupQuery) querySpec() *sqlgraph.QuerySpec {
@@ -971,7 +968,7 @@ func (ggb *GroupGroupBy) Aggregate(fns ...AggregateFunc) *GroupGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (ggb *GroupGroupBy) Scan(ctx context.Context, v any) error {
+func (ggb *GroupGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := ggb.path(ctx)
 	if err != nil {
 		return err
@@ -980,7 +977,7 @@ func (ggb *GroupGroupBy) Scan(ctx context.Context, v any) error {
 	return ggb.sqlScan(ctx, v)
 }
 
-func (ggb *GroupGroupBy) sqlScan(ctx context.Context, v any) error {
+func (ggb *GroupGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 	for _, f := range ggb.fields {
 		if !group.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -1027,7 +1024,7 @@ type GroupSelect struct {
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (gs *GroupSelect) Scan(ctx context.Context, v any) error {
+func (gs *GroupSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := gs.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -1035,7 +1032,7 @@ func (gs *GroupSelect) Scan(ctx context.Context, v any) error {
 	return gs.sqlScan(ctx, v)
 }
 
-func (gs *GroupSelect) sqlScan(ctx context.Context, v any) error {
+func (gs *GroupSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
 	query, args := gs.sql.Query()
 	if err := gs.driver.Query(ctx, query, args, rows); err != nil {

@@ -56,7 +56,7 @@ func IDNEQ(id int) predicate.Group {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...int) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -67,7 +67,7 @@ func IDIn(ids ...int) predicate.Group {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...int) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -140,7 +140,7 @@ func TenantIDNEQ(v int) predicate.Group {
 
 // TenantIDIn applies the In predicate on the "tenant_id" field.
 func TenantIDIn(vs ...int) predicate.Group {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -151,7 +151,7 @@ func TenantIDIn(vs ...int) predicate.Group {
 
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Group {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -176,7 +176,7 @@ func NameNEQ(v string) predicate.Group {
 
 // NameIn applies the In predicate on the "Name" field.
 func NameIn(vs ...string) predicate.Group {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -187,7 +187,7 @@ func NameIn(vs ...string) predicate.Group {
 
 // NameNotIn applies the NotIn predicate on the "Name" field.
 func NameNotIn(vs ...string) predicate.Group {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -275,7 +275,7 @@ func DescriptionNEQ(v string) predicate.Group {
 
 // DescriptionIn applies the In predicate on the "Description" field.
 func DescriptionIn(vs ...string) predicate.Group {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -286,7 +286,7 @@ func DescriptionIn(vs ...string) predicate.Group {
 
 // DescriptionNotIn applies the NotIn predicate on the "Description" field.
 func DescriptionNotIn(vs ...string) predicate.Group {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}

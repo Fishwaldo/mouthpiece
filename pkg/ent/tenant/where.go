@@ -55,7 +55,7 @@ func IDNEQ(id int) predicate.Tenant {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...int) predicate.Tenant {
 	return predicate.Tenant(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -66,7 +66,7 @@ func IDIn(ids ...int) predicate.Tenant {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...int) predicate.Tenant {
 	return predicate.Tenant(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -125,7 +125,7 @@ func NameNEQ(v string) predicate.Tenant {
 
 // NameIn applies the In predicate on the "name" field.
 func NameIn(vs ...string) predicate.Tenant {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -136,7 +136,7 @@ func NameIn(vs ...string) predicate.Tenant {
 
 // NameNotIn applies the NotIn predicate on the "name" field.
 func NameNotIn(vs ...string) predicate.Tenant {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}

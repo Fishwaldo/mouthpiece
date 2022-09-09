@@ -56,7 +56,7 @@ func IDNEQ(id int) predicate.Filter {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...int) predicate.Filter {
 	return predicate.Filter(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -67,7 +67,7 @@ func IDIn(ids ...int) predicate.Filter {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...int) predicate.Filter {
 	return predicate.Filter(func(s *sql.Selector) {
-		v := make([]any, len(ids))
+		v := make([]interface{}, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -154,7 +154,7 @@ func TenantIDNEQ(v int) predicate.Filter {
 
 // TenantIDIn applies the In predicate on the "tenant_id" field.
 func TenantIDIn(vs ...int) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -165,7 +165,7 @@ func TenantIDIn(vs ...int) predicate.Filter {
 
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -190,7 +190,7 @@ func NameNEQ(v string) predicate.Filter {
 
 // NameIn applies the In predicate on the "Name" field.
 func NameIn(vs ...string) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -201,7 +201,7 @@ func NameIn(vs ...string) predicate.Filter {
 
 // NameNotIn applies the NotIn predicate on the "Name" field.
 func NameNotIn(vs ...string) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -289,7 +289,7 @@ func DescriptionNEQ(v string) predicate.Filter {
 
 // DescriptionIn applies the In predicate on the "Description" field.
 func DescriptionIn(vs ...string) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -300,7 +300,7 @@ func DescriptionIn(vs ...string) predicate.Filter {
 
 // DescriptionNotIn applies the NotIn predicate on the "Description" field.
 func DescriptionNotIn(vs ...string) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -388,7 +388,7 @@ func TypeNEQ(v Type) predicate.Filter {
 
 // TypeIn applies the In predicate on the "Type" field.
 func TypeIn(vs ...Type) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -399,7 +399,7 @@ func TypeIn(vs ...Type) predicate.Filter {
 
 // TypeNotIn applies the NotIn predicate on the "Type" field.
 func TypeNotIn(vs ...Type) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -438,7 +438,7 @@ func FilterImplNEQ(v string) predicate.Filter {
 
 // FilterImplIn applies the In predicate on the "FilterImpl" field.
 func FilterImplIn(vs ...string) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -449,7 +449,7 @@ func FilterImplIn(vs ...string) predicate.Filter {
 
 // FilterImplNotIn applies the NotIn predicate on the "FilterImpl" field.
 func FilterImplNotIn(vs ...string) predicate.Filter {
-	v := make([]any, len(vs))
+	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}

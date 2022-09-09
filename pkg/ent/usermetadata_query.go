@@ -433,10 +433,10 @@ func (umdq *UserMetaDataQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, usermetadata.ForeignKeys...)
 	}
-	_spec.ScanValues = func(columns []string) ([]any, error) {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*UserMetaData).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []any) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &UserMetaData{config: umdq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -532,14 +532,11 @@ func (umdq *UserMetaDataQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (umdq *UserMetaDataQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := umdq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
+	n, err := umdq.sqlCount(ctx)
+	if err != nil {
 		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
 	}
+	return n > 0, nil
 }
 
 func (umdq *UserMetaDataQuery) querySpec() *sqlgraph.QuerySpec {
@@ -640,7 +637,7 @@ func (umdgb *UserMetaDataGroupBy) Aggregate(fns ...AggregateFunc) *UserMetaDataG
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (umdgb *UserMetaDataGroupBy) Scan(ctx context.Context, v any) error {
+func (umdgb *UserMetaDataGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := umdgb.path(ctx)
 	if err != nil {
 		return err
@@ -649,7 +646,7 @@ func (umdgb *UserMetaDataGroupBy) Scan(ctx context.Context, v any) error {
 	return umdgb.sqlScan(ctx, v)
 }
 
-func (umdgb *UserMetaDataGroupBy) sqlScan(ctx context.Context, v any) error {
+func (umdgb *UserMetaDataGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 	for _, f := range umdgb.fields {
 		if !usermetadata.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -696,7 +693,7 @@ type UserMetaDataSelect struct {
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (umds *UserMetaDataSelect) Scan(ctx context.Context, v any) error {
+func (umds *UserMetaDataSelect) Scan(ctx context.Context, v interface{}) error {
 	if err := umds.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -704,7 +701,7 @@ func (umds *UserMetaDataSelect) Scan(ctx context.Context, v any) error {
 	return umds.sqlScan(ctx, v)
 }
 
-func (umds *UserMetaDataSelect) sqlScan(ctx context.Context, v any) error {
+func (umds *UserMetaDataSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
 	query, args := umds.sql.Query()
 	if err := umds.driver.Query(ctx, query, args, rows); err != nil {
