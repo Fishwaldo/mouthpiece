@@ -36,28 +36,26 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// App is the client for interacting with the App builders.
-	App *AppClient
-	// Filter is the client for interacting with the Filter builders.
-	Filter *FilterClient
-	// FilterConfig is the client for interacting with the FilterConfig builders.
-	FilterConfig *FilterConfigClient
-	// Group is the client for interacting with the Group builders.
-	Group *GroupClient
-	// Message is the client for interacting with the Message builders.
-	Message *MessageClient
-	// MsgVar is the client for interacting with the MsgVar builders.
-	MsgVar *MsgVarClient
+	// DbApp is the client for interacting with the DbApp builders.
+	DbApp *DbAppClient
+	// DbFilter is the client for interacting with the DbFilter builders.
+	DbFilter *DbFilterClient
+	// DbGroup is the client for interacting with the DbGroup builders.
+	DbGroup *DbGroupClient
+	// DbMessage is the client for interacting with the DbMessage builders.
+	DbMessage *DbMessageClient
+	// DbMessageFields is the client for interacting with the DbMessageFields builders.
+	DbMessageFields *DbMessageFieldsClient
+	// DbTransportInstances is the client for interacting with the DbTransportInstances builders.
+	DbTransportInstances *DbTransportInstancesClient
+	// DbTransportRecipients is the client for interacting with the DbTransportRecipients builders.
+	DbTransportRecipients *DbTransportRecipientsClient
+	// DbUser is the client for interacting with the DbUser builders.
+	DbUser *DbUserClient
+	// DbUserMetaData is the client for interacting with the DbUserMetaData builders.
+	DbUserMetaData *DbUserMetaDataClient
 	// Tenant is the client for interacting with the Tenant builders.
 	Tenant *TenantClient
-	// TransportInstance is the client for interacting with the TransportInstance builders.
-	TransportInstance *TransportInstanceClient
-	// TransportRecipient is the client for interacting with the TransportRecipient builders.
-	TransportRecipient *TransportRecipientClient
-	// User is the client for interacting with the User builders.
-	User *UserClient
-	// UserMetaData is the client for interacting with the UserMetaData builders.
-	UserMetaData *UserMetaDataClient
 
 	// lazily loaded.
 	client     *Client
@@ -193,17 +191,16 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.App = NewAppClient(tx.config)
-	tx.Filter = NewFilterClient(tx.config)
-	tx.FilterConfig = NewFilterConfigClient(tx.config)
-	tx.Group = NewGroupClient(tx.config)
-	tx.Message = NewMessageClient(tx.config)
-	tx.MsgVar = NewMsgVarClient(tx.config)
+	tx.DbApp = NewDbAppClient(tx.config)
+	tx.DbFilter = NewDbFilterClient(tx.config)
+	tx.DbGroup = NewDbGroupClient(tx.config)
+	tx.DbMessage = NewDbMessageClient(tx.config)
+	tx.DbMessageFields = NewDbMessageFieldsClient(tx.config)
+	tx.DbTransportInstances = NewDbTransportInstancesClient(tx.config)
+	tx.DbTransportRecipients = NewDbTransportRecipientsClient(tx.config)
+	tx.DbUser = NewDbUserClient(tx.config)
+	tx.DbUserMetaData = NewDbUserMetaDataClient(tx.config)
 	tx.Tenant = NewTenantClient(tx.config)
-	tx.TransportInstance = NewTransportInstanceClient(tx.config)
-	tx.TransportRecipient = NewTransportRecipientClient(tx.config)
-	tx.User = NewUserClient(tx.config)
-	tx.UserMetaData = NewUserMetaDataClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.
@@ -213,7 +210,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: App.QueryXXX(), the query will be executed
+// applies a query, for example: DbApp.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

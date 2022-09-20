@@ -5,22 +5,22 @@ import (
 	"time"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/app"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/message"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessage"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var DemoApp *ent.App
-var DemoMsg *ent.Message
+var DemoApp *ent.DbApp
+var DemoMsg *ent.DbMessage
 
 var _ = Describe("Messages: ", func() {
 	It("Setup Demo App", func() {
 		var err error
-		DemoApp, err = eClient.App.Create().
+		DemoApp, err = eClient.DbApp.Create().
 			SetName("DemoApp").
-			SetStatus(app.StatusEnabled).
+			SetStatus(dbapp.StatusEnabled).
 			SetDescription("Demo Application").
 			SetIcon("https://example.com/icon.png").
 			SetURL("https://example.com").
@@ -31,7 +31,7 @@ var _ = Describe("Messages: ", func() {
 	When("Creating", func() {
 		DescribeTable("Some Messages",
 			func(message string, shortmsg string, topic string, severity int, ts time.Time, expectedmessage string, expectedshortmsg string, expectedtopic string, expectedseverity int, expectedts time.Time) {
-				newmsg, err := eClient.Message.Create().
+				newmsg, err := eClient.DbMessage.Create().
 					SetMessage(message).
 					SetShortMsg(shortmsg).
 					SetTopic(topic).
@@ -54,7 +54,7 @@ var _ = Describe("Messages: ", func() {
 	When("Creating Messages with Fields", func() {
 		It("Should be ok", func() {
 			var err error
-			DemoMsg, err = eClient.Message.Create().
+			DemoMsg, err = eClient.DbMessage.Create().
 				SetMessage("message").
 				SetShortMsg("shortmsg").
 				SetTopic("topic").
@@ -63,8 +63,8 @@ var _ = Describe("Messages: ", func() {
 				SetApp(DemoApp).
 				Save(ctx)
 
-			var1, err1 := eClient.MsgVar.Create().SetName("key1").SetValue("value1").SetOwner(DemoMsg).Save(ctx)
-			var2, err2 := eClient.MsgVar.Create().SetName("key2").SetValue("value2").SetOwner(DemoMsg).Save(ctx)
+			var1, err1 := eClient.DbMessageFields.Create().SetName("key1").SetValue("value1").SetOwner(DemoMsg).Save(ctx)
+			var2, err2 := eClient.DbMessageFields.Create().SetName("key2").SetValue("value2").SetOwner(DemoMsg).Save(ctx)
 
 			Expect(err).To(BeNil())
 			Expect(DemoMsg).ToNot(BeNil())
@@ -84,7 +84,7 @@ var _ = Describe("Messages: ", func() {
 			Expect(var2.Value).To(Equal("value2"))
 
 
-			dbmsg, err := eClient.Message.Query().Where(message.ID(DemoMsg.ID)).WithVars().WithApp().Only(ctx)
+			dbmsg, err := eClient.DbMessage.Query().Where(dbmessage.ID(DemoMsg.ID)).WithFields().WithApp().Only(ctx)
 
 			Expect(err).To(BeNil())
 			Expect(dbmsg).ToNot(BeNil())
@@ -94,24 +94,24 @@ var _ = Describe("Messages: ", func() {
 			Expect(dbmsg.Severity).To(Equal(3))
 			Expect(dbmsg.Timestamp).To(Equal(time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)))
 			Expect(dbmsg.Edges.App.ID).To(Equal(DemoApp.ID))
-			Expect(dbmsg.Edges.Vars).To(HaveLen(2))
-			Expect(dbmsg.Edges.Vars[0].Name).To(Equal("key1"))
-			Expect(dbmsg.Edges.Vars[0].Value).To(Equal("value1"))
-			Expect(dbmsg.Edges.Vars[1].Name).To(Equal("key2"))
-			Expect(dbmsg.Edges.Vars[1].Value).To(Equal("value2"))
+			Expect(dbmsg.Edges.Fields).To(HaveLen(2))
+			Expect(dbmsg.Edges.Fields[0].Name).To(Equal("key1"))
+			Expect(dbmsg.Edges.Fields[0].Value).To(Equal("value1"))
+			Expect(dbmsg.Edges.Fields[1].Name).To(Equal("key2"))
+			Expect(dbmsg.Edges.Fields[1].Value).To(Equal("value2"))
 		})	
 		It("Cannot Have Duplicate Fields", func() {
-			newmsg, err := eClient.Message.Query().WithVars().Where(message.ID(DemoMsg.ID)).First(ctx)
+			newmsg, err := eClient.DbMessage.Query().WithFields().Where(dbmessage.ID(DemoMsg.ID)).First(ctx)
 			Expect(err).To(BeNil())
 			Expect(newmsg).ToNot(BeNil())
-			var3, err := eClient.MsgVar.Create().SetName("key1").SetValue("value1").SetOwner(newmsg).Save(ctx)
+			var3, err := eClient.DbMessageFields.Create().SetName("key1").SetValue("value1").SetOwner(newmsg).Save(ctx)
 			Expect(err).ToNot(BeNil())
 			Expect(var3).To(BeNil())
 		})
 	})
 	When("Retrieving Messages", func() {
 		It("Should have 3 messages", func() {
-			messages, err := eClient.Message.Query().All(ctx)
+			messages, err := eClient.DbMessage.Query().All(ctx)
 			Expect(err).To(BeNil())
 			Expect(messages).ToNot(BeNil())
 			Expect(len(messages)).To(Equal(3))
@@ -119,7 +119,7 @@ var _ = Describe("Messages: ", func() {
 	})
 	When("Message Must be Associated with a App", func() {
 		It("Should fail to create a Message without an App", func() {
-			_, err := eClient.Message.Create().
+			_, err := eClient.DbMessage.Create().
 				SetMessage("message").
 				SetShortMsg("shortmsg").
 				SetTopic("topic").
@@ -129,7 +129,7 @@ var _ = Describe("Messages: ", func() {
 			Expect(err).ToNot(BeNil())
 		})
 		It("Should have the Apps", func() {
-			msg, err := eClient.Message.Query().WithApp().First(ctx)
+			msg, err := eClient.DbMessage.Query().WithApp().First(ctx)
 			Expect(err).To(BeNil())
 			Expect(msg).ToNot(BeNil())
 			Expect(msg.Edges.App).ToNot(BeNil())

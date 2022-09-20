@@ -55,7 +55,7 @@ func main() {
 //		},
 		Features: []gen.Feature{
 			gen.FeatureVersionedMigration,
-			//gen.FeatureSnapshot,
+			gen.FeatureSnapshot,
 			gen.FeaturePrivacy,
 			gen.FeatureEntQL,
 		},

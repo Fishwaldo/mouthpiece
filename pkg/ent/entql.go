@@ -27,18 +27,17 @@
 package ent
 
 import (
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/app"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/filter"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/filterconfig"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/group"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/message"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/msgvar"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbfilter"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbgroup"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessage"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessagefields"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportinstances"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportrecipients"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbusermetadata"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/predicate"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/transportinstance"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/transportrecipient"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/user"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/usermetadata"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -48,113 +47,166 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 11)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 10)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   app.Table,
-			Columns: app.Columns,
+			Table:   dbapp.Table,
+			Columns: dbapp.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: app.FieldID,
+				Column: dbapp.FieldID,
 			},
 		},
-		Type: "App",
+		Type: "DbApp",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			app.FieldTenantID:    {Type: field.TypeInt, Column: app.FieldTenantID},
-			app.FieldName:        {Type: field.TypeString, Column: app.FieldName},
-			app.FieldStatus:      {Type: field.TypeEnum, Column: app.FieldStatus},
-			app.FieldDescription: {Type: field.TypeString, Column: app.FieldDescription},
-			app.FieldIcon:        {Type: field.TypeString, Column: app.FieldIcon},
-			app.FieldURL:         {Type: field.TypeString, Column: app.FieldURL},
+			dbapp.FieldTenantID:    {Type: field.TypeInt, Column: dbapp.FieldTenantID},
+			dbapp.FieldName:        {Type: field.TypeString, Column: dbapp.FieldName},
+			dbapp.FieldStatus:      {Type: field.TypeEnum, Column: dbapp.FieldStatus},
+			dbapp.FieldDescription: {Type: field.TypeString, Column: dbapp.FieldDescription},
+			dbapp.FieldIcon:        {Type: field.TypeString, Column: dbapp.FieldIcon},
+			dbapp.FieldURL:         {Type: field.TypeString, Column: dbapp.FieldURL},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   filter.Table,
-			Columns: filter.Columns,
+			Table:   dbfilter.Table,
+			Columns: dbfilter.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: filter.FieldID,
+				Column: dbfilter.FieldID,
 			},
 		},
-		Type: "Filter",
+		Type: "DbFilter",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			filter.FieldTenantID:    {Type: field.TypeInt, Column: filter.FieldTenantID},
-			filter.FieldName:        {Type: field.TypeString, Column: filter.FieldName},
-			filter.FieldDescription: {Type: field.TypeString, Column: filter.FieldDescription},
-			filter.FieldType:        {Type: field.TypeEnum, Column: filter.FieldType},
-			filter.FieldEnabled:     {Type: field.TypeBool, Column: filter.FieldEnabled},
-			filter.FieldFilterImpl:  {Type: field.TypeString, Column: filter.FieldFilterImpl},
+			dbfilter.FieldTenantID:    {Type: field.TypeInt, Column: dbfilter.FieldTenantID},
+			dbfilter.FieldName:        {Type: field.TypeString, Column: dbfilter.FieldName},
+			dbfilter.FieldDescription: {Type: field.TypeString, Column: dbfilter.FieldDescription},
+			dbfilter.FieldType:        {Type: field.TypeEnum, Column: dbfilter.FieldType},
+			dbfilter.FieldEnabled:     {Type: field.TypeBool, Column: dbfilter.FieldEnabled},
+			dbfilter.FieldFilterImpl:  {Type: field.TypeString, Column: dbfilter.FieldFilterImpl},
+			dbfilter.FieldConfig:      {Type: field.TypeString, Column: dbfilter.FieldConfig},
 		},
 	}
 	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   filterconfig.Table,
-			Columns: filterconfig.Columns,
+			Table:   dbgroup.Table,
+			Columns: dbgroup.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: filterconfig.FieldID,
+				Column: dbgroup.FieldID,
 			},
 		},
-		Type: "FilterConfig",
+		Type: "DbGroup",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			filterconfig.FieldTenantID: {Type: field.TypeInt, Column: filterconfig.FieldTenantID},
-			filterconfig.FieldName:     {Type: field.TypeString, Column: filterconfig.FieldName},
-			filterconfig.FieldValue:    {Type: field.TypeString, Column: filterconfig.FieldValue},
+			dbgroup.FieldTenantID:    {Type: field.TypeInt, Column: dbgroup.FieldTenantID},
+			dbgroup.FieldName:        {Type: field.TypeString, Column: dbgroup.FieldName},
+			dbgroup.FieldDescription: {Type: field.TypeString, Column: dbgroup.FieldDescription},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   group.Table,
-			Columns: group.Columns,
+			Table:   dbmessage.Table,
+			Columns: dbmessage.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: group.FieldID,
+				Type:   field.TypeUUID,
+				Column: dbmessage.FieldID,
 			},
 		},
-		Type: "Group",
+		Type: "DbMessage",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			group.FieldTenantID:    {Type: field.TypeInt, Column: group.FieldTenantID},
-			group.FieldName:        {Type: field.TypeString, Column: group.FieldName},
-			group.FieldDescription: {Type: field.TypeString, Column: group.FieldDescription},
+			dbmessage.FieldTenantID:  {Type: field.TypeInt, Column: dbmessage.FieldTenantID},
+			dbmessage.FieldMessage:   {Type: field.TypeString, Column: dbmessage.FieldMessage},
+			dbmessage.FieldShortMsg:  {Type: field.TypeString, Column: dbmessage.FieldShortMsg},
+			dbmessage.FieldTopic:     {Type: field.TypeString, Column: dbmessage.FieldTopic},
+			dbmessage.FieldSeverity:  {Type: field.TypeInt, Column: dbmessage.FieldSeverity},
+			dbmessage.FieldTimestamp: {Type: field.TypeTime, Column: dbmessage.FieldTimestamp},
 		},
 	}
 	graph.Nodes[4] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   message.Table,
-			Columns: message.Columns,
+			Table:   dbmessagefields.Table,
+			Columns: dbmessagefields.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: message.FieldID,
+				Type:   field.TypeInt,
+				Column: dbmessagefields.FieldID,
 			},
 		},
-		Type: "Message",
+		Type: "DbMessageFields",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			message.FieldTenantID:  {Type: field.TypeInt, Column: message.FieldTenantID},
-			message.FieldMessage:   {Type: field.TypeString, Column: message.FieldMessage},
-			message.FieldShortMsg:  {Type: field.TypeString, Column: message.FieldShortMsg},
-			message.FieldTopic:     {Type: field.TypeString, Column: message.FieldTopic},
-			message.FieldSeverity:  {Type: field.TypeInt, Column: message.FieldSeverity},
-			message.FieldTimestamp: {Type: field.TypeTime, Column: message.FieldTimestamp},
+			dbmessagefields.FieldTenantID: {Type: field.TypeInt, Column: dbmessagefields.FieldTenantID},
+			dbmessagefields.FieldName:     {Type: field.TypeString, Column: dbmessagefields.FieldName},
+			dbmessagefields.FieldValue:    {Type: field.TypeString, Column: dbmessagefields.FieldValue},
 		},
 	}
 	graph.Nodes[5] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   msgvar.Table,
-			Columns: msgvar.Columns,
+			Table:   dbtransportinstances.Table,
+			Columns: dbtransportinstances.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeInt,
-				Column: msgvar.FieldID,
+				Column: dbtransportinstances.FieldID,
 			},
 		},
-		Type: "MsgVar",
+		Type: "DbTransportInstances",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			msgvar.FieldTenantID: {Type: field.TypeInt, Column: msgvar.FieldTenantID},
-			msgvar.FieldName:     {Type: field.TypeString, Column: msgvar.FieldName},
-			msgvar.FieldValue:    {Type: field.TypeString, Column: msgvar.FieldValue},
+			dbtransportinstances.FieldTenantID:          {Type: field.TypeInt, Column: dbtransportinstances.FieldTenantID},
+			dbtransportinstances.FieldName:              {Type: field.TypeString, Column: dbtransportinstances.FieldName},
+			dbtransportinstances.FieldDescription:       {Type: field.TypeString, Column: dbtransportinstances.FieldDescription},
+			dbtransportinstances.FieldConfig:            {Type: field.TypeString, Column: dbtransportinstances.FieldConfig},
+			dbtransportinstances.FieldTransportProvider: {Type: field.TypeString, Column: dbtransportinstances.FieldTransportProvider},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   dbtransportrecipients.Table,
+			Columns: dbtransportrecipients.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: dbtransportrecipients.FieldID,
+			},
+		},
+		Type: "DbTransportRecipients",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			dbtransportrecipients.FieldTenantID:    {Type: field.TypeInt, Column: dbtransportrecipients.FieldTenantID},
+			dbtransportrecipients.FieldName:        {Type: field.TypeString, Column: dbtransportrecipients.FieldName},
+			dbtransportrecipients.FieldDescription: {Type: field.TypeString, Column: dbtransportrecipients.FieldDescription},
+			dbtransportrecipients.FieldConfig:      {Type: field.TypeString, Column: dbtransportrecipients.FieldConfig},
+		},
+	}
+	graph.Nodes[7] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   dbuser.Table,
+			Columns: dbuser.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: dbuser.FieldID,
+			},
+		},
+		Type: "DbUser",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			dbuser.FieldTenantID:    {Type: field.TypeInt, Column: dbuser.FieldTenantID},
+			dbuser.FieldEmail:       {Type: field.TypeString, Column: dbuser.FieldEmail},
+			dbuser.FieldName:        {Type: field.TypeString, Column: dbuser.FieldName},
+			dbuser.FieldDescription: {Type: field.TypeString, Column: dbuser.FieldDescription},
+		},
+	}
+	graph.Nodes[8] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   dbusermetadata.Table,
+			Columns: dbusermetadata.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: dbusermetadata.FieldID,
+			},
+		},
+		Type: "DbUserMetaData",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			dbusermetadata.FieldTenantID: {Type: field.TypeInt, Column: dbusermetadata.FieldTenantID},
+			dbusermetadata.FieldName:     {Type: field.TypeString, Column: dbusermetadata.FieldName},
+			dbusermetadata.FieldValue:    {Type: field.TypeString, Column: dbusermetadata.FieldValue},
+		},
+	}
+	graph.Nodes[9] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   tenant.Table,
 			Columns: tenant.Columns,
@@ -168,81 +220,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 			tenant.FieldName: {Type: field.TypeString, Column: tenant.FieldName},
 		},
 	}
-	graph.Nodes[7] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   transportinstance.Table,
-			Columns: transportinstance.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: transportinstance.FieldID,
-			},
-		},
-		Type: "TransportInstance",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			transportinstance.FieldTenantID:    {Type: field.TypeInt, Column: transportinstance.FieldTenantID},
-			transportinstance.FieldName:        {Type: field.TypeString, Column: transportinstance.FieldName},
-			transportinstance.FieldDescription: {Type: field.TypeString, Column: transportinstance.FieldDescription},
-		},
-	}
-	graph.Nodes[8] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   transportrecipient.Table,
-			Columns: transportrecipient.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: transportrecipient.FieldID,
-			},
-		},
-		Type: "TransportRecipient",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			transportrecipient.FieldTenantID:    {Type: field.TypeInt, Column: transportrecipient.FieldTenantID},
-			transportrecipient.FieldName:        {Type: field.TypeString, Column: transportrecipient.FieldName},
-			transportrecipient.FieldDescription: {Type: field.TypeString, Column: transportrecipient.FieldDescription},
-		},
-	}
-	graph.Nodes[9] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   user.Table,
-			Columns: user.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: user.FieldID,
-			},
-		},
-		Type: "User",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			user.FieldTenantID:    {Type: field.TypeInt, Column: user.FieldTenantID},
-			user.FieldEmail:       {Type: field.TypeString, Column: user.FieldEmail},
-			user.FieldName:        {Type: field.TypeString, Column: user.FieldName},
-			user.FieldDescription: {Type: field.TypeString, Column: user.FieldDescription},
-		},
-	}
-	graph.Nodes[10] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   usermetadata.Table,
-			Columns: usermetadata.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: usermetadata.FieldID,
-			},
-		},
-		Type: "UserMetaData",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			usermetadata.FieldTenantID: {Type: field.TypeInt, Column: usermetadata.FieldTenantID},
-			usermetadata.FieldName:     {Type: field.TypeString, Column: usermetadata.FieldName},
-			usermetadata.FieldValue:    {Type: field.TypeString, Column: usermetadata.FieldValue},
-		},
-	}
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   app.TenantTable,
-			Columns: []string{app.TenantColumn},
+			Table:   dbapp.TenantTable,
+			Columns: []string{dbapp.TenantColumn},
 			Bidi:    false,
 		},
-		"App",
+		"DbApp",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -250,239 +237,191 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   app.MessagesTable,
-			Columns: []string{app.MessagesColumn},
+			Table:   dbapp.MessagesTable,
+			Columns: []string{dbapp.MessagesColumn},
 			Bidi:    false,
 		},
-		"App",
-		"Message",
+		"DbApp",
+		"DbMessage",
 	)
 	graph.MustAddE(
 		"filters",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   app.FiltersTable,
-			Columns: app.FiltersPrimaryKey,
+			Table:   dbapp.FiltersTable,
+			Columns: dbapp.FiltersPrimaryKey,
 			Bidi:    false,
 		},
-		"App",
-		"Filter",
+		"DbApp",
+		"DbFilter",
 	)
 	graph.MustAddE(
 		"groups",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   app.GroupsTable,
-			Columns: app.GroupsPrimaryKey,
+			Table:   dbapp.GroupsTable,
+			Columns: dbapp.GroupsPrimaryKey,
 			Bidi:    false,
 		},
-		"App",
-		"Group",
-	)
-	graph.MustAddE(
-		"TransportRecipients",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   app.TransportRecipientsTable,
-			Columns: app.TransportRecipientsPrimaryKey,
-			Bidi:    false,
-		},
-		"App",
-		"TransportRecipient",
+		"DbApp",
+		"DbGroup",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   filter.TenantTable,
-			Columns: []string{filter.TenantColumn},
+			Table:   dbfilter.TenantTable,
+			Columns: []string{dbfilter.TenantColumn},
 			Bidi:    false,
 		},
-		"Filter",
+		"DbFilter",
 		"Tenant",
-	)
-	graph.MustAddE(
-		"config",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filter.ConfigTable,
-			Columns: []string{filter.ConfigColumn},
-			Bidi:    false,
-		},
-		"Filter",
-		"FilterConfig",
 	)
 	graph.MustAddE(
 		"groups",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   filter.GroupsTable,
-			Columns: filter.GroupsPrimaryKey,
+			Table:   dbfilter.GroupsTable,
+			Columns: dbfilter.GroupsPrimaryKey,
 			Bidi:    false,
 		},
-		"Filter",
-		"Group",
+		"DbFilter",
+		"DbGroup",
 	)
 	graph.MustAddE(
 		"app",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   filter.AppTable,
-			Columns: filter.AppPrimaryKey,
+			Table:   dbfilter.AppTable,
+			Columns: dbfilter.AppPrimaryKey,
 			Bidi:    false,
 		},
-		"Filter",
-		"App",
+		"DbFilter",
+		"DbApp",
 	)
 	graph.MustAddE(
 		"user",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   filter.UserTable,
-			Columns: filter.UserPrimaryKey,
+			Table:   dbfilter.UserTable,
+			Columns: dbfilter.UserPrimaryKey,
 			Bidi:    false,
 		},
-		"Filter",
-		"User",
+		"DbFilter",
+		"DbUser",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   filterconfig.TenantTable,
-			Columns: []string{filterconfig.TenantColumn},
+			Table:   dbgroup.TenantTable,
+			Columns: []string{dbgroup.TenantColumn},
 			Bidi:    false,
 		},
-		"FilterConfig",
-		"Tenant",
-	)
-	graph.MustAddE(
-		"filter",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   filterconfig.FilterTable,
-			Columns: []string{filterconfig.FilterColumn},
-			Bidi:    false,
-		},
-		"FilterConfig",
-		"Filter",
-	)
-	graph.MustAddE(
-		"tenant",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   group.TenantTable,
-			Columns: []string{group.TenantColumn},
-			Bidi:    false,
-		},
-		"Group",
+		"DbGroup",
 		"Tenant",
 	)
 	graph.MustAddE(
 		"TransportRecipients",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   group.TransportRecipientsTable,
-			Columns: group.TransportRecipientsPrimaryKey,
+			Table:   dbgroup.TransportRecipientsTable,
+			Columns: []string{dbgroup.TransportRecipientsColumn},
 			Bidi:    false,
 		},
-		"Group",
-		"TransportRecipient",
+		"DbGroup",
+		"DbTransportRecipients",
 	)
 	graph.MustAddE(
 		"users",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   group.UsersTable,
-			Columns: group.UsersPrimaryKey,
+			Table:   dbgroup.UsersTable,
+			Columns: dbgroup.UsersPrimaryKey,
 			Bidi:    false,
 		},
-		"Group",
-		"User",
+		"DbGroup",
+		"DbUser",
 	)
 	graph.MustAddE(
 		"filters",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   group.FiltersTable,
-			Columns: group.FiltersPrimaryKey,
+			Table:   dbgroup.FiltersTable,
+			Columns: dbgroup.FiltersPrimaryKey,
 			Bidi:    false,
 		},
-		"Group",
-		"Filter",
+		"DbGroup",
+		"DbFilter",
 	)
 	graph.MustAddE(
 		"apps",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   group.AppsTable,
-			Columns: group.AppsPrimaryKey,
+			Table:   dbgroup.AppsTable,
+			Columns: dbgroup.AppsPrimaryKey,
 			Bidi:    false,
 		},
-		"Group",
-		"App",
+		"DbGroup",
+		"DbApp",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   message.TenantTable,
-			Columns: []string{message.TenantColumn},
+			Table:   dbmessage.TenantTable,
+			Columns: []string{dbmessage.TenantColumn},
 			Bidi:    false,
 		},
-		"Message",
+		"DbMessage",
 		"Tenant",
 	)
 	graph.MustAddE(
-		"vars",
+		"fields",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   message.VarsTable,
-			Columns: []string{message.VarsColumn},
+			Table:   dbmessage.FieldsTable,
+			Columns: []string{dbmessage.FieldsColumn},
 			Bidi:    false,
 		},
-		"Message",
-		"MsgVar",
+		"DbMessage",
+		"DbMessageFields",
 	)
 	graph.MustAddE(
 		"app",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   message.AppTable,
-			Columns: []string{message.AppColumn},
+			Table:   dbmessage.AppTable,
+			Columns: []string{dbmessage.AppColumn},
 			Bidi:    false,
 		},
-		"Message",
-		"App",
+		"DbMessage",
+		"DbApp",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   msgvar.TenantTable,
-			Columns: []string{msgvar.TenantColumn},
+			Table:   dbmessagefields.TenantTable,
+			Columns: []string{dbmessagefields.TenantColumn},
 			Bidi:    false,
 		},
-		"MsgVar",
+		"DbMessageFields",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -490,23 +429,23 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   msgvar.OwnerTable,
-			Columns: []string{msgvar.OwnerColumn},
+			Table:   dbmessagefields.OwnerTable,
+			Columns: []string{dbmessagefields.OwnerColumn},
 			Bidi:    false,
 		},
-		"MsgVar",
-		"Message",
+		"DbMessageFields",
+		"DbMessage",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   transportinstance.TenantTable,
-			Columns: []string{transportinstance.TenantColumn},
+			Table:   dbtransportinstances.TenantTable,
+			Columns: []string{dbtransportinstances.TenantColumn},
 			Bidi:    false,
 		},
-		"TransportInstance",
+		"DbTransportInstances",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -514,23 +453,23 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   transportinstance.TransportRecipientsTable,
-			Columns: []string{transportinstance.TransportRecipientsColumn},
+			Table:   dbtransportinstances.TransportRecipientsTable,
+			Columns: []string{dbtransportinstances.TransportRecipientsColumn},
 			Bidi:    false,
 		},
-		"TransportInstance",
-		"TransportRecipient",
+		"DbTransportInstances",
+		"DbTransportRecipients",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   transportrecipient.TenantTable,
-			Columns: []string{transportrecipient.TenantColumn},
+			Table:   dbtransportrecipients.TenantTable,
+			Columns: []string{dbtransportrecipients.TenantColumn},
 			Bidi:    false,
 		},
-		"TransportRecipient",
+		"DbTransportRecipients",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -538,59 +477,47 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   transportrecipient.TransportInstanceTable,
-			Columns: []string{transportrecipient.TransportInstanceColumn},
+			Table:   dbtransportrecipients.TransportInstanceTable,
+			Columns: []string{dbtransportrecipients.TransportInstanceColumn},
 			Bidi:    false,
 		},
-		"TransportRecipient",
-		"TransportInstance",
-	)
-	graph.MustAddE(
-		"AppRecipient",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   transportrecipient.AppRecipientTable,
-			Columns: transportrecipient.AppRecipientPrimaryKey,
-			Bidi:    false,
-		},
-		"TransportRecipient",
-		"App",
+		"DbTransportRecipients",
+		"DbTransportInstances",
 	)
 	graph.MustAddE(
 		"GroupRecipient",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   transportrecipient.GroupRecipientTable,
-			Columns: transportrecipient.GroupRecipientPrimaryKey,
+			Table:   dbtransportrecipients.GroupRecipientTable,
+			Columns: []string{dbtransportrecipients.GroupRecipientColumn},
 			Bidi:    false,
 		},
-		"TransportRecipient",
-		"Group",
+		"DbTransportRecipients",
+		"DbGroup",
 	)
 	graph.MustAddE(
 		"UserRecipient",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   transportrecipient.UserRecipientTable,
-			Columns: transportrecipient.UserRecipientPrimaryKey,
+			Table:   dbtransportrecipients.UserRecipientTable,
+			Columns: []string{dbtransportrecipients.UserRecipientColumn},
 			Bidi:    false,
 		},
-		"TransportRecipient",
-		"User",
+		"DbTransportRecipients",
+		"DbUser",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   user.TenantTable,
-			Columns: []string{user.TenantColumn},
+			Table:   dbuser.TenantTable,
+			Columns: []string{dbuser.TenantColumn},
 			Bidi:    false,
 		},
-		"User",
+		"DbUser",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -598,59 +525,59 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.MetadataTable,
-			Columns: []string{user.MetadataColumn},
+			Table:   dbuser.MetadataTable,
+			Columns: []string{dbuser.MetadataColumn},
 			Bidi:    false,
 		},
-		"User",
-		"UserMetaData",
+		"DbUser",
+		"DbUserMetaData",
 	)
 	graph.MustAddE(
 		"filters",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   user.FiltersTable,
-			Columns: user.FiltersPrimaryKey,
+			Table:   dbuser.FiltersTable,
+			Columns: dbuser.FiltersPrimaryKey,
 			Bidi:    false,
 		},
-		"User",
-		"Filter",
+		"DbUser",
+		"DbFilter",
 	)
 	graph.MustAddE(
 		"groups",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   user.GroupsTable,
-			Columns: user.GroupsPrimaryKey,
+			Table:   dbuser.GroupsTable,
+			Columns: dbuser.GroupsPrimaryKey,
 			Bidi:    false,
 		},
-		"User",
-		"Group",
+		"DbUser",
+		"DbGroup",
 	)
 	graph.MustAddE(
 		"TransportRecipients",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.TransportRecipientsTable,
-			Columns: user.TransportRecipientsPrimaryKey,
+			Table:   dbuser.TransportRecipientsTable,
+			Columns: []string{dbuser.TransportRecipientsColumn},
 			Bidi:    false,
 		},
-		"User",
-		"TransportRecipient",
+		"DbUser",
+		"DbTransportRecipients",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   usermetadata.TenantTable,
-			Columns: []string{usermetadata.TenantColumn},
+			Table:   dbusermetadata.TenantTable,
+			Columns: []string{dbusermetadata.TenantColumn},
 			Bidi:    false,
 		},
-		"UserMetaData",
+		"DbUserMetaData",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -658,12 +585,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   usermetadata.UserTable,
-			Columns: []string{usermetadata.UserColumn},
+			Table:   dbusermetadata.UserTable,
+			Columns: []string{dbusermetadata.UserColumn},
 			Bidi:    false,
 		},
-		"UserMetaData",
-		"User",
+		"DbUserMetaData",
+		"DbUser",
 	)
 	return graph
 }()
@@ -675,33 +602,33 @@ type predicateAdder interface {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (aq *AppQuery) addPredicate(pred func(s *sql.Selector)) {
-	aq.predicates = append(aq.predicates, pred)
+func (daq *DbAppQuery) addPredicate(pred func(s *sql.Selector)) {
+	daq.predicates = append(daq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the AppQuery builder.
-func (aq *AppQuery) Filter() *AppFilter {
-	return &AppFilter{config: aq.config, predicateAdder: aq}
+// Filter returns a Filter implementation to apply filters on the DbAppQuery builder.
+func (daq *DbAppQuery) Filter() *DbAppFilter {
+	return &DbAppFilter{config: daq.config, predicateAdder: daq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *AppMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *DbAppMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the AppMutation builder.
-func (m *AppMutation) Filter() *AppFilter {
-	return &AppFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the DbAppMutation builder.
+func (m *DbAppMutation) Filter() *DbAppFilter {
+	return &DbAppFilter{config: m.config, predicateAdder: m}
 }
 
-// AppFilter provides a generic filtering capability at runtime for AppQuery.
-type AppFilter struct {
+// DbAppFilter provides a generic filtering capability at runtime for DbAppQuery.
+type DbAppFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *AppFilter) Where(p entql.P) {
+func (f *DbAppFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
 			s.AddError(err)
@@ -710,47 +637,47 @@ func (f *AppFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql int predicate on the id field.
-func (f *AppFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(app.FieldID))
+func (f *DbAppFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(dbapp.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *AppFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(app.FieldTenantID))
+func (f *DbAppFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(dbapp.FieldTenantID))
 }
 
 // WhereName applies the entql string predicate on the Name field.
-func (f *AppFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(app.FieldName))
+func (f *DbAppFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(dbapp.FieldName))
 }
 
 // WhereStatus applies the entql string predicate on the Status field.
-func (f *AppFilter) WhereStatus(p entql.StringP) {
-	f.Where(p.Field(app.FieldStatus))
+func (f *DbAppFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(dbapp.FieldStatus))
 }
 
 // WhereDescription applies the entql string predicate on the Description field.
-func (f *AppFilter) WhereDescription(p entql.StringP) {
-	f.Where(p.Field(app.FieldDescription))
+func (f *DbAppFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(dbapp.FieldDescription))
 }
 
 // WhereIcon applies the entql string predicate on the icon field.
-func (f *AppFilter) WhereIcon(p entql.StringP) {
-	f.Where(p.Field(app.FieldIcon))
+func (f *DbAppFilter) WhereIcon(p entql.StringP) {
+	f.Where(p.Field(dbapp.FieldIcon))
 }
 
 // WhereURL applies the entql string predicate on the url field.
-func (f *AppFilter) WhereURL(p entql.StringP) {
-	f.Where(p.Field(app.FieldURL))
+func (f *DbAppFilter) WhereURL(p entql.StringP) {
+	f.Where(p.Field(dbapp.FieldURL))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *AppFilter) WhereHasTenant() {
+func (f *DbAppFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *AppFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *DbAppFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -759,12 +686,12 @@ func (f *AppFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 }
 
 // WhereHasMessages applies a predicate to check if query has an edge messages.
-func (f *AppFilter) WhereHasMessages() {
+func (f *DbAppFilter) WhereHasMessages() {
 	f.Where(entql.HasEdge("messages"))
 }
 
 // WhereHasMessagesWith applies a predicate to check if query has an edge messages with a given conditions (other predicates).
-func (f *AppFilter) WhereHasMessagesWith(preds ...predicate.Message) {
+func (f *DbAppFilter) WhereHasMessagesWith(preds ...predicate.DbMessage) {
 	f.Where(entql.HasEdgeWith("messages", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -773,12 +700,12 @@ func (f *AppFilter) WhereHasMessagesWith(preds ...predicate.Message) {
 }
 
 // WhereHasFilters applies a predicate to check if query has an edge filters.
-func (f *AppFilter) WhereHasFilters() {
+func (f *DbAppFilter) WhereHasFilters() {
 	f.Where(entql.HasEdge("filters"))
 }
 
 // WhereHasFiltersWith applies a predicate to check if query has an edge filters with a given conditions (other predicates).
-func (f *AppFilter) WhereHasFiltersWith(preds ...predicate.Filter) {
+func (f *DbAppFilter) WhereHasFiltersWith(preds ...predicate.DbFilter) {
 	f.Where(entql.HasEdgeWith("filters", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -787,12 +714,12 @@ func (f *AppFilter) WhereHasFiltersWith(preds ...predicate.Filter) {
 }
 
 // WhereHasGroups applies a predicate to check if query has an edge groups.
-func (f *AppFilter) WhereHasGroups() {
+func (f *DbAppFilter) WhereHasGroups() {
 	f.Where(entql.HasEdge("groups"))
 }
 
 // WhereHasGroupsWith applies a predicate to check if query has an edge groups with a given conditions (other predicates).
-func (f *AppFilter) WhereHasGroupsWith(preds ...predicate.Group) {
+func (f *DbAppFilter) WhereHasGroupsWith(preds ...predicate.DbGroup) {
 	f.Where(entql.HasEdgeWith("groups", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -800,48 +727,34 @@ func (f *AppFilter) WhereHasGroupsWith(preds ...predicate.Group) {
 	})))
 }
 
-// WhereHasTransportRecipients applies a predicate to check if query has an edge TransportRecipients.
-func (f *AppFilter) WhereHasTransportRecipients() {
-	f.Where(entql.HasEdge("TransportRecipients"))
+// addPredicate implements the predicateAdder interface.
+func (dfq *DbFilterQuery) addPredicate(pred func(s *sql.Selector)) {
+	dfq.predicates = append(dfq.predicates, pred)
 }
 
-// WhereHasTransportRecipientsWith applies a predicate to check if query has an edge TransportRecipients with a given conditions (other predicates).
-func (f *AppFilter) WhereHasTransportRecipientsWith(preds ...predicate.TransportRecipient) {
-	f.Where(entql.HasEdgeWith("TransportRecipients", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
+// Filter returns a Filter implementation to apply filters on the DbFilterQuery builder.
+func (dfq *DbFilterQuery) Filter() *DbFilterFilter {
+	return &DbFilterFilter{config: dfq.config, predicateAdder: dfq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (fq *FilterQuery) addPredicate(pred func(s *sql.Selector)) {
-	fq.predicates = append(fq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the FilterQuery builder.
-func (fq *FilterQuery) Filter() *FilterFilter {
-	return &FilterFilter{config: fq.config, predicateAdder: fq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *FilterMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *DbFilterMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the FilterMutation builder.
-func (m *FilterMutation) Filter() *FilterFilter {
-	return &FilterFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the DbFilterMutation builder.
+func (m *DbFilterMutation) Filter() *DbFilterFilter {
+	return &DbFilterFilter{config: m.config, predicateAdder: m}
 }
 
-// FilterFilter provides a generic filtering capability at runtime for FilterQuery.
-type FilterFilter struct {
+// DbFilterFilter provides a generic filtering capability at runtime for DbFilterQuery.
+type DbFilterFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *FilterFilter) Where(p entql.P) {
+func (f *DbFilterFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
 			s.AddError(err)
@@ -850,47 +763,52 @@ func (f *FilterFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql int predicate on the id field.
-func (f *FilterFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(filter.FieldID))
+func (f *DbFilterFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(dbfilter.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *FilterFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(filter.FieldTenantID))
+func (f *DbFilterFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(dbfilter.FieldTenantID))
 }
 
 // WhereName applies the entql string predicate on the Name field.
-func (f *FilterFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(filter.FieldName))
+func (f *DbFilterFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(dbfilter.FieldName))
 }
 
 // WhereDescription applies the entql string predicate on the Description field.
-func (f *FilterFilter) WhereDescription(p entql.StringP) {
-	f.Where(p.Field(filter.FieldDescription))
+func (f *DbFilterFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(dbfilter.FieldDescription))
 }
 
 // WhereType applies the entql string predicate on the Type field.
-func (f *FilterFilter) WhereType(p entql.StringP) {
-	f.Where(p.Field(filter.FieldType))
+func (f *DbFilterFilter) WhereType(p entql.StringP) {
+	f.Where(p.Field(dbfilter.FieldType))
 }
 
 // WhereEnabled applies the entql bool predicate on the Enabled field.
-func (f *FilterFilter) WhereEnabled(p entql.BoolP) {
-	f.Where(p.Field(filter.FieldEnabled))
+func (f *DbFilterFilter) WhereEnabled(p entql.BoolP) {
+	f.Where(p.Field(dbfilter.FieldEnabled))
 }
 
 // WhereFilterImpl applies the entql string predicate on the FilterImpl field.
-func (f *FilterFilter) WhereFilterImpl(p entql.StringP) {
-	f.Where(p.Field(filter.FieldFilterImpl))
+func (f *DbFilterFilter) WhereFilterImpl(p entql.StringP) {
+	f.Where(p.Field(dbfilter.FieldFilterImpl))
+}
+
+// WhereConfig applies the entql string predicate on the Config field.
+func (f *DbFilterFilter) WhereConfig(p entql.StringP) {
+	f.Where(p.Field(dbfilter.FieldConfig))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *FilterFilter) WhereHasTenant() {
+func (f *DbFilterFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *FilterFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *DbFilterFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -898,27 +816,13 @@ func (f *FilterFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	})))
 }
 
-// WhereHasConfig applies a predicate to check if query has an edge config.
-func (f *FilterFilter) WhereHasConfig() {
-	f.Where(entql.HasEdge("config"))
-}
-
-// WhereHasConfigWith applies a predicate to check if query has an edge config with a given conditions (other predicates).
-func (f *FilterFilter) WhereHasConfigWith(preds ...predicate.FilterConfig) {
-	f.Where(entql.HasEdgeWith("config", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasGroups applies a predicate to check if query has an edge groups.
-func (f *FilterFilter) WhereHasGroups() {
+func (f *DbFilterFilter) WhereHasGroups() {
 	f.Where(entql.HasEdge("groups"))
 }
 
 // WhereHasGroupsWith applies a predicate to check if query has an edge groups with a given conditions (other predicates).
-func (f *FilterFilter) WhereHasGroupsWith(preds ...predicate.Group) {
+func (f *DbFilterFilter) WhereHasGroupsWith(preds ...predicate.DbGroup) {
 	f.Where(entql.HasEdgeWith("groups", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -927,12 +831,12 @@ func (f *FilterFilter) WhereHasGroupsWith(preds ...predicate.Group) {
 }
 
 // WhereHasApp applies a predicate to check if query has an edge app.
-func (f *FilterFilter) WhereHasApp() {
+func (f *DbFilterFilter) WhereHasApp() {
 	f.Where(entql.HasEdge("app"))
 }
 
 // WhereHasAppWith applies a predicate to check if query has an edge app with a given conditions (other predicates).
-func (f *FilterFilter) WhereHasAppWith(preds ...predicate.App) {
+func (f *DbFilterFilter) WhereHasAppWith(preds ...predicate.DbApp) {
 	f.Where(entql.HasEdgeWith("app", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -941,12 +845,12 @@ func (f *FilterFilter) WhereHasAppWith(preds ...predicate.App) {
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.
-func (f *FilterFilter) WhereHasUser() {
+func (f *DbFilterFilter) WhereHasUser() {
 	f.Where(entql.HasEdge("user"))
 }
 
 // WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
-func (f *FilterFilter) WhereHasUserWith(preds ...predicate.User) {
+func (f *DbFilterFilter) WhereHasUserWith(preds ...predicate.DbUser) {
 	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -955,33 +859,33 @@ func (f *FilterFilter) WhereHasUserWith(preds ...predicate.User) {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (fcq *FilterConfigQuery) addPredicate(pred func(s *sql.Selector)) {
-	fcq.predicates = append(fcq.predicates, pred)
+func (dgq *DbGroupQuery) addPredicate(pred func(s *sql.Selector)) {
+	dgq.predicates = append(dgq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the FilterConfigQuery builder.
-func (fcq *FilterConfigQuery) Filter() *FilterConfigFilter {
-	return &FilterConfigFilter{config: fcq.config, predicateAdder: fcq}
+// Filter returns a Filter implementation to apply filters on the DbGroupQuery builder.
+func (dgq *DbGroupQuery) Filter() *DbGroupFilter {
+	return &DbGroupFilter{config: dgq.config, predicateAdder: dgq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *FilterConfigMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *DbGroupMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the FilterConfigMutation builder.
-func (m *FilterConfigMutation) Filter() *FilterConfigFilter {
-	return &FilterConfigFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the DbGroupMutation builder.
+func (m *DbGroupMutation) Filter() *DbGroupFilter {
+	return &DbGroupFilter{config: m.config, predicateAdder: m}
 }
 
-// FilterConfigFilter provides a generic filtering capability at runtime for FilterConfigQuery.
-type FilterConfigFilter struct {
+// DbGroupFilter provides a generic filtering capability at runtime for DbGroupQuery.
+type DbGroupFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *FilterConfigFilter) Where(p entql.P) {
+func (f *DbGroupFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
@@ -990,115 +894,32 @@ func (f *FilterConfigFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql int predicate on the id field.
-func (f *FilterConfigFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(filterconfig.FieldID))
+func (f *DbGroupFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(dbgroup.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *FilterConfigFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(filterconfig.FieldTenantID))
+func (f *DbGroupFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(dbgroup.FieldTenantID))
 }
 
 // WhereName applies the entql string predicate on the Name field.
-func (f *FilterConfigFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(filterconfig.FieldName))
-}
-
-// WhereValue applies the entql string predicate on the Value field.
-func (f *FilterConfigFilter) WhereValue(p entql.StringP) {
-	f.Where(p.Field(filterconfig.FieldValue))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *FilterConfigFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *FilterConfigFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasFilter applies a predicate to check if query has an edge filter.
-func (f *FilterConfigFilter) WhereHasFilter() {
-	f.Where(entql.HasEdge("filter"))
-}
-
-// WhereHasFilterWith applies a predicate to check if query has an edge filter with a given conditions (other predicates).
-func (f *FilterConfigFilter) WhereHasFilterWith(preds ...predicate.Filter) {
-	f.Where(entql.HasEdgeWith("filter", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (gq *GroupQuery) addPredicate(pred func(s *sql.Selector)) {
-	gq.predicates = append(gq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the GroupQuery builder.
-func (gq *GroupQuery) Filter() *GroupFilter {
-	return &GroupFilter{config: gq.config, predicateAdder: gq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *GroupMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the GroupMutation builder.
-func (m *GroupMutation) Filter() *GroupFilter {
-	return &GroupFilter{config: m.config, predicateAdder: m}
-}
-
-// GroupFilter provides a generic filtering capability at runtime for GroupQuery.
-type GroupFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *GroupFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql int predicate on the id field.
-func (f *GroupFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(group.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *GroupFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(group.FieldTenantID))
-}
-
-// WhereName applies the entql string predicate on the Name field.
-func (f *GroupFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(group.FieldName))
+func (f *DbGroupFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(dbgroup.FieldName))
 }
 
 // WhereDescription applies the entql string predicate on the Description field.
-func (f *GroupFilter) WhereDescription(p entql.StringP) {
-	f.Where(p.Field(group.FieldDescription))
+func (f *DbGroupFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(dbgroup.FieldDescription))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *GroupFilter) WhereHasTenant() {
+func (f *DbGroupFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *GroupFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *DbGroupFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -1107,12 +928,12 @@ func (f *GroupFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 }
 
 // WhereHasTransportRecipients applies a predicate to check if query has an edge TransportRecipients.
-func (f *GroupFilter) WhereHasTransportRecipients() {
+func (f *DbGroupFilter) WhereHasTransportRecipients() {
 	f.Where(entql.HasEdge("TransportRecipients"))
 }
 
 // WhereHasTransportRecipientsWith applies a predicate to check if query has an edge TransportRecipients with a given conditions (other predicates).
-func (f *GroupFilter) WhereHasTransportRecipientsWith(preds ...predicate.TransportRecipient) {
+func (f *DbGroupFilter) WhereHasTransportRecipientsWith(preds ...predicate.DbTransportRecipients) {
 	f.Where(entql.HasEdgeWith("TransportRecipients", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -1121,12 +942,12 @@ func (f *GroupFilter) WhereHasTransportRecipientsWith(preds ...predicate.Transpo
 }
 
 // WhereHasUsers applies a predicate to check if query has an edge users.
-func (f *GroupFilter) WhereHasUsers() {
+func (f *DbGroupFilter) WhereHasUsers() {
 	f.Where(entql.HasEdge("users"))
 }
 
 // WhereHasUsersWith applies a predicate to check if query has an edge users with a given conditions (other predicates).
-func (f *GroupFilter) WhereHasUsersWith(preds ...predicate.User) {
+func (f *DbGroupFilter) WhereHasUsersWith(preds ...predicate.DbUser) {
 	f.Where(entql.HasEdgeWith("users", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -1135,12 +956,12 @@ func (f *GroupFilter) WhereHasUsersWith(preds ...predicate.User) {
 }
 
 // WhereHasFilters applies a predicate to check if query has an edge filters.
-func (f *GroupFilter) WhereHasFilters() {
+func (f *DbGroupFilter) WhereHasFilters() {
 	f.Where(entql.HasEdge("filters"))
 }
 
 // WhereHasFiltersWith applies a predicate to check if query has an edge filters with a given conditions (other predicates).
-func (f *GroupFilter) WhereHasFiltersWith(preds ...predicate.Filter) {
+func (f *DbGroupFilter) WhereHasFiltersWith(preds ...predicate.DbFilter) {
 	f.Where(entql.HasEdgeWith("filters", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -1149,12 +970,12 @@ func (f *GroupFilter) WhereHasFiltersWith(preds ...predicate.Filter) {
 }
 
 // WhereHasApps applies a predicate to check if query has an edge apps.
-func (f *GroupFilter) WhereHasApps() {
+func (f *DbGroupFilter) WhereHasApps() {
 	f.Where(entql.HasEdge("apps"))
 }
 
 // WhereHasAppsWith applies a predicate to check if query has an edge apps with a given conditions (other predicates).
-func (f *GroupFilter) WhereHasAppsWith(preds ...predicate.App) {
+func (f *DbGroupFilter) WhereHasAppsWith(preds ...predicate.DbApp) {
 	f.Where(entql.HasEdgeWith("apps", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -1163,82 +984,82 @@ func (f *GroupFilter) WhereHasAppsWith(preds ...predicate.App) {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (mq *MessageQuery) addPredicate(pred func(s *sql.Selector)) {
-	mq.predicates = append(mq.predicates, pred)
+func (dmq *DbMessageQuery) addPredicate(pred func(s *sql.Selector)) {
+	dmq.predicates = append(dmq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the MessageQuery builder.
-func (mq *MessageQuery) Filter() *MessageFilter {
-	return &MessageFilter{config: mq.config, predicateAdder: mq}
+// Filter returns a Filter implementation to apply filters on the DbMessageQuery builder.
+func (dmq *DbMessageQuery) Filter() *DbMessageFilter {
+	return &DbMessageFilter{config: dmq.config, predicateAdder: dmq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *MessageMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *DbMessageMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the MessageMutation builder.
-func (m *MessageMutation) Filter() *MessageFilter {
-	return &MessageFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the DbMessageMutation builder.
+func (m *DbMessageMutation) Filter() *DbMessageFilter {
+	return &DbMessageFilter{config: m.config, predicateAdder: m}
 }
 
-// MessageFilter provides a generic filtering capability at runtime for MessageQuery.
-type MessageFilter struct {
+// DbMessageFilter provides a generic filtering capability at runtime for DbMessageQuery.
+type DbMessageFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *MessageFilter) Where(p entql.P) {
+func (f *DbMessageFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *MessageFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(message.FieldID))
+func (f *DbMessageFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(dbmessage.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *MessageFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(message.FieldTenantID))
+func (f *DbMessageFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(dbmessage.FieldTenantID))
 }
 
 // WhereMessage applies the entql string predicate on the Message field.
-func (f *MessageFilter) WhereMessage(p entql.StringP) {
-	f.Where(p.Field(message.FieldMessage))
+func (f *DbMessageFilter) WhereMessage(p entql.StringP) {
+	f.Where(p.Field(dbmessage.FieldMessage))
 }
 
 // WhereShortMsg applies the entql string predicate on the ShortMsg field.
-func (f *MessageFilter) WhereShortMsg(p entql.StringP) {
-	f.Where(p.Field(message.FieldShortMsg))
+func (f *DbMessageFilter) WhereShortMsg(p entql.StringP) {
+	f.Where(p.Field(dbmessage.FieldShortMsg))
 }
 
 // WhereTopic applies the entql string predicate on the Topic field.
-func (f *MessageFilter) WhereTopic(p entql.StringP) {
-	f.Where(p.Field(message.FieldTopic))
+func (f *DbMessageFilter) WhereTopic(p entql.StringP) {
+	f.Where(p.Field(dbmessage.FieldTopic))
 }
 
 // WhereSeverity applies the entql int predicate on the Severity field.
-func (f *MessageFilter) WhereSeverity(p entql.IntP) {
-	f.Where(p.Field(message.FieldSeverity))
+func (f *DbMessageFilter) WhereSeverity(p entql.IntP) {
+	f.Where(p.Field(dbmessage.FieldSeverity))
 }
 
 // WhereTimestamp applies the entql time.Time predicate on the Timestamp field.
-func (f *MessageFilter) WhereTimestamp(p entql.TimeP) {
-	f.Where(p.Field(message.FieldTimestamp))
+func (f *DbMessageFilter) WhereTimestamp(p entql.TimeP) {
+	f.Where(p.Field(dbmessage.FieldTimestamp))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *MessageFilter) WhereHasTenant() {
+func (f *DbMessageFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *MessageFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *DbMessageFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -1246,14 +1067,14 @@ func (f *MessageFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	})))
 }
 
-// WhereHasVars applies a predicate to check if query has an edge vars.
-func (f *MessageFilter) WhereHasVars() {
-	f.Where(entql.HasEdge("vars"))
+// WhereHasFields applies a predicate to check if query has an edge fields.
+func (f *DbMessageFilter) WhereHasFields() {
+	f.Where(entql.HasEdge("fields"))
 }
 
-// WhereHasVarsWith applies a predicate to check if query has an edge vars with a given conditions (other predicates).
-func (f *MessageFilter) WhereHasVarsWith(preds ...predicate.MsgVar) {
-	f.Where(entql.HasEdgeWith("vars", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasFieldsWith applies a predicate to check if query has an edge fields with a given conditions (other predicates).
+func (f *DbMessageFilter) WhereHasFieldsWith(preds ...predicate.DbMessageFields) {
+	f.Where(entql.HasEdgeWith("fields", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -1261,12 +1082,12 @@ func (f *MessageFilter) WhereHasVarsWith(preds ...predicate.MsgVar) {
 }
 
 // WhereHasApp applies a predicate to check if query has an edge app.
-func (f *MessageFilter) WhereHasApp() {
+func (f *DbMessageFilter) WhereHasApp() {
 	f.Where(entql.HasEdge("app"))
 }
 
 // WhereHasAppWith applies a predicate to check if query has an edge app with a given conditions (other predicates).
-func (f *MessageFilter) WhereHasAppWith(preds ...predicate.App) {
+func (f *DbMessageFilter) WhereHasAppWith(preds ...predicate.DbApp) {
 	f.Where(entql.HasEdgeWith("app", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -1275,67 +1096,67 @@ func (f *MessageFilter) WhereHasAppWith(preds ...predicate.App) {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (mvq *MsgVarQuery) addPredicate(pred func(s *sql.Selector)) {
-	mvq.predicates = append(mvq.predicates, pred)
+func (dmfq *DbMessageFieldsQuery) addPredicate(pred func(s *sql.Selector)) {
+	dmfq.predicates = append(dmfq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the MsgVarQuery builder.
-func (mvq *MsgVarQuery) Filter() *MsgVarFilter {
-	return &MsgVarFilter{config: mvq.config, predicateAdder: mvq}
+// Filter returns a Filter implementation to apply filters on the DbMessageFieldsQuery builder.
+func (dmfq *DbMessageFieldsQuery) Filter() *DbMessageFieldsFilter {
+	return &DbMessageFieldsFilter{config: dmfq.config, predicateAdder: dmfq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *MsgVarMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *DbMessageFieldsMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the MsgVarMutation builder.
-func (m *MsgVarMutation) Filter() *MsgVarFilter {
-	return &MsgVarFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the DbMessageFieldsMutation builder.
+func (m *DbMessageFieldsMutation) Filter() *DbMessageFieldsFilter {
+	return &DbMessageFieldsFilter{config: m.config, predicateAdder: m}
 }
 
-// MsgVarFilter provides a generic filtering capability at runtime for MsgVarQuery.
-type MsgVarFilter struct {
+// DbMessageFieldsFilter provides a generic filtering capability at runtime for DbMessageFieldsQuery.
+type DbMessageFieldsFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *MsgVarFilter) Where(p entql.P) {
+func (f *DbMessageFieldsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
 }
 
 // WhereID applies the entql int predicate on the id field.
-func (f *MsgVarFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(msgvar.FieldID))
+func (f *DbMessageFieldsFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(dbmessagefields.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *MsgVarFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(msgvar.FieldTenantID))
+func (f *DbMessageFieldsFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(dbmessagefields.FieldTenantID))
 }
 
 // WhereName applies the entql string predicate on the Name field.
-func (f *MsgVarFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(msgvar.FieldName))
+func (f *DbMessageFieldsFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(dbmessagefields.FieldName))
 }
 
 // WhereValue applies the entql string predicate on the Value field.
-func (f *MsgVarFilter) WhereValue(p entql.StringP) {
-	f.Where(p.Field(msgvar.FieldValue))
+func (f *DbMessageFieldsFilter) WhereValue(p entql.StringP) {
+	f.Where(p.Field(dbmessagefields.FieldValue))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *MsgVarFilter) WhereHasTenant() {
+func (f *DbMessageFieldsFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *MsgVarFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *DbMessageFieldsFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -1344,13 +1165,435 @@ func (f *MsgVarFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 }
 
 // WhereHasOwner applies a predicate to check if query has an edge owner.
-func (f *MsgVarFilter) WhereHasOwner() {
+func (f *DbMessageFieldsFilter) WhereHasOwner() {
 	f.Where(entql.HasEdge("owner"))
 }
 
 // WhereHasOwnerWith applies a predicate to check if query has an edge owner with a given conditions (other predicates).
-func (f *MsgVarFilter) WhereHasOwnerWith(preds ...predicate.Message) {
+func (f *DbMessageFieldsFilter) WhereHasOwnerWith(preds ...predicate.DbMessage) {
 	f.Where(entql.HasEdgeWith("owner", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (dtiq *DbTransportInstancesQuery) addPredicate(pred func(s *sql.Selector)) {
+	dtiq.predicates = append(dtiq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DbTransportInstancesQuery builder.
+func (dtiq *DbTransportInstancesQuery) Filter() *DbTransportInstancesFilter {
+	return &DbTransportInstancesFilter{config: dtiq.config, predicateAdder: dtiq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DbTransportInstancesMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DbTransportInstancesMutation builder.
+func (m *DbTransportInstancesMutation) Filter() *DbTransportInstancesFilter {
+	return &DbTransportInstancesFilter{config: m.config, predicateAdder: m}
+}
+
+// DbTransportInstancesFilter provides a generic filtering capability at runtime for DbTransportInstancesQuery.
+type DbTransportInstancesFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DbTransportInstancesFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *DbTransportInstancesFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(dbtransportinstances.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *DbTransportInstancesFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(dbtransportinstances.FieldTenantID))
+}
+
+// WhereName applies the entql string predicate on the Name field.
+func (f *DbTransportInstancesFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(dbtransportinstances.FieldName))
+}
+
+// WhereDescription applies the entql string predicate on the Description field.
+func (f *DbTransportInstancesFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(dbtransportinstances.FieldDescription))
+}
+
+// WhereConfig applies the entql string predicate on the Config field.
+func (f *DbTransportInstancesFilter) WhereConfig(p entql.StringP) {
+	f.Where(p.Field(dbtransportinstances.FieldConfig))
+}
+
+// WhereTransportProvider applies the entql string predicate on the TransportProvider field.
+func (f *DbTransportInstancesFilter) WhereTransportProvider(p entql.StringP) {
+	f.Where(p.Field(dbtransportinstances.FieldTransportProvider))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *DbTransportInstancesFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *DbTransportInstancesFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTransportRecipients applies a predicate to check if query has an edge TransportRecipients.
+func (f *DbTransportInstancesFilter) WhereHasTransportRecipients() {
+	f.Where(entql.HasEdge("TransportRecipients"))
+}
+
+// WhereHasTransportRecipientsWith applies a predicate to check if query has an edge TransportRecipients with a given conditions (other predicates).
+func (f *DbTransportInstancesFilter) WhereHasTransportRecipientsWith(preds ...predicate.DbTransportRecipients) {
+	f.Where(entql.HasEdgeWith("TransportRecipients", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (dtrq *DbTransportRecipientsQuery) addPredicate(pred func(s *sql.Selector)) {
+	dtrq.predicates = append(dtrq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DbTransportRecipientsQuery builder.
+func (dtrq *DbTransportRecipientsQuery) Filter() *DbTransportRecipientsFilter {
+	return &DbTransportRecipientsFilter{config: dtrq.config, predicateAdder: dtrq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DbTransportRecipientsMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DbTransportRecipientsMutation builder.
+func (m *DbTransportRecipientsMutation) Filter() *DbTransportRecipientsFilter {
+	return &DbTransportRecipientsFilter{config: m.config, predicateAdder: m}
+}
+
+// DbTransportRecipientsFilter provides a generic filtering capability at runtime for DbTransportRecipientsQuery.
+type DbTransportRecipientsFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DbTransportRecipientsFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *DbTransportRecipientsFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(dbtransportrecipients.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *DbTransportRecipientsFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(dbtransportrecipients.FieldTenantID))
+}
+
+// WhereName applies the entql string predicate on the Name field.
+func (f *DbTransportRecipientsFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(dbtransportrecipients.FieldName))
+}
+
+// WhereDescription applies the entql string predicate on the Description field.
+func (f *DbTransportRecipientsFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(dbtransportrecipients.FieldDescription))
+}
+
+// WhereConfig applies the entql string predicate on the config field.
+func (f *DbTransportRecipientsFilter) WhereConfig(p entql.StringP) {
+	f.Where(p.Field(dbtransportrecipients.FieldConfig))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *DbTransportRecipientsFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *DbTransportRecipientsFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTransportInstance applies a predicate to check if query has an edge TransportInstance.
+func (f *DbTransportRecipientsFilter) WhereHasTransportInstance() {
+	f.Where(entql.HasEdge("TransportInstance"))
+}
+
+// WhereHasTransportInstanceWith applies a predicate to check if query has an edge TransportInstance with a given conditions (other predicates).
+func (f *DbTransportRecipientsFilter) WhereHasTransportInstanceWith(preds ...predicate.DbTransportInstances) {
+	f.Where(entql.HasEdgeWith("TransportInstance", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasGroupRecipient applies a predicate to check if query has an edge GroupRecipient.
+func (f *DbTransportRecipientsFilter) WhereHasGroupRecipient() {
+	f.Where(entql.HasEdge("GroupRecipient"))
+}
+
+// WhereHasGroupRecipientWith applies a predicate to check if query has an edge GroupRecipient with a given conditions (other predicates).
+func (f *DbTransportRecipientsFilter) WhereHasGroupRecipientWith(preds ...predicate.DbGroup) {
+	f.Where(entql.HasEdgeWith("GroupRecipient", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUserRecipient applies a predicate to check if query has an edge UserRecipient.
+func (f *DbTransportRecipientsFilter) WhereHasUserRecipient() {
+	f.Where(entql.HasEdge("UserRecipient"))
+}
+
+// WhereHasUserRecipientWith applies a predicate to check if query has an edge UserRecipient with a given conditions (other predicates).
+func (f *DbTransportRecipientsFilter) WhereHasUserRecipientWith(preds ...predicate.DbUser) {
+	f.Where(entql.HasEdgeWith("UserRecipient", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (duq *DbUserQuery) addPredicate(pred func(s *sql.Selector)) {
+	duq.predicates = append(duq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DbUserQuery builder.
+func (duq *DbUserQuery) Filter() *DbUserFilter {
+	return &DbUserFilter{config: duq.config, predicateAdder: duq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DbUserMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DbUserMutation builder.
+func (m *DbUserMutation) Filter() *DbUserFilter {
+	return &DbUserFilter{config: m.config, predicateAdder: m}
+}
+
+// DbUserFilter provides a generic filtering capability at runtime for DbUserQuery.
+type DbUserFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DbUserFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *DbUserFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(dbuser.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *DbUserFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(dbuser.FieldTenantID))
+}
+
+// WhereEmail applies the entql string predicate on the Email field.
+func (f *DbUserFilter) WhereEmail(p entql.StringP) {
+	f.Where(p.Field(dbuser.FieldEmail))
+}
+
+// WhereName applies the entql string predicate on the Name field.
+func (f *DbUserFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(dbuser.FieldName))
+}
+
+// WhereDescription applies the entql string predicate on the Description field.
+func (f *DbUserFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(dbuser.FieldDescription))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *DbUserFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *DbUserFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasMetadata applies a predicate to check if query has an edge metadata.
+func (f *DbUserFilter) WhereHasMetadata() {
+	f.Where(entql.HasEdge("metadata"))
+}
+
+// WhereHasMetadataWith applies a predicate to check if query has an edge metadata with a given conditions (other predicates).
+func (f *DbUserFilter) WhereHasMetadataWith(preds ...predicate.DbUserMetaData) {
+	f.Where(entql.HasEdgeWith("metadata", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasFilters applies a predicate to check if query has an edge filters.
+func (f *DbUserFilter) WhereHasFilters() {
+	f.Where(entql.HasEdge("filters"))
+}
+
+// WhereHasFiltersWith applies a predicate to check if query has an edge filters with a given conditions (other predicates).
+func (f *DbUserFilter) WhereHasFiltersWith(preds ...predicate.DbFilter) {
+	f.Where(entql.HasEdgeWith("filters", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasGroups applies a predicate to check if query has an edge groups.
+func (f *DbUserFilter) WhereHasGroups() {
+	f.Where(entql.HasEdge("groups"))
+}
+
+// WhereHasGroupsWith applies a predicate to check if query has an edge groups with a given conditions (other predicates).
+func (f *DbUserFilter) WhereHasGroupsWith(preds ...predicate.DbGroup) {
+	f.Where(entql.HasEdgeWith("groups", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTransportRecipients applies a predicate to check if query has an edge TransportRecipients.
+func (f *DbUserFilter) WhereHasTransportRecipients() {
+	f.Where(entql.HasEdge("TransportRecipients"))
+}
+
+// WhereHasTransportRecipientsWith applies a predicate to check if query has an edge TransportRecipients with a given conditions (other predicates).
+func (f *DbUserFilter) WhereHasTransportRecipientsWith(preds ...predicate.DbTransportRecipients) {
+	f.Where(entql.HasEdgeWith("TransportRecipients", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (dumdq *DbUserMetaDataQuery) addPredicate(pred func(s *sql.Selector)) {
+	dumdq.predicates = append(dumdq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DbUserMetaDataQuery builder.
+func (dumdq *DbUserMetaDataQuery) Filter() *DbUserMetaDataFilter {
+	return &DbUserMetaDataFilter{config: dumdq.config, predicateAdder: dumdq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DbUserMetaDataMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DbUserMetaDataMutation builder.
+func (m *DbUserMetaDataMutation) Filter() *DbUserMetaDataFilter {
+	return &DbUserMetaDataFilter{config: m.config, predicateAdder: m}
+}
+
+// DbUserMetaDataFilter provides a generic filtering capability at runtime for DbUserMetaDataQuery.
+type DbUserMetaDataFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DbUserMetaDataFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *DbUserMetaDataFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(dbusermetadata.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *DbUserMetaDataFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(dbusermetadata.FieldTenantID))
+}
+
+// WhereName applies the entql string predicate on the Name field.
+func (f *DbUserMetaDataFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(dbusermetadata.FieldName))
+}
+
+// WhereValue applies the entql string predicate on the Value field.
+func (f *DbUserMetaDataFilter) WhereValue(p entql.StringP) {
+	f.Where(p.Field(dbusermetadata.FieldValue))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *DbUserMetaDataFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *DbUserMetaDataFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *DbUserMetaDataFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *DbUserMetaDataFilter) WhereHasUserWith(preds ...predicate.DbUser) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -1386,7 +1629,7 @@ type TenantFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TenantFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1400,425 +1643,4 @@ func (f *TenantFilter) WhereID(p entql.IntP) {
 // WhereName applies the entql string predicate on the name field.
 func (f *TenantFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(tenant.FieldName))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (tiq *TransportInstanceQuery) addPredicate(pred func(s *sql.Selector)) {
-	tiq.predicates = append(tiq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the TransportInstanceQuery builder.
-func (tiq *TransportInstanceQuery) Filter() *TransportInstanceFilter {
-	return &TransportInstanceFilter{config: tiq.config, predicateAdder: tiq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *TransportInstanceMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the TransportInstanceMutation builder.
-func (m *TransportInstanceMutation) Filter() *TransportInstanceFilter {
-	return &TransportInstanceFilter{config: m.config, predicateAdder: m}
-}
-
-// TransportInstanceFilter provides a generic filtering capability at runtime for TransportInstanceQuery.
-type TransportInstanceFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *TransportInstanceFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql int predicate on the id field.
-func (f *TransportInstanceFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(transportinstance.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *TransportInstanceFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(transportinstance.FieldTenantID))
-}
-
-// WhereName applies the entql string predicate on the Name field.
-func (f *TransportInstanceFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(transportinstance.FieldName))
-}
-
-// WhereDescription applies the entql string predicate on the Description field.
-func (f *TransportInstanceFilter) WhereDescription(p entql.StringP) {
-	f.Where(p.Field(transportinstance.FieldDescription))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *TransportInstanceFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *TransportInstanceFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasTransportRecipients applies a predicate to check if query has an edge TransportRecipients.
-func (f *TransportInstanceFilter) WhereHasTransportRecipients() {
-	f.Where(entql.HasEdge("TransportRecipients"))
-}
-
-// WhereHasTransportRecipientsWith applies a predicate to check if query has an edge TransportRecipients with a given conditions (other predicates).
-func (f *TransportInstanceFilter) WhereHasTransportRecipientsWith(preds ...predicate.TransportRecipient) {
-	f.Where(entql.HasEdgeWith("TransportRecipients", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (trq *TransportRecipientQuery) addPredicate(pred func(s *sql.Selector)) {
-	trq.predicates = append(trq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the TransportRecipientQuery builder.
-func (trq *TransportRecipientQuery) Filter() *TransportRecipientFilter {
-	return &TransportRecipientFilter{config: trq.config, predicateAdder: trq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *TransportRecipientMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the TransportRecipientMutation builder.
-func (m *TransportRecipientMutation) Filter() *TransportRecipientFilter {
-	return &TransportRecipientFilter{config: m.config, predicateAdder: m}
-}
-
-// TransportRecipientFilter provides a generic filtering capability at runtime for TransportRecipientQuery.
-type TransportRecipientFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *TransportRecipientFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql int predicate on the id field.
-func (f *TransportRecipientFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(transportrecipient.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *TransportRecipientFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(transportrecipient.FieldTenantID))
-}
-
-// WhereName applies the entql string predicate on the Name field.
-func (f *TransportRecipientFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(transportrecipient.FieldName))
-}
-
-// WhereDescription applies the entql string predicate on the Description field.
-func (f *TransportRecipientFilter) WhereDescription(p entql.StringP) {
-	f.Where(p.Field(transportrecipient.FieldDescription))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *TransportRecipientFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *TransportRecipientFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasTransportInstance applies a predicate to check if query has an edge TransportInstance.
-func (f *TransportRecipientFilter) WhereHasTransportInstance() {
-	f.Where(entql.HasEdge("TransportInstance"))
-}
-
-// WhereHasTransportInstanceWith applies a predicate to check if query has an edge TransportInstance with a given conditions (other predicates).
-func (f *TransportRecipientFilter) WhereHasTransportInstanceWith(preds ...predicate.TransportInstance) {
-	f.Where(entql.HasEdgeWith("TransportInstance", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasAppRecipient applies a predicate to check if query has an edge AppRecipient.
-func (f *TransportRecipientFilter) WhereHasAppRecipient() {
-	f.Where(entql.HasEdge("AppRecipient"))
-}
-
-// WhereHasAppRecipientWith applies a predicate to check if query has an edge AppRecipient with a given conditions (other predicates).
-func (f *TransportRecipientFilter) WhereHasAppRecipientWith(preds ...predicate.App) {
-	f.Where(entql.HasEdgeWith("AppRecipient", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasGroupRecipient applies a predicate to check if query has an edge GroupRecipient.
-func (f *TransportRecipientFilter) WhereHasGroupRecipient() {
-	f.Where(entql.HasEdge("GroupRecipient"))
-}
-
-// WhereHasGroupRecipientWith applies a predicate to check if query has an edge GroupRecipient with a given conditions (other predicates).
-func (f *TransportRecipientFilter) WhereHasGroupRecipientWith(preds ...predicate.Group) {
-	f.Where(entql.HasEdgeWith("GroupRecipient", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasUserRecipient applies a predicate to check if query has an edge UserRecipient.
-func (f *TransportRecipientFilter) WhereHasUserRecipient() {
-	f.Where(entql.HasEdge("UserRecipient"))
-}
-
-// WhereHasUserRecipientWith applies a predicate to check if query has an edge UserRecipient with a given conditions (other predicates).
-func (f *TransportRecipientFilter) WhereHasUserRecipientWith(preds ...predicate.User) {
-	f.Where(entql.HasEdgeWith("UserRecipient", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (uq *UserQuery) addPredicate(pred func(s *sql.Selector)) {
-	uq.predicates = append(uq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the UserQuery builder.
-func (uq *UserQuery) Filter() *UserFilter {
-	return &UserFilter{config: uq.config, predicateAdder: uq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *UserMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the UserMutation builder.
-func (m *UserMutation) Filter() *UserFilter {
-	return &UserFilter{config: m.config, predicateAdder: m}
-}
-
-// UserFilter provides a generic filtering capability at runtime for UserQuery.
-type UserFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *UserFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql int predicate on the id field.
-func (f *UserFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(user.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *UserFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(user.FieldTenantID))
-}
-
-// WhereEmail applies the entql string predicate on the Email field.
-func (f *UserFilter) WhereEmail(p entql.StringP) {
-	f.Where(p.Field(user.FieldEmail))
-}
-
-// WhereName applies the entql string predicate on the Name field.
-func (f *UserFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(user.FieldName))
-}
-
-// WhereDescription applies the entql string predicate on the Description field.
-func (f *UserFilter) WhereDescription(p entql.StringP) {
-	f.Where(p.Field(user.FieldDescription))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *UserFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *UserFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasMetadata applies a predicate to check if query has an edge metadata.
-func (f *UserFilter) WhereHasMetadata() {
-	f.Where(entql.HasEdge("metadata"))
-}
-
-// WhereHasMetadataWith applies a predicate to check if query has an edge metadata with a given conditions (other predicates).
-func (f *UserFilter) WhereHasMetadataWith(preds ...predicate.UserMetaData) {
-	f.Where(entql.HasEdgeWith("metadata", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasFilters applies a predicate to check if query has an edge filters.
-func (f *UserFilter) WhereHasFilters() {
-	f.Where(entql.HasEdge("filters"))
-}
-
-// WhereHasFiltersWith applies a predicate to check if query has an edge filters with a given conditions (other predicates).
-func (f *UserFilter) WhereHasFiltersWith(preds ...predicate.Filter) {
-	f.Where(entql.HasEdgeWith("filters", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasGroups applies a predicate to check if query has an edge groups.
-func (f *UserFilter) WhereHasGroups() {
-	f.Where(entql.HasEdge("groups"))
-}
-
-// WhereHasGroupsWith applies a predicate to check if query has an edge groups with a given conditions (other predicates).
-func (f *UserFilter) WhereHasGroupsWith(preds ...predicate.Group) {
-	f.Where(entql.HasEdgeWith("groups", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasTransportRecipients applies a predicate to check if query has an edge TransportRecipients.
-func (f *UserFilter) WhereHasTransportRecipients() {
-	f.Where(entql.HasEdge("TransportRecipients"))
-}
-
-// WhereHasTransportRecipientsWith applies a predicate to check if query has an edge TransportRecipients with a given conditions (other predicates).
-func (f *UserFilter) WhereHasTransportRecipientsWith(preds ...predicate.TransportRecipient) {
-	f.Where(entql.HasEdgeWith("TransportRecipients", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (umdq *UserMetaDataQuery) addPredicate(pred func(s *sql.Selector)) {
-	umdq.predicates = append(umdq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the UserMetaDataQuery builder.
-func (umdq *UserMetaDataQuery) Filter() *UserMetaDataFilter {
-	return &UserMetaDataFilter{config: umdq.config, predicateAdder: umdq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *UserMetaDataMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the UserMetaDataMutation builder.
-func (m *UserMetaDataMutation) Filter() *UserMetaDataFilter {
-	return &UserMetaDataFilter{config: m.config, predicateAdder: m}
-}
-
-// UserMetaDataFilter provides a generic filtering capability at runtime for UserMetaDataQuery.
-type UserMetaDataFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *UserMetaDataFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql int predicate on the id field.
-func (f *UserMetaDataFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(usermetadata.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *UserMetaDataFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(usermetadata.FieldTenantID))
-}
-
-// WhereName applies the entql string predicate on the Name field.
-func (f *UserMetaDataFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(usermetadata.FieldName))
-}
-
-// WhereValue applies the entql string predicate on the Value field.
-func (f *UserMetaDataFilter) WhereValue(p entql.StringP) {
-	f.Where(p.Field(usermetadata.FieldValue))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *UserMetaDataFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *UserMetaDataFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasUser applies a predicate to check if query has an edge user.
-func (f *UserMetaDataFilter) WhereHasUser() {
-	f.Where(entql.HasEdge("user"))
-}
-
-// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
-func (f *UserMetaDataFilter) WhereHasUserWith(preds ...predicate.User) {
-	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
 }

@@ -35,17 +35,16 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/migrate"
 	"github.com/google/uuid"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/app"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/filter"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/filterconfig"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/group"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/message"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/msgvar"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbfilter"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbgroup"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessage"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessagefields"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportinstances"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportrecipients"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbusermetadata"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/transportinstance"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/transportrecipient"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/user"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/usermetadata"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -57,28 +56,26 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// App is the client for interacting with the App builders.
-	App *AppClient
-	// Filter is the client for interacting with the Filter builders.
-	Filter *FilterClient
-	// FilterConfig is the client for interacting with the FilterConfig builders.
-	FilterConfig *FilterConfigClient
-	// Group is the client for interacting with the Group builders.
-	Group *GroupClient
-	// Message is the client for interacting with the Message builders.
-	Message *MessageClient
-	// MsgVar is the client for interacting with the MsgVar builders.
-	MsgVar *MsgVarClient
+	// DbApp is the client for interacting with the DbApp builders.
+	DbApp *DbAppClient
+	// DbFilter is the client for interacting with the DbFilter builders.
+	DbFilter *DbFilterClient
+	// DbGroup is the client for interacting with the DbGroup builders.
+	DbGroup *DbGroupClient
+	// DbMessage is the client for interacting with the DbMessage builders.
+	DbMessage *DbMessageClient
+	// DbMessageFields is the client for interacting with the DbMessageFields builders.
+	DbMessageFields *DbMessageFieldsClient
+	// DbTransportInstances is the client for interacting with the DbTransportInstances builders.
+	DbTransportInstances *DbTransportInstancesClient
+	// DbTransportRecipients is the client for interacting with the DbTransportRecipients builders.
+	DbTransportRecipients *DbTransportRecipientsClient
+	// DbUser is the client for interacting with the DbUser builders.
+	DbUser *DbUserClient
+	// DbUserMetaData is the client for interacting with the DbUserMetaData builders.
+	DbUserMetaData *DbUserMetaDataClient
 	// Tenant is the client for interacting with the Tenant builders.
 	Tenant *TenantClient
-	// TransportInstance is the client for interacting with the TransportInstance builders.
-	TransportInstance *TransportInstanceClient
-	// TransportRecipient is the client for interacting with the TransportRecipient builders.
-	TransportRecipient *TransportRecipientClient
-	// User is the client for interacting with the User builders.
-	User *UserClient
-	// UserMetaData is the client for interacting with the UserMetaData builders.
-	UserMetaData *UserMetaDataClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -92,17 +89,16 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.App = NewAppClient(c.config)
-	c.Filter = NewFilterClient(c.config)
-	c.FilterConfig = NewFilterConfigClient(c.config)
-	c.Group = NewGroupClient(c.config)
-	c.Message = NewMessageClient(c.config)
-	c.MsgVar = NewMsgVarClient(c.config)
+	c.DbApp = NewDbAppClient(c.config)
+	c.DbFilter = NewDbFilterClient(c.config)
+	c.DbGroup = NewDbGroupClient(c.config)
+	c.DbMessage = NewDbMessageClient(c.config)
+	c.DbMessageFields = NewDbMessageFieldsClient(c.config)
+	c.DbTransportInstances = NewDbTransportInstancesClient(c.config)
+	c.DbTransportRecipients = NewDbTransportRecipientsClient(c.config)
+	c.DbUser = NewDbUserClient(c.config)
+	c.DbUserMetaData = NewDbUserMetaDataClient(c.config)
 	c.Tenant = NewTenantClient(c.config)
-	c.TransportInstance = NewTransportInstanceClient(c.config)
-	c.TransportRecipient = NewTransportRecipientClient(c.config)
-	c.User = NewUserClient(c.config)
-	c.UserMetaData = NewUserMetaDataClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -134,19 +130,18 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		App:                NewAppClient(cfg),
-		Filter:             NewFilterClient(cfg),
-		FilterConfig:       NewFilterConfigClient(cfg),
-		Group:              NewGroupClient(cfg),
-		Message:            NewMessageClient(cfg),
-		MsgVar:             NewMsgVarClient(cfg),
-		Tenant:             NewTenantClient(cfg),
-		TransportInstance:  NewTransportInstanceClient(cfg),
-		TransportRecipient: NewTransportRecipientClient(cfg),
-		User:               NewUserClient(cfg),
-		UserMetaData:       NewUserMetaDataClient(cfg),
+		ctx:                   ctx,
+		config:                cfg,
+		DbApp:                 NewDbAppClient(cfg),
+		DbFilter:              NewDbFilterClient(cfg),
+		DbGroup:               NewDbGroupClient(cfg),
+		DbMessage:             NewDbMessageClient(cfg),
+		DbMessageFields:       NewDbMessageFieldsClient(cfg),
+		DbTransportInstances:  NewDbTransportInstancesClient(cfg),
+		DbTransportRecipients: NewDbTransportRecipientsClient(cfg),
+		DbUser:                NewDbUserClient(cfg),
+		DbUserMetaData:        NewDbUserMetaDataClient(cfg),
+		Tenant:                NewTenantClient(cfg),
 	}, nil
 }
 
@@ -164,26 +159,25 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		App:                NewAppClient(cfg),
-		Filter:             NewFilterClient(cfg),
-		FilterConfig:       NewFilterConfigClient(cfg),
-		Group:              NewGroupClient(cfg),
-		Message:            NewMessageClient(cfg),
-		MsgVar:             NewMsgVarClient(cfg),
-		Tenant:             NewTenantClient(cfg),
-		TransportInstance:  NewTransportInstanceClient(cfg),
-		TransportRecipient: NewTransportRecipientClient(cfg),
-		User:               NewUserClient(cfg),
-		UserMetaData:       NewUserMetaDataClient(cfg),
+		ctx:                   ctx,
+		config:                cfg,
+		DbApp:                 NewDbAppClient(cfg),
+		DbFilter:              NewDbFilterClient(cfg),
+		DbGroup:               NewDbGroupClient(cfg),
+		DbMessage:             NewDbMessageClient(cfg),
+		DbMessageFields:       NewDbMessageFieldsClient(cfg),
+		DbTransportInstances:  NewDbTransportInstancesClient(cfg),
+		DbTransportRecipients: NewDbTransportRecipientsClient(cfg),
+		DbUser:                NewDbUserClient(cfg),
+		DbUserMetaData:        NewDbUserMetaDataClient(cfg),
+		Tenant:                NewTenantClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		App.
+//		DbApp.
 //		Query().
 //		Count(ctx)
 //
@@ -206,97 +200,96 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.App.Use(hooks...)
-	c.Filter.Use(hooks...)
-	c.FilterConfig.Use(hooks...)
-	c.Group.Use(hooks...)
-	c.Message.Use(hooks...)
-	c.MsgVar.Use(hooks...)
+	c.DbApp.Use(hooks...)
+	c.DbFilter.Use(hooks...)
+	c.DbGroup.Use(hooks...)
+	c.DbMessage.Use(hooks...)
+	c.DbMessageFields.Use(hooks...)
+	c.DbTransportInstances.Use(hooks...)
+	c.DbTransportRecipients.Use(hooks...)
+	c.DbUser.Use(hooks...)
+	c.DbUserMetaData.Use(hooks...)
 	c.Tenant.Use(hooks...)
-	c.TransportInstance.Use(hooks...)
-	c.TransportRecipient.Use(hooks...)
-	c.User.Use(hooks...)
-	c.UserMetaData.Use(hooks...)
 }
 
-// AppClient is a client for the App schema.
-type AppClient struct {
+// DbAppClient is a client for the DbApp schema.
+type DbAppClient struct {
 	config
 }
 
-// NewAppClient returns a client for the App from the given config.
-func NewAppClient(c config) *AppClient {
-	return &AppClient{config: c}
+// NewDbAppClient returns a client for the DbApp from the given config.
+func NewDbAppClient(c config) *DbAppClient {
+	return &DbAppClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `app.Hooks(f(g(h())))`.
-func (c *AppClient) Use(hooks ...Hook) {
-	c.hooks.App = append(c.hooks.App, hooks...)
+// A call to `Use(f, g, h)` equals to `dbapp.Hooks(f(g(h())))`.
+func (c *DbAppClient) Use(hooks ...Hook) {
+	c.hooks.DbApp = append(c.hooks.DbApp, hooks...)
 }
 
-// Create returns a builder for creating a App entity.
-func (c *AppClient) Create() *AppCreate {
-	mutation := newAppMutation(c.config, OpCreate)
-	return &AppCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a DbApp entity.
+func (c *DbAppClient) Create() *DbAppCreate {
+	mutation := newDbAppMutation(c.config, OpCreate)
+	return &DbAppCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of App entities.
-func (c *AppClient) CreateBulk(builders ...*AppCreate) *AppCreateBulk {
-	return &AppCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of DbApp entities.
+func (c *DbAppClient) CreateBulk(builders ...*DbAppCreate) *DbAppCreateBulk {
+	return &DbAppCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for App.
-func (c *AppClient) Update() *AppUpdate {
-	mutation := newAppMutation(c.config, OpUpdate)
-	return &AppUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for DbApp.
+func (c *DbAppClient) Update() *DbAppUpdate {
+	mutation := newDbAppMutation(c.config, OpUpdate)
+	return &DbAppUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *AppClient) UpdateOne(a *App) *AppUpdateOne {
-	mutation := newAppMutation(c.config, OpUpdateOne, withApp(a))
-	return &AppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbAppClient) UpdateOne(da *DbApp) *DbAppUpdateOne {
+	mutation := newDbAppMutation(c.config, OpUpdateOne, withDbApp(da))
+	return &DbAppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *AppClient) UpdateOneID(id int) *AppUpdateOne {
-	mutation := newAppMutation(c.config, OpUpdateOne, withAppID(id))
-	return &AppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbAppClient) UpdateOneID(id int) *DbAppUpdateOne {
+	mutation := newDbAppMutation(c.config, OpUpdateOne, withDbAppID(id))
+	return &DbAppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for App.
-func (c *AppClient) Delete() *AppDelete {
-	mutation := newAppMutation(c.config, OpDelete)
-	return &AppDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for DbApp.
+func (c *DbAppClient) Delete() *DbAppDelete {
+	mutation := newDbAppMutation(c.config, OpDelete)
+	return &DbAppDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *AppClient) DeleteOne(a *App) *AppDeleteOne {
-	return c.DeleteOneID(a.ID)
+func (c *DbAppClient) DeleteOne(da *DbApp) *DbAppDeleteOne {
+	return c.DeleteOneID(da.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *AppClient) DeleteOneID(id int) *AppDeleteOne {
-	builder := c.Delete().Where(app.ID(id))
+func (c *DbAppClient) DeleteOneID(id int) *DbAppDeleteOne {
+	builder := c.Delete().Where(dbapp.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &AppDeleteOne{builder}
+	return &DbAppDeleteOne{builder}
 }
 
-// Query returns a query builder for App.
-func (c *AppClient) Query() *AppQuery {
-	return &AppQuery{
+// Query returns a query builder for DbApp.
+func (c *DbAppClient) Query() *DbAppQuery {
+	return &DbAppQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a App entity by its id.
-func (c *AppClient) Get(ctx context.Context, id int) (*App, error) {
-	return c.Query().Where(app.ID(id)).Only(ctx)
+// Get returns a DbApp entity by its id.
+func (c *DbAppClient) Get(ctx context.Context, id int) (*DbApp, error) {
+	return c.Query().Where(dbapp.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *AppClient) GetX(ctx context.Context, id int) *App {
+func (c *DbAppClient) GetX(ctx context.Context, id int) *DbApp {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -304,170 +297,154 @@ func (c *AppClient) GetX(ctx context.Context, id int) *App {
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a App.
-func (c *AppClient) QueryTenant(a *App) *TenantQuery {
+// QueryTenant queries the tenant edge of a DbApp.
+func (c *DbAppClient) QueryTenant(da *DbApp) *TenantQuery {
 	query := &TenantQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
+		id := da.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(app.Table, app.FieldID, id),
+			sqlgraph.From(dbapp.Table, dbapp.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, app.TenantTable, app.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, dbapp.TenantTable, dbapp.TenantColumn),
 		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(da.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryMessages queries the messages edge of a App.
-func (c *AppClient) QueryMessages(a *App) *MessageQuery {
-	query := &MessageQuery{config: c.config}
+// QueryMessages queries the messages edge of a DbApp.
+func (c *DbAppClient) QueryMessages(da *DbApp) *DbMessageQuery {
+	query := &DbMessageQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
+		id := da.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(app.Table, app.FieldID, id),
-			sqlgraph.To(message.Table, message.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, app.MessagesTable, app.MessagesColumn),
+			sqlgraph.From(dbapp.Table, dbapp.FieldID, id),
+			sqlgraph.To(dbmessage.Table, dbmessage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dbapp.MessagesTable, dbapp.MessagesColumn),
 		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(da.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryFilters queries the filters edge of a App.
-func (c *AppClient) QueryFilters(a *App) *FilterQuery {
-	query := &FilterQuery{config: c.config}
+// QueryFilters queries the filters edge of a DbApp.
+func (c *DbAppClient) QueryFilters(da *DbApp) *DbFilterQuery {
+	query := &DbFilterQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
+		id := da.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(app.Table, app.FieldID, id),
-			sqlgraph.To(filter.Table, filter.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, app.FiltersTable, app.FiltersPrimaryKey...),
+			sqlgraph.From(dbapp.Table, dbapp.FieldID, id),
+			sqlgraph.To(dbfilter.Table, dbfilter.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, dbapp.FiltersTable, dbapp.FiltersPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(da.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryGroups queries the groups edge of a App.
-func (c *AppClient) QueryGroups(a *App) *GroupQuery {
-	query := &GroupQuery{config: c.config}
+// QueryGroups queries the groups edge of a DbApp.
+func (c *DbAppClient) QueryGroups(da *DbApp) *DbGroupQuery {
+	query := &DbGroupQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
+		id := da.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(app.Table, app.FieldID, id),
-			sqlgraph.To(group.Table, group.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, app.GroupsTable, app.GroupsPrimaryKey...),
+			sqlgraph.From(dbapp.Table, dbapp.FieldID, id),
+			sqlgraph.To(dbgroup.Table, dbgroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, dbapp.GroupsTable, dbapp.GroupsPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTransportRecipients queries the TransportRecipients edge of a App.
-func (c *AppClient) QueryTransportRecipients(a *App) *TransportRecipientQuery {
-	query := &TransportRecipientQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(app.Table, app.FieldID, id),
-			sqlgraph.To(transportrecipient.Table, transportrecipient.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, app.TransportRecipientsTable, app.TransportRecipientsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(da.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *AppClient) Hooks() []Hook {
-	hooks := c.hooks.App
-	return append(hooks[:len(hooks):len(hooks)], app.Hooks[:]...)
+func (c *DbAppClient) Hooks() []Hook {
+	hooks := c.hooks.DbApp
+	return append(hooks[:len(hooks):len(hooks)], dbapp.Hooks[:]...)
 }
 
-// FilterClient is a client for the Filter schema.
-type FilterClient struct {
+// DbFilterClient is a client for the DbFilter schema.
+type DbFilterClient struct {
 	config
 }
 
-// NewFilterClient returns a client for the Filter from the given config.
-func NewFilterClient(c config) *FilterClient {
-	return &FilterClient{config: c}
+// NewDbFilterClient returns a client for the DbFilter from the given config.
+func NewDbFilterClient(c config) *DbFilterClient {
+	return &DbFilterClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `filter.Hooks(f(g(h())))`.
-func (c *FilterClient) Use(hooks ...Hook) {
-	c.hooks.Filter = append(c.hooks.Filter, hooks...)
+// A call to `Use(f, g, h)` equals to `dbfilter.Hooks(f(g(h())))`.
+func (c *DbFilterClient) Use(hooks ...Hook) {
+	c.hooks.DbFilter = append(c.hooks.DbFilter, hooks...)
 }
 
-// Create returns a builder for creating a Filter entity.
-func (c *FilterClient) Create() *FilterCreate {
-	mutation := newFilterMutation(c.config, OpCreate)
-	return &FilterCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a DbFilter entity.
+func (c *DbFilterClient) Create() *DbFilterCreate {
+	mutation := newDbFilterMutation(c.config, OpCreate)
+	return &DbFilterCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Filter entities.
-func (c *FilterClient) CreateBulk(builders ...*FilterCreate) *FilterCreateBulk {
-	return &FilterCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of DbFilter entities.
+func (c *DbFilterClient) CreateBulk(builders ...*DbFilterCreate) *DbFilterCreateBulk {
+	return &DbFilterCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Filter.
-func (c *FilterClient) Update() *FilterUpdate {
-	mutation := newFilterMutation(c.config, OpUpdate)
-	return &FilterUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for DbFilter.
+func (c *DbFilterClient) Update() *DbFilterUpdate {
+	mutation := newDbFilterMutation(c.config, OpUpdate)
+	return &DbFilterUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *FilterClient) UpdateOne(f *Filter) *FilterUpdateOne {
-	mutation := newFilterMutation(c.config, OpUpdateOne, withFilter(f))
-	return &FilterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbFilterClient) UpdateOne(df *DbFilter) *DbFilterUpdateOne {
+	mutation := newDbFilterMutation(c.config, OpUpdateOne, withDbFilter(df))
+	return &DbFilterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *FilterClient) UpdateOneID(id int) *FilterUpdateOne {
-	mutation := newFilterMutation(c.config, OpUpdateOne, withFilterID(id))
-	return &FilterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbFilterClient) UpdateOneID(id int) *DbFilterUpdateOne {
+	mutation := newDbFilterMutation(c.config, OpUpdateOne, withDbFilterID(id))
+	return &DbFilterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Filter.
-func (c *FilterClient) Delete() *FilterDelete {
-	mutation := newFilterMutation(c.config, OpDelete)
-	return &FilterDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for DbFilter.
+func (c *DbFilterClient) Delete() *DbFilterDelete {
+	mutation := newDbFilterMutation(c.config, OpDelete)
+	return &DbFilterDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *FilterClient) DeleteOne(f *Filter) *FilterDeleteOne {
-	return c.DeleteOneID(f.ID)
+func (c *DbFilterClient) DeleteOne(df *DbFilter) *DbFilterDeleteOne {
+	return c.DeleteOneID(df.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *FilterClient) DeleteOneID(id int) *FilterDeleteOne {
-	builder := c.Delete().Where(filter.ID(id))
+func (c *DbFilterClient) DeleteOneID(id int) *DbFilterDeleteOne {
+	builder := c.Delete().Where(dbfilter.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &FilterDeleteOne{builder}
+	return &DbFilterDeleteOne{builder}
 }
 
-// Query returns a query builder for Filter.
-func (c *FilterClient) Query() *FilterQuery {
-	return &FilterQuery{
+// Query returns a query builder for DbFilter.
+func (c *DbFilterClient) Query() *DbFilterQuery {
+	return &DbFilterQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Filter entity by its id.
-func (c *FilterClient) Get(ctx context.Context, id int) (*Filter, error) {
-	return c.Query().Where(filter.ID(id)).Only(ctx)
+// Get returns a DbFilter entity by its id.
+func (c *DbFilterClient) Get(ctx context.Context, id int) (*DbFilter, error) {
+	return c.Query().Where(dbfilter.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *FilterClient) GetX(ctx context.Context, id int) *Filter {
+func (c *DbFilterClient) GetX(ctx context.Context, id int) *DbFilter {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -475,170 +452,154 @@ func (c *FilterClient) GetX(ctx context.Context, id int) *Filter {
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a Filter.
-func (c *FilterClient) QueryTenant(f *Filter) *TenantQuery {
+// QueryTenant queries the tenant edge of a DbFilter.
+func (c *DbFilterClient) QueryTenant(df *DbFilter) *TenantQuery {
 	query := &TenantQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := f.ID
+		id := df.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(filter.Table, filter.FieldID, id),
+			sqlgraph.From(dbfilter.Table, dbfilter.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, filter.TenantTable, filter.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, dbfilter.TenantTable, dbfilter.TenantColumn),
 		)
-		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(df.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryConfig queries the config edge of a Filter.
-func (c *FilterClient) QueryConfig(f *Filter) *FilterConfigQuery {
-	query := &FilterConfigQuery{config: c.config}
+// QueryGroups queries the groups edge of a DbFilter.
+func (c *DbFilterClient) QueryGroups(df *DbFilter) *DbGroupQuery {
+	query := &DbGroupQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := f.ID
+		id := df.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(filter.Table, filter.FieldID, id),
-			sqlgraph.To(filterconfig.Table, filterconfig.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filter.ConfigTable, filter.ConfigColumn),
+			sqlgraph.From(dbfilter.Table, dbfilter.FieldID, id),
+			sqlgraph.To(dbgroup.Table, dbgroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, dbfilter.GroupsTable, dbfilter.GroupsPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(df.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryGroups queries the groups edge of a Filter.
-func (c *FilterClient) QueryGroups(f *Filter) *GroupQuery {
-	query := &GroupQuery{config: c.config}
+// QueryApp queries the app edge of a DbFilter.
+func (c *DbFilterClient) QueryApp(df *DbFilter) *DbAppQuery {
+	query := &DbAppQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := f.ID
+		id := df.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(filter.Table, filter.FieldID, id),
-			sqlgraph.To(group.Table, group.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, filter.GroupsTable, filter.GroupsPrimaryKey...),
+			sqlgraph.From(dbfilter.Table, dbfilter.FieldID, id),
+			sqlgraph.To(dbapp.Table, dbapp.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dbfilter.AppTable, dbfilter.AppPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(df.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryApp queries the app edge of a Filter.
-func (c *FilterClient) QueryApp(f *Filter) *AppQuery {
-	query := &AppQuery{config: c.config}
+// QueryUser queries the user edge of a DbFilter.
+func (c *DbFilterClient) QueryUser(df *DbFilter) *DbUserQuery {
+	query := &DbUserQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := f.ID
+		id := df.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(filter.Table, filter.FieldID, id),
-			sqlgraph.To(app.Table, app.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, filter.AppTable, filter.AppPrimaryKey...),
+			sqlgraph.From(dbfilter.Table, dbfilter.FieldID, id),
+			sqlgraph.To(dbuser.Table, dbuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dbfilter.UserTable, dbfilter.UserPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUser queries the user edge of a Filter.
-func (c *FilterClient) QueryUser(f *Filter) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := f.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(filter.Table, filter.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, filter.UserTable, filter.UserPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(df.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *FilterClient) Hooks() []Hook {
-	hooks := c.hooks.Filter
-	return append(hooks[:len(hooks):len(hooks)], filter.Hooks[:]...)
+func (c *DbFilterClient) Hooks() []Hook {
+	hooks := c.hooks.DbFilter
+	return append(hooks[:len(hooks):len(hooks)], dbfilter.Hooks[:]...)
 }
 
-// FilterConfigClient is a client for the FilterConfig schema.
-type FilterConfigClient struct {
+// DbGroupClient is a client for the DbGroup schema.
+type DbGroupClient struct {
 	config
 }
 
-// NewFilterConfigClient returns a client for the FilterConfig from the given config.
-func NewFilterConfigClient(c config) *FilterConfigClient {
-	return &FilterConfigClient{config: c}
+// NewDbGroupClient returns a client for the DbGroup from the given config.
+func NewDbGroupClient(c config) *DbGroupClient {
+	return &DbGroupClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `filterconfig.Hooks(f(g(h())))`.
-func (c *FilterConfigClient) Use(hooks ...Hook) {
-	c.hooks.FilterConfig = append(c.hooks.FilterConfig, hooks...)
+// A call to `Use(f, g, h)` equals to `dbgroup.Hooks(f(g(h())))`.
+func (c *DbGroupClient) Use(hooks ...Hook) {
+	c.hooks.DbGroup = append(c.hooks.DbGroup, hooks...)
 }
 
-// Create returns a builder for creating a FilterConfig entity.
-func (c *FilterConfigClient) Create() *FilterConfigCreate {
-	mutation := newFilterConfigMutation(c.config, OpCreate)
-	return &FilterConfigCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a DbGroup entity.
+func (c *DbGroupClient) Create() *DbGroupCreate {
+	mutation := newDbGroupMutation(c.config, OpCreate)
+	return &DbGroupCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of FilterConfig entities.
-func (c *FilterConfigClient) CreateBulk(builders ...*FilterConfigCreate) *FilterConfigCreateBulk {
-	return &FilterConfigCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of DbGroup entities.
+func (c *DbGroupClient) CreateBulk(builders ...*DbGroupCreate) *DbGroupCreateBulk {
+	return &DbGroupCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for FilterConfig.
-func (c *FilterConfigClient) Update() *FilterConfigUpdate {
-	mutation := newFilterConfigMutation(c.config, OpUpdate)
-	return &FilterConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for DbGroup.
+func (c *DbGroupClient) Update() *DbGroupUpdate {
+	mutation := newDbGroupMutation(c.config, OpUpdate)
+	return &DbGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *FilterConfigClient) UpdateOne(fc *FilterConfig) *FilterConfigUpdateOne {
-	mutation := newFilterConfigMutation(c.config, OpUpdateOne, withFilterConfig(fc))
-	return &FilterConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbGroupClient) UpdateOne(dg *DbGroup) *DbGroupUpdateOne {
+	mutation := newDbGroupMutation(c.config, OpUpdateOne, withDbGroup(dg))
+	return &DbGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *FilterConfigClient) UpdateOneID(id int) *FilterConfigUpdateOne {
-	mutation := newFilterConfigMutation(c.config, OpUpdateOne, withFilterConfigID(id))
-	return &FilterConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbGroupClient) UpdateOneID(id int) *DbGroupUpdateOne {
+	mutation := newDbGroupMutation(c.config, OpUpdateOne, withDbGroupID(id))
+	return &DbGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for FilterConfig.
-func (c *FilterConfigClient) Delete() *FilterConfigDelete {
-	mutation := newFilterConfigMutation(c.config, OpDelete)
-	return &FilterConfigDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for DbGroup.
+func (c *DbGroupClient) Delete() *DbGroupDelete {
+	mutation := newDbGroupMutation(c.config, OpDelete)
+	return &DbGroupDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *FilterConfigClient) DeleteOne(fc *FilterConfig) *FilterConfigDeleteOne {
-	return c.DeleteOneID(fc.ID)
+func (c *DbGroupClient) DeleteOne(dg *DbGroup) *DbGroupDeleteOne {
+	return c.DeleteOneID(dg.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *FilterConfigClient) DeleteOneID(id int) *FilterConfigDeleteOne {
-	builder := c.Delete().Where(filterconfig.ID(id))
+func (c *DbGroupClient) DeleteOneID(id int) *DbGroupDeleteOne {
+	builder := c.Delete().Where(dbgroup.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &FilterConfigDeleteOne{builder}
+	return &DbGroupDeleteOne{builder}
 }
 
-// Query returns a query builder for FilterConfig.
-func (c *FilterConfigClient) Query() *FilterConfigQuery {
-	return &FilterConfigQuery{
+// Query returns a query builder for DbGroup.
+func (c *DbGroupClient) Query() *DbGroupQuery {
+	return &DbGroupQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a FilterConfig entity by its id.
-func (c *FilterConfigClient) Get(ctx context.Context, id int) (*FilterConfig, error) {
-	return c.Query().Where(filterconfig.ID(id)).Only(ctx)
+// Get returns a DbGroup entity by its id.
+func (c *DbGroupClient) Get(ctx context.Context, id int) (*DbGroup, error) {
+	return c.Query().Where(dbgroup.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *FilterConfigClient) GetX(ctx context.Context, id int) *FilterConfig {
+func (c *DbGroupClient) GetX(ctx context.Context, id int) *DbGroup {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -646,122 +607,170 @@ func (c *FilterConfigClient) GetX(ctx context.Context, id int) *FilterConfig {
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a FilterConfig.
-func (c *FilterConfigClient) QueryTenant(fc *FilterConfig) *TenantQuery {
+// QueryTenant queries the tenant edge of a DbGroup.
+func (c *DbGroupClient) QueryTenant(dg *DbGroup) *TenantQuery {
 	query := &TenantQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := fc.ID
+		id := dg.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(filterconfig.Table, filterconfig.FieldID, id),
+			sqlgraph.From(dbgroup.Table, dbgroup.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, filterconfig.TenantTable, filterconfig.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, dbgroup.TenantTable, dbgroup.TenantColumn),
 		)
-		fromV = sqlgraph.Neighbors(fc.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(dg.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryFilter queries the filter edge of a FilterConfig.
-func (c *FilterConfigClient) QueryFilter(fc *FilterConfig) *FilterQuery {
-	query := &FilterQuery{config: c.config}
+// QueryTransportRecipients queries the TransportRecipients edge of a DbGroup.
+func (c *DbGroupClient) QueryTransportRecipients(dg *DbGroup) *DbTransportRecipientsQuery {
+	query := &DbTransportRecipientsQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := fc.ID
+		id := dg.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(filterconfig.Table, filterconfig.FieldID, id),
-			sqlgraph.To(filter.Table, filter.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, filterconfig.FilterTable, filterconfig.FilterColumn),
+			sqlgraph.From(dbgroup.Table, dbgroup.FieldID, id),
+			sqlgraph.To(dbtransportrecipients.Table, dbtransportrecipients.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dbgroup.TransportRecipientsTable, dbgroup.TransportRecipientsColumn),
 		)
-		fromV = sqlgraph.Neighbors(fc.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(dg.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUsers queries the users edge of a DbGroup.
+func (c *DbGroupClient) QueryUsers(dg *DbGroup) *DbUserQuery {
+	query := &DbUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dg.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbgroup.Table, dbgroup.FieldID, id),
+			sqlgraph.To(dbuser.Table, dbuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dbgroup.UsersTable, dbgroup.UsersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(dg.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFilters queries the filters edge of a DbGroup.
+func (c *DbGroupClient) QueryFilters(dg *DbGroup) *DbFilterQuery {
+	query := &DbFilterQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dg.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbgroup.Table, dbgroup.FieldID, id),
+			sqlgraph.To(dbfilter.Table, dbfilter.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dbgroup.FiltersTable, dbgroup.FiltersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(dg.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryApps queries the apps edge of a DbGroup.
+func (c *DbGroupClient) QueryApps(dg *DbGroup) *DbAppQuery {
+	query := &DbAppQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dg.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbgroup.Table, dbgroup.FieldID, id),
+			sqlgraph.To(dbapp.Table, dbapp.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dbgroup.AppsTable, dbgroup.AppsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(dg.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *FilterConfigClient) Hooks() []Hook {
-	hooks := c.hooks.FilterConfig
-	return append(hooks[:len(hooks):len(hooks)], filterconfig.Hooks[:]...)
+func (c *DbGroupClient) Hooks() []Hook {
+	hooks := c.hooks.DbGroup
+	return append(hooks[:len(hooks):len(hooks)], dbgroup.Hooks[:]...)
 }
 
-// GroupClient is a client for the Group schema.
-type GroupClient struct {
+// DbMessageClient is a client for the DbMessage schema.
+type DbMessageClient struct {
 	config
 }
 
-// NewGroupClient returns a client for the Group from the given config.
-func NewGroupClient(c config) *GroupClient {
-	return &GroupClient{config: c}
+// NewDbMessageClient returns a client for the DbMessage from the given config.
+func NewDbMessageClient(c config) *DbMessageClient {
+	return &DbMessageClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `group.Hooks(f(g(h())))`.
-func (c *GroupClient) Use(hooks ...Hook) {
-	c.hooks.Group = append(c.hooks.Group, hooks...)
+// A call to `Use(f, g, h)` equals to `dbmessage.Hooks(f(g(h())))`.
+func (c *DbMessageClient) Use(hooks ...Hook) {
+	c.hooks.DbMessage = append(c.hooks.DbMessage, hooks...)
 }
 
-// Create returns a builder for creating a Group entity.
-func (c *GroupClient) Create() *GroupCreate {
-	mutation := newGroupMutation(c.config, OpCreate)
-	return &GroupCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a DbMessage entity.
+func (c *DbMessageClient) Create() *DbMessageCreate {
+	mutation := newDbMessageMutation(c.config, OpCreate)
+	return &DbMessageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Group entities.
-func (c *GroupClient) CreateBulk(builders ...*GroupCreate) *GroupCreateBulk {
-	return &GroupCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of DbMessage entities.
+func (c *DbMessageClient) CreateBulk(builders ...*DbMessageCreate) *DbMessageCreateBulk {
+	return &DbMessageCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Group.
-func (c *GroupClient) Update() *GroupUpdate {
-	mutation := newGroupMutation(c.config, OpUpdate)
-	return &GroupUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for DbMessage.
+func (c *DbMessageClient) Update() *DbMessageUpdate {
+	mutation := newDbMessageMutation(c.config, OpUpdate)
+	return &DbMessageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *GroupClient) UpdateOne(gr *Group) *GroupUpdateOne {
-	mutation := newGroupMutation(c.config, OpUpdateOne, withGroup(gr))
-	return &GroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbMessageClient) UpdateOne(dm *DbMessage) *DbMessageUpdateOne {
+	mutation := newDbMessageMutation(c.config, OpUpdateOne, withDbMessage(dm))
+	return &DbMessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *GroupClient) UpdateOneID(id int) *GroupUpdateOne {
-	mutation := newGroupMutation(c.config, OpUpdateOne, withGroupID(id))
-	return &GroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbMessageClient) UpdateOneID(id uuid.UUID) *DbMessageUpdateOne {
+	mutation := newDbMessageMutation(c.config, OpUpdateOne, withDbMessageID(id))
+	return &DbMessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Group.
-func (c *GroupClient) Delete() *GroupDelete {
-	mutation := newGroupMutation(c.config, OpDelete)
-	return &GroupDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for DbMessage.
+func (c *DbMessageClient) Delete() *DbMessageDelete {
+	mutation := newDbMessageMutation(c.config, OpDelete)
+	return &DbMessageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *GroupClient) DeleteOne(gr *Group) *GroupDeleteOne {
-	return c.DeleteOneID(gr.ID)
+func (c *DbMessageClient) DeleteOne(dm *DbMessage) *DbMessageDeleteOne {
+	return c.DeleteOneID(dm.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *GroupClient) DeleteOneID(id int) *GroupDeleteOne {
-	builder := c.Delete().Where(group.ID(id))
+func (c *DbMessageClient) DeleteOneID(id uuid.UUID) *DbMessageDeleteOne {
+	builder := c.Delete().Where(dbmessage.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &GroupDeleteOne{builder}
+	return &DbMessageDeleteOne{builder}
 }
 
-// Query returns a query builder for Group.
-func (c *GroupClient) Query() *GroupQuery {
-	return &GroupQuery{
+// Query returns a query builder for DbMessage.
+func (c *DbMessageClient) Query() *DbMessageQuery {
+	return &DbMessageQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Group entity by its id.
-func (c *GroupClient) Get(ctx context.Context, id int) (*Group, error) {
-	return c.Query().Where(group.ID(id)).Only(ctx)
+// Get returns a DbMessage entity by its id.
+func (c *DbMessageClient) Get(ctx context.Context, id uuid.UUID) (*DbMessage, error) {
+	return c.Query().Where(dbmessage.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *GroupClient) GetX(ctx context.Context, id int) *Group {
+func (c *DbMessageClient) GetX(ctx context.Context, id uuid.UUID) *DbMessage {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -769,170 +778,138 @@ func (c *GroupClient) GetX(ctx context.Context, id int) *Group {
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a Group.
-func (c *GroupClient) QueryTenant(gr *Group) *TenantQuery {
+// QueryTenant queries the tenant edge of a DbMessage.
+func (c *DbMessageClient) QueryTenant(dm *DbMessage) *TenantQuery {
 	query := &TenantQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := gr.ID
+		id := dm.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.From(dbmessage.Table, dbmessage.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, group.TenantTable, group.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, dbmessage.TenantTable, dbmessage.TenantColumn),
 		)
-		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(dm.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryTransportRecipients queries the TransportRecipients edge of a Group.
-func (c *GroupClient) QueryTransportRecipients(gr *Group) *TransportRecipientQuery {
-	query := &TransportRecipientQuery{config: c.config}
+// QueryFields queries the fields edge of a DbMessage.
+func (c *DbMessageClient) QueryFields(dm *DbMessage) *DbMessageFieldsQuery {
+	query := &DbMessageFieldsQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := gr.ID
+		id := dm.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(group.Table, group.FieldID, id),
-			sqlgraph.To(transportrecipient.Table, transportrecipient.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, group.TransportRecipientsTable, group.TransportRecipientsPrimaryKey...),
+			sqlgraph.From(dbmessage.Table, dbmessage.FieldID, id),
+			sqlgraph.To(dbmessagefields.Table, dbmessagefields.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dbmessage.FieldsTable, dbmessage.FieldsColumn),
 		)
-		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(dm.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryUsers queries the users edge of a Group.
-func (c *GroupClient) QueryUsers(gr *Group) *UserQuery {
-	query := &UserQuery{config: c.config}
+// QueryApp queries the app edge of a DbMessage.
+func (c *DbMessageClient) QueryApp(dm *DbMessage) *DbAppQuery {
+	query := &DbAppQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := gr.ID
+		id := dm.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(group.Table, group.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, group.UsersTable, group.UsersPrimaryKey...),
+			sqlgraph.From(dbmessage.Table, dbmessage.FieldID, id),
+			sqlgraph.To(dbapp.Table, dbapp.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dbmessage.AppTable, dbmessage.AppColumn),
 		)
-		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFilters queries the filters edge of a Group.
-func (c *GroupClient) QueryFilters(gr *Group) *FilterQuery {
-	query := &FilterQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := gr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(group.Table, group.FieldID, id),
-			sqlgraph.To(filter.Table, filter.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, group.FiltersTable, group.FiltersPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryApps queries the apps edge of a Group.
-func (c *GroupClient) QueryApps(gr *Group) *AppQuery {
-	query := &AppQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := gr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(group.Table, group.FieldID, id),
-			sqlgraph.To(app.Table, app.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, group.AppsTable, group.AppsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(dm.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *GroupClient) Hooks() []Hook {
-	hooks := c.hooks.Group
-	return append(hooks[:len(hooks):len(hooks)], group.Hooks[:]...)
+func (c *DbMessageClient) Hooks() []Hook {
+	hooks := c.hooks.DbMessage
+	return append(hooks[:len(hooks):len(hooks)], dbmessage.Hooks[:]...)
 }
 
-// MessageClient is a client for the Message schema.
-type MessageClient struct {
+// DbMessageFieldsClient is a client for the DbMessageFields schema.
+type DbMessageFieldsClient struct {
 	config
 }
 
-// NewMessageClient returns a client for the Message from the given config.
-func NewMessageClient(c config) *MessageClient {
-	return &MessageClient{config: c}
+// NewDbMessageFieldsClient returns a client for the DbMessageFields from the given config.
+func NewDbMessageFieldsClient(c config) *DbMessageFieldsClient {
+	return &DbMessageFieldsClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `message.Hooks(f(g(h())))`.
-func (c *MessageClient) Use(hooks ...Hook) {
-	c.hooks.Message = append(c.hooks.Message, hooks...)
+// A call to `Use(f, g, h)` equals to `dbmessagefields.Hooks(f(g(h())))`.
+func (c *DbMessageFieldsClient) Use(hooks ...Hook) {
+	c.hooks.DbMessageFields = append(c.hooks.DbMessageFields, hooks...)
 }
 
-// Create returns a builder for creating a Message entity.
-func (c *MessageClient) Create() *MessageCreate {
-	mutation := newMessageMutation(c.config, OpCreate)
-	return &MessageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a DbMessageFields entity.
+func (c *DbMessageFieldsClient) Create() *DbMessageFieldsCreate {
+	mutation := newDbMessageFieldsMutation(c.config, OpCreate)
+	return &DbMessageFieldsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Message entities.
-func (c *MessageClient) CreateBulk(builders ...*MessageCreate) *MessageCreateBulk {
-	return &MessageCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of DbMessageFields entities.
+func (c *DbMessageFieldsClient) CreateBulk(builders ...*DbMessageFieldsCreate) *DbMessageFieldsCreateBulk {
+	return &DbMessageFieldsCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Message.
-func (c *MessageClient) Update() *MessageUpdate {
-	mutation := newMessageMutation(c.config, OpUpdate)
-	return &MessageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for DbMessageFields.
+func (c *DbMessageFieldsClient) Update() *DbMessageFieldsUpdate {
+	mutation := newDbMessageFieldsMutation(c.config, OpUpdate)
+	return &DbMessageFieldsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *MessageClient) UpdateOne(m *Message) *MessageUpdateOne {
-	mutation := newMessageMutation(c.config, OpUpdateOne, withMessage(m))
-	return &MessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbMessageFieldsClient) UpdateOne(dmf *DbMessageFields) *DbMessageFieldsUpdateOne {
+	mutation := newDbMessageFieldsMutation(c.config, OpUpdateOne, withDbMessageFields(dmf))
+	return &DbMessageFieldsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *MessageClient) UpdateOneID(id uuid.UUID) *MessageUpdateOne {
-	mutation := newMessageMutation(c.config, OpUpdateOne, withMessageID(id))
-	return &MessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbMessageFieldsClient) UpdateOneID(id int) *DbMessageFieldsUpdateOne {
+	mutation := newDbMessageFieldsMutation(c.config, OpUpdateOne, withDbMessageFieldsID(id))
+	return &DbMessageFieldsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Message.
-func (c *MessageClient) Delete() *MessageDelete {
-	mutation := newMessageMutation(c.config, OpDelete)
-	return &MessageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for DbMessageFields.
+func (c *DbMessageFieldsClient) Delete() *DbMessageFieldsDelete {
+	mutation := newDbMessageFieldsMutation(c.config, OpDelete)
+	return &DbMessageFieldsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *MessageClient) DeleteOne(m *Message) *MessageDeleteOne {
-	return c.DeleteOneID(m.ID)
+func (c *DbMessageFieldsClient) DeleteOne(dmf *DbMessageFields) *DbMessageFieldsDeleteOne {
+	return c.DeleteOneID(dmf.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *MessageClient) DeleteOneID(id uuid.UUID) *MessageDeleteOne {
-	builder := c.Delete().Where(message.ID(id))
+func (c *DbMessageFieldsClient) DeleteOneID(id int) *DbMessageFieldsDeleteOne {
+	builder := c.Delete().Where(dbmessagefields.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &MessageDeleteOne{builder}
+	return &DbMessageFieldsDeleteOne{builder}
 }
 
-// Query returns a query builder for Message.
-func (c *MessageClient) Query() *MessageQuery {
-	return &MessageQuery{
+// Query returns a query builder for DbMessageFields.
+func (c *DbMessageFieldsClient) Query() *DbMessageFieldsQuery {
+	return &DbMessageFieldsQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Message entity by its id.
-func (c *MessageClient) Get(ctx context.Context, id uuid.UUID) (*Message, error) {
-	return c.Query().Where(message.ID(id)).Only(ctx)
+// Get returns a DbMessageFields entity by its id.
+func (c *DbMessageFieldsClient) Get(ctx context.Context, id int) (*DbMessageFields, error) {
+	return c.Query().Where(dbmessagefields.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *MessageClient) GetX(ctx context.Context, id uuid.UUID) *Message {
+func (c *DbMessageFieldsClient) GetX(ctx context.Context, id int) *DbMessageFields {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -940,138 +917,122 @@ func (c *MessageClient) GetX(ctx context.Context, id uuid.UUID) *Message {
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a Message.
-func (c *MessageClient) QueryTenant(m *Message) *TenantQuery {
+// QueryTenant queries the tenant edge of a DbMessageFields.
+func (c *DbMessageFieldsClient) QueryTenant(dmf *DbMessageFields) *TenantQuery {
 	query := &TenantQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := m.ID
+		id := dmf.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
+			sqlgraph.From(dbmessagefields.Table, dbmessagefields.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, message.TenantTable, message.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, dbmessagefields.TenantTable, dbmessagefields.TenantColumn),
 		)
-		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(dmf.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryVars queries the vars edge of a Message.
-func (c *MessageClient) QueryVars(m *Message) *MsgVarQuery {
-	query := &MsgVarQuery{config: c.config}
+// QueryOwner queries the owner edge of a DbMessageFields.
+func (c *DbMessageFieldsClient) QueryOwner(dmf *DbMessageFields) *DbMessageQuery {
+	query := &DbMessageQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := m.ID
+		id := dmf.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
-			sqlgraph.To(msgvar.Table, msgvar.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, message.VarsTable, message.VarsColumn),
+			sqlgraph.From(dbmessagefields.Table, dbmessagefields.FieldID, id),
+			sqlgraph.To(dbmessage.Table, dbmessage.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dbmessagefields.OwnerTable, dbmessagefields.OwnerColumn),
 		)
-		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryApp queries the app edge of a Message.
-func (c *MessageClient) QueryApp(m *Message) *AppQuery {
-	query := &AppQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
-			sqlgraph.To(app.Table, app.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, message.AppTable, message.AppColumn),
-		)
-		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(dmf.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *MessageClient) Hooks() []Hook {
-	hooks := c.hooks.Message
-	return append(hooks[:len(hooks):len(hooks)], message.Hooks[:]...)
+func (c *DbMessageFieldsClient) Hooks() []Hook {
+	hooks := c.hooks.DbMessageFields
+	return append(hooks[:len(hooks):len(hooks)], dbmessagefields.Hooks[:]...)
 }
 
-// MsgVarClient is a client for the MsgVar schema.
-type MsgVarClient struct {
+// DbTransportInstancesClient is a client for the DbTransportInstances schema.
+type DbTransportInstancesClient struct {
 	config
 }
 
-// NewMsgVarClient returns a client for the MsgVar from the given config.
-func NewMsgVarClient(c config) *MsgVarClient {
-	return &MsgVarClient{config: c}
+// NewDbTransportInstancesClient returns a client for the DbTransportInstances from the given config.
+func NewDbTransportInstancesClient(c config) *DbTransportInstancesClient {
+	return &DbTransportInstancesClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `msgvar.Hooks(f(g(h())))`.
-func (c *MsgVarClient) Use(hooks ...Hook) {
-	c.hooks.MsgVar = append(c.hooks.MsgVar, hooks...)
+// A call to `Use(f, g, h)` equals to `dbtransportinstances.Hooks(f(g(h())))`.
+func (c *DbTransportInstancesClient) Use(hooks ...Hook) {
+	c.hooks.DbTransportInstances = append(c.hooks.DbTransportInstances, hooks...)
 }
 
-// Create returns a builder for creating a MsgVar entity.
-func (c *MsgVarClient) Create() *MsgVarCreate {
-	mutation := newMsgVarMutation(c.config, OpCreate)
-	return &MsgVarCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a DbTransportInstances entity.
+func (c *DbTransportInstancesClient) Create() *DbTransportInstancesCreate {
+	mutation := newDbTransportInstancesMutation(c.config, OpCreate)
+	return &DbTransportInstancesCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of MsgVar entities.
-func (c *MsgVarClient) CreateBulk(builders ...*MsgVarCreate) *MsgVarCreateBulk {
-	return &MsgVarCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of DbTransportInstances entities.
+func (c *DbTransportInstancesClient) CreateBulk(builders ...*DbTransportInstancesCreate) *DbTransportInstancesCreateBulk {
+	return &DbTransportInstancesCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for MsgVar.
-func (c *MsgVarClient) Update() *MsgVarUpdate {
-	mutation := newMsgVarMutation(c.config, OpUpdate)
-	return &MsgVarUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for DbTransportInstances.
+func (c *DbTransportInstancesClient) Update() *DbTransportInstancesUpdate {
+	mutation := newDbTransportInstancesMutation(c.config, OpUpdate)
+	return &DbTransportInstancesUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *MsgVarClient) UpdateOne(mv *MsgVar) *MsgVarUpdateOne {
-	mutation := newMsgVarMutation(c.config, OpUpdateOne, withMsgVar(mv))
-	return &MsgVarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbTransportInstancesClient) UpdateOne(dti *DbTransportInstances) *DbTransportInstancesUpdateOne {
+	mutation := newDbTransportInstancesMutation(c.config, OpUpdateOne, withDbTransportInstances(dti))
+	return &DbTransportInstancesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *MsgVarClient) UpdateOneID(id int) *MsgVarUpdateOne {
-	mutation := newMsgVarMutation(c.config, OpUpdateOne, withMsgVarID(id))
-	return &MsgVarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DbTransportInstancesClient) UpdateOneID(id int) *DbTransportInstancesUpdateOne {
+	mutation := newDbTransportInstancesMutation(c.config, OpUpdateOne, withDbTransportInstancesID(id))
+	return &DbTransportInstancesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for MsgVar.
-func (c *MsgVarClient) Delete() *MsgVarDelete {
-	mutation := newMsgVarMutation(c.config, OpDelete)
-	return &MsgVarDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for DbTransportInstances.
+func (c *DbTransportInstancesClient) Delete() *DbTransportInstancesDelete {
+	mutation := newDbTransportInstancesMutation(c.config, OpDelete)
+	return &DbTransportInstancesDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *MsgVarClient) DeleteOne(mv *MsgVar) *MsgVarDeleteOne {
-	return c.DeleteOneID(mv.ID)
+func (c *DbTransportInstancesClient) DeleteOne(dti *DbTransportInstances) *DbTransportInstancesDeleteOne {
+	return c.DeleteOneID(dti.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *MsgVarClient) DeleteOneID(id int) *MsgVarDeleteOne {
-	builder := c.Delete().Where(msgvar.ID(id))
+func (c *DbTransportInstancesClient) DeleteOneID(id int) *DbTransportInstancesDeleteOne {
+	builder := c.Delete().Where(dbtransportinstances.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &MsgVarDeleteOne{builder}
+	return &DbTransportInstancesDeleteOne{builder}
 }
 
-// Query returns a query builder for MsgVar.
-func (c *MsgVarClient) Query() *MsgVarQuery {
-	return &MsgVarQuery{
+// Query returns a query builder for DbTransportInstances.
+func (c *DbTransportInstancesClient) Query() *DbTransportInstancesQuery {
+	return &DbTransportInstancesQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a MsgVar entity by its id.
-func (c *MsgVarClient) Get(ctx context.Context, id int) (*MsgVar, error) {
-	return c.Query().Where(msgvar.ID(id)).Only(ctx)
+// Get returns a DbTransportInstances entity by its id.
+func (c *DbTransportInstancesClient) Get(ctx context.Context, id int) (*DbTransportInstances, error) {
+	return c.Query().Where(dbtransportinstances.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *MsgVarClient) GetX(ctx context.Context, id int) *MsgVar {
+func (c *DbTransportInstancesClient) GetX(ctx context.Context, id int) *DbTransportInstances {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1079,42 +1040,491 @@ func (c *MsgVarClient) GetX(ctx context.Context, id int) *MsgVar {
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a MsgVar.
-func (c *MsgVarClient) QueryTenant(mv *MsgVar) *TenantQuery {
+// QueryTenant queries the tenant edge of a DbTransportInstances.
+func (c *DbTransportInstancesClient) QueryTenant(dti *DbTransportInstances) *TenantQuery {
 	query := &TenantQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := mv.ID
+		id := dti.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(msgvar.Table, msgvar.FieldID, id),
+			sqlgraph.From(dbtransportinstances.Table, dbtransportinstances.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, msgvar.TenantTable, msgvar.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, dbtransportinstances.TenantTable, dbtransportinstances.TenantColumn),
 		)
-		fromV = sqlgraph.Neighbors(mv.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(dti.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryOwner queries the owner edge of a MsgVar.
-func (c *MsgVarClient) QueryOwner(mv *MsgVar) *MessageQuery {
-	query := &MessageQuery{config: c.config}
+// QueryTransportRecipients queries the TransportRecipients edge of a DbTransportInstances.
+func (c *DbTransportInstancesClient) QueryTransportRecipients(dti *DbTransportInstances) *DbTransportRecipientsQuery {
+	query := &DbTransportRecipientsQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := mv.ID
+		id := dti.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(msgvar.Table, msgvar.FieldID, id),
-			sqlgraph.To(message.Table, message.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, msgvar.OwnerTable, msgvar.OwnerColumn),
+			sqlgraph.From(dbtransportinstances.Table, dbtransportinstances.FieldID, id),
+			sqlgraph.To(dbtransportrecipients.Table, dbtransportrecipients.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dbtransportinstances.TransportRecipientsTable, dbtransportinstances.TransportRecipientsColumn),
 		)
-		fromV = sqlgraph.Neighbors(mv.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(dti.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *MsgVarClient) Hooks() []Hook {
-	hooks := c.hooks.MsgVar
-	return append(hooks[:len(hooks):len(hooks)], msgvar.Hooks[:]...)
+func (c *DbTransportInstancesClient) Hooks() []Hook {
+	hooks := c.hooks.DbTransportInstances
+	return append(hooks[:len(hooks):len(hooks)], dbtransportinstances.Hooks[:]...)
+}
+
+// DbTransportRecipientsClient is a client for the DbTransportRecipients schema.
+type DbTransportRecipientsClient struct {
+	config
+}
+
+// NewDbTransportRecipientsClient returns a client for the DbTransportRecipients from the given config.
+func NewDbTransportRecipientsClient(c config) *DbTransportRecipientsClient {
+	return &DbTransportRecipientsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dbtransportrecipients.Hooks(f(g(h())))`.
+func (c *DbTransportRecipientsClient) Use(hooks ...Hook) {
+	c.hooks.DbTransportRecipients = append(c.hooks.DbTransportRecipients, hooks...)
+}
+
+// Create returns a builder for creating a DbTransportRecipients entity.
+func (c *DbTransportRecipientsClient) Create() *DbTransportRecipientsCreate {
+	mutation := newDbTransportRecipientsMutation(c.config, OpCreate)
+	return &DbTransportRecipientsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DbTransportRecipients entities.
+func (c *DbTransportRecipientsClient) CreateBulk(builders ...*DbTransportRecipientsCreate) *DbTransportRecipientsCreateBulk {
+	return &DbTransportRecipientsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DbTransportRecipients.
+func (c *DbTransportRecipientsClient) Update() *DbTransportRecipientsUpdate {
+	mutation := newDbTransportRecipientsMutation(c.config, OpUpdate)
+	return &DbTransportRecipientsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DbTransportRecipientsClient) UpdateOne(dtr *DbTransportRecipients) *DbTransportRecipientsUpdateOne {
+	mutation := newDbTransportRecipientsMutation(c.config, OpUpdateOne, withDbTransportRecipients(dtr))
+	return &DbTransportRecipientsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DbTransportRecipientsClient) UpdateOneID(id int) *DbTransportRecipientsUpdateOne {
+	mutation := newDbTransportRecipientsMutation(c.config, OpUpdateOne, withDbTransportRecipientsID(id))
+	return &DbTransportRecipientsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DbTransportRecipients.
+func (c *DbTransportRecipientsClient) Delete() *DbTransportRecipientsDelete {
+	mutation := newDbTransportRecipientsMutation(c.config, OpDelete)
+	return &DbTransportRecipientsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DbTransportRecipientsClient) DeleteOne(dtr *DbTransportRecipients) *DbTransportRecipientsDeleteOne {
+	return c.DeleteOneID(dtr.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *DbTransportRecipientsClient) DeleteOneID(id int) *DbTransportRecipientsDeleteOne {
+	builder := c.Delete().Where(dbtransportrecipients.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DbTransportRecipientsDeleteOne{builder}
+}
+
+// Query returns a query builder for DbTransportRecipients.
+func (c *DbTransportRecipientsClient) Query() *DbTransportRecipientsQuery {
+	return &DbTransportRecipientsQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a DbTransportRecipients entity by its id.
+func (c *DbTransportRecipientsClient) Get(ctx context.Context, id int) (*DbTransportRecipients, error) {
+	return c.Query().Where(dbtransportrecipients.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DbTransportRecipientsClient) GetX(ctx context.Context, id int) *DbTransportRecipients {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a DbTransportRecipients.
+func (c *DbTransportRecipientsClient) QueryTenant(dtr *DbTransportRecipients) *TenantQuery {
+	query := &TenantQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dtr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbtransportrecipients.Table, dbtransportrecipients.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, dbtransportrecipients.TenantTable, dbtransportrecipients.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(dtr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTransportInstance queries the TransportInstance edge of a DbTransportRecipients.
+func (c *DbTransportRecipientsClient) QueryTransportInstance(dtr *DbTransportRecipients) *DbTransportInstancesQuery {
+	query := &DbTransportInstancesQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dtr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbtransportrecipients.Table, dbtransportrecipients.FieldID, id),
+			sqlgraph.To(dbtransportinstances.Table, dbtransportinstances.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dbtransportrecipients.TransportInstanceTable, dbtransportrecipients.TransportInstanceColumn),
+		)
+		fromV = sqlgraph.Neighbors(dtr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGroupRecipient queries the GroupRecipient edge of a DbTransportRecipients.
+func (c *DbTransportRecipientsClient) QueryGroupRecipient(dtr *DbTransportRecipients) *DbGroupQuery {
+	query := &DbGroupQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dtr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbtransportrecipients.Table, dbtransportrecipients.FieldID, id),
+			sqlgraph.To(dbgroup.Table, dbgroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dbtransportrecipients.GroupRecipientTable, dbtransportrecipients.GroupRecipientColumn),
+		)
+		fromV = sqlgraph.Neighbors(dtr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserRecipient queries the UserRecipient edge of a DbTransportRecipients.
+func (c *DbTransportRecipientsClient) QueryUserRecipient(dtr *DbTransportRecipients) *DbUserQuery {
+	query := &DbUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dtr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbtransportrecipients.Table, dbtransportrecipients.FieldID, id),
+			sqlgraph.To(dbuser.Table, dbuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dbtransportrecipients.UserRecipientTable, dbtransportrecipients.UserRecipientColumn),
+		)
+		fromV = sqlgraph.Neighbors(dtr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DbTransportRecipientsClient) Hooks() []Hook {
+	hooks := c.hooks.DbTransportRecipients
+	return append(hooks[:len(hooks):len(hooks)], dbtransportrecipients.Hooks[:]...)
+}
+
+// DbUserClient is a client for the DbUser schema.
+type DbUserClient struct {
+	config
+}
+
+// NewDbUserClient returns a client for the DbUser from the given config.
+func NewDbUserClient(c config) *DbUserClient {
+	return &DbUserClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dbuser.Hooks(f(g(h())))`.
+func (c *DbUserClient) Use(hooks ...Hook) {
+	c.hooks.DbUser = append(c.hooks.DbUser, hooks...)
+}
+
+// Create returns a builder for creating a DbUser entity.
+func (c *DbUserClient) Create() *DbUserCreate {
+	mutation := newDbUserMutation(c.config, OpCreate)
+	return &DbUserCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DbUser entities.
+func (c *DbUserClient) CreateBulk(builders ...*DbUserCreate) *DbUserCreateBulk {
+	return &DbUserCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DbUser.
+func (c *DbUserClient) Update() *DbUserUpdate {
+	mutation := newDbUserMutation(c.config, OpUpdate)
+	return &DbUserUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DbUserClient) UpdateOne(du *DbUser) *DbUserUpdateOne {
+	mutation := newDbUserMutation(c.config, OpUpdateOne, withDbUser(du))
+	return &DbUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DbUserClient) UpdateOneID(id int) *DbUserUpdateOne {
+	mutation := newDbUserMutation(c.config, OpUpdateOne, withDbUserID(id))
+	return &DbUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DbUser.
+func (c *DbUserClient) Delete() *DbUserDelete {
+	mutation := newDbUserMutation(c.config, OpDelete)
+	return &DbUserDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DbUserClient) DeleteOne(du *DbUser) *DbUserDeleteOne {
+	return c.DeleteOneID(du.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *DbUserClient) DeleteOneID(id int) *DbUserDeleteOne {
+	builder := c.Delete().Where(dbuser.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DbUserDeleteOne{builder}
+}
+
+// Query returns a query builder for DbUser.
+func (c *DbUserClient) Query() *DbUserQuery {
+	return &DbUserQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a DbUser entity by its id.
+func (c *DbUserClient) Get(ctx context.Context, id int) (*DbUser, error) {
+	return c.Query().Where(dbuser.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DbUserClient) GetX(ctx context.Context, id int) *DbUser {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a DbUser.
+func (c *DbUserClient) QueryTenant(du *DbUser) *TenantQuery {
+	query := &TenantQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := du.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbuser.Table, dbuser.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, dbuser.TenantTable, dbuser.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(du.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMetadata queries the metadata edge of a DbUser.
+func (c *DbUserClient) QueryMetadata(du *DbUser) *DbUserMetaDataQuery {
+	query := &DbUserMetaDataQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := du.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbuser.Table, dbuser.FieldID, id),
+			sqlgraph.To(dbusermetadata.Table, dbusermetadata.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dbuser.MetadataTable, dbuser.MetadataColumn),
+		)
+		fromV = sqlgraph.Neighbors(du.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFilters queries the filters edge of a DbUser.
+func (c *DbUserClient) QueryFilters(du *DbUser) *DbFilterQuery {
+	query := &DbFilterQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := du.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbuser.Table, dbuser.FieldID, id),
+			sqlgraph.To(dbfilter.Table, dbfilter.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, dbuser.FiltersTable, dbuser.FiltersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(du.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGroups queries the groups edge of a DbUser.
+func (c *DbUserClient) QueryGroups(du *DbUser) *DbGroupQuery {
+	query := &DbGroupQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := du.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbuser.Table, dbuser.FieldID, id),
+			sqlgraph.To(dbgroup.Table, dbgroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, dbuser.GroupsTable, dbuser.GroupsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(du.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTransportRecipients queries the TransportRecipients edge of a DbUser.
+func (c *DbUserClient) QueryTransportRecipients(du *DbUser) *DbTransportRecipientsQuery {
+	query := &DbTransportRecipientsQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := du.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbuser.Table, dbuser.FieldID, id),
+			sqlgraph.To(dbtransportrecipients.Table, dbtransportrecipients.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dbuser.TransportRecipientsTable, dbuser.TransportRecipientsColumn),
+		)
+		fromV = sqlgraph.Neighbors(du.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DbUserClient) Hooks() []Hook {
+	hooks := c.hooks.DbUser
+	return append(hooks[:len(hooks):len(hooks)], dbuser.Hooks[:]...)
+}
+
+// DbUserMetaDataClient is a client for the DbUserMetaData schema.
+type DbUserMetaDataClient struct {
+	config
+}
+
+// NewDbUserMetaDataClient returns a client for the DbUserMetaData from the given config.
+func NewDbUserMetaDataClient(c config) *DbUserMetaDataClient {
+	return &DbUserMetaDataClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dbusermetadata.Hooks(f(g(h())))`.
+func (c *DbUserMetaDataClient) Use(hooks ...Hook) {
+	c.hooks.DbUserMetaData = append(c.hooks.DbUserMetaData, hooks...)
+}
+
+// Create returns a builder for creating a DbUserMetaData entity.
+func (c *DbUserMetaDataClient) Create() *DbUserMetaDataCreate {
+	mutation := newDbUserMetaDataMutation(c.config, OpCreate)
+	return &DbUserMetaDataCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DbUserMetaData entities.
+func (c *DbUserMetaDataClient) CreateBulk(builders ...*DbUserMetaDataCreate) *DbUserMetaDataCreateBulk {
+	return &DbUserMetaDataCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DbUserMetaData.
+func (c *DbUserMetaDataClient) Update() *DbUserMetaDataUpdate {
+	mutation := newDbUserMetaDataMutation(c.config, OpUpdate)
+	return &DbUserMetaDataUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DbUserMetaDataClient) UpdateOne(dumd *DbUserMetaData) *DbUserMetaDataUpdateOne {
+	mutation := newDbUserMetaDataMutation(c.config, OpUpdateOne, withDbUserMetaData(dumd))
+	return &DbUserMetaDataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DbUserMetaDataClient) UpdateOneID(id int) *DbUserMetaDataUpdateOne {
+	mutation := newDbUserMetaDataMutation(c.config, OpUpdateOne, withDbUserMetaDataID(id))
+	return &DbUserMetaDataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DbUserMetaData.
+func (c *DbUserMetaDataClient) Delete() *DbUserMetaDataDelete {
+	mutation := newDbUserMetaDataMutation(c.config, OpDelete)
+	return &DbUserMetaDataDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DbUserMetaDataClient) DeleteOne(dumd *DbUserMetaData) *DbUserMetaDataDeleteOne {
+	return c.DeleteOneID(dumd.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *DbUserMetaDataClient) DeleteOneID(id int) *DbUserMetaDataDeleteOne {
+	builder := c.Delete().Where(dbusermetadata.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DbUserMetaDataDeleteOne{builder}
+}
+
+// Query returns a query builder for DbUserMetaData.
+func (c *DbUserMetaDataClient) Query() *DbUserMetaDataQuery {
+	return &DbUserMetaDataQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a DbUserMetaData entity by its id.
+func (c *DbUserMetaDataClient) Get(ctx context.Context, id int) (*DbUserMetaData, error) {
+	return c.Query().Where(dbusermetadata.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DbUserMetaDataClient) GetX(ctx context.Context, id int) *DbUserMetaData {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a DbUserMetaData.
+func (c *DbUserMetaDataClient) QueryTenant(dumd *DbUserMetaData) *TenantQuery {
+	query := &TenantQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dumd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbusermetadata.Table, dbusermetadata.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, dbusermetadata.TenantTable, dbusermetadata.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(dumd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a DbUserMetaData.
+func (c *DbUserMetaDataClient) QueryUser(dumd *DbUserMetaData) *DbUserQuery {
+	query := &DbUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := dumd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dbusermetadata.Table, dbusermetadata.FieldID, id),
+			sqlgraph.To(dbuser.Table, dbuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dbusermetadata.UserTable, dbusermetadata.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(dumd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DbUserMetaDataClient) Hooks() []Hook {
+	hooks := c.hooks.DbUserMetaData
+	return append(hooks[:len(hooks):len(hooks)], dbusermetadata.Hooks[:]...)
 }
 
 // TenantClient is a client for the Tenant schema.
@@ -1206,592 +1616,4 @@ func (c *TenantClient) GetX(ctx context.Context, id int) *Tenant {
 func (c *TenantClient) Hooks() []Hook {
 	hooks := c.hooks.Tenant
 	return append(hooks[:len(hooks):len(hooks)], tenant.Hooks[:]...)
-}
-
-// TransportInstanceClient is a client for the TransportInstance schema.
-type TransportInstanceClient struct {
-	config
-}
-
-// NewTransportInstanceClient returns a client for the TransportInstance from the given config.
-func NewTransportInstanceClient(c config) *TransportInstanceClient {
-	return &TransportInstanceClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `transportinstance.Hooks(f(g(h())))`.
-func (c *TransportInstanceClient) Use(hooks ...Hook) {
-	c.hooks.TransportInstance = append(c.hooks.TransportInstance, hooks...)
-}
-
-// Create returns a builder for creating a TransportInstance entity.
-func (c *TransportInstanceClient) Create() *TransportInstanceCreate {
-	mutation := newTransportInstanceMutation(c.config, OpCreate)
-	return &TransportInstanceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of TransportInstance entities.
-func (c *TransportInstanceClient) CreateBulk(builders ...*TransportInstanceCreate) *TransportInstanceCreateBulk {
-	return &TransportInstanceCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for TransportInstance.
-func (c *TransportInstanceClient) Update() *TransportInstanceUpdate {
-	mutation := newTransportInstanceMutation(c.config, OpUpdate)
-	return &TransportInstanceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *TransportInstanceClient) UpdateOne(ti *TransportInstance) *TransportInstanceUpdateOne {
-	mutation := newTransportInstanceMutation(c.config, OpUpdateOne, withTransportInstance(ti))
-	return &TransportInstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *TransportInstanceClient) UpdateOneID(id int) *TransportInstanceUpdateOne {
-	mutation := newTransportInstanceMutation(c.config, OpUpdateOne, withTransportInstanceID(id))
-	return &TransportInstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for TransportInstance.
-func (c *TransportInstanceClient) Delete() *TransportInstanceDelete {
-	mutation := newTransportInstanceMutation(c.config, OpDelete)
-	return &TransportInstanceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *TransportInstanceClient) DeleteOne(ti *TransportInstance) *TransportInstanceDeleteOne {
-	return c.DeleteOneID(ti.ID)
-}
-
-// DeleteOne returns a builder for deleting the given entity by its id.
-func (c *TransportInstanceClient) DeleteOneID(id int) *TransportInstanceDeleteOne {
-	builder := c.Delete().Where(transportinstance.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &TransportInstanceDeleteOne{builder}
-}
-
-// Query returns a query builder for TransportInstance.
-func (c *TransportInstanceClient) Query() *TransportInstanceQuery {
-	return &TransportInstanceQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a TransportInstance entity by its id.
-func (c *TransportInstanceClient) Get(ctx context.Context, id int) (*TransportInstance, error) {
-	return c.Query().Where(transportinstance.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *TransportInstanceClient) GetX(ctx context.Context, id int) *TransportInstance {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a TransportInstance.
-func (c *TransportInstanceClient) QueryTenant(ti *TransportInstance) *TenantQuery {
-	query := &TenantQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ti.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(transportinstance.Table, transportinstance.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, transportinstance.TenantTable, transportinstance.TenantColumn),
-		)
-		fromV = sqlgraph.Neighbors(ti.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTransportRecipients queries the TransportRecipients edge of a TransportInstance.
-func (c *TransportInstanceClient) QueryTransportRecipients(ti *TransportInstance) *TransportRecipientQuery {
-	query := &TransportRecipientQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := ti.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(transportinstance.Table, transportinstance.FieldID, id),
-			sqlgraph.To(transportrecipient.Table, transportrecipient.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, transportinstance.TransportRecipientsTable, transportinstance.TransportRecipientsColumn),
-		)
-		fromV = sqlgraph.Neighbors(ti.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *TransportInstanceClient) Hooks() []Hook {
-	hooks := c.hooks.TransportInstance
-	return append(hooks[:len(hooks):len(hooks)], transportinstance.Hooks[:]...)
-}
-
-// TransportRecipientClient is a client for the TransportRecipient schema.
-type TransportRecipientClient struct {
-	config
-}
-
-// NewTransportRecipientClient returns a client for the TransportRecipient from the given config.
-func NewTransportRecipientClient(c config) *TransportRecipientClient {
-	return &TransportRecipientClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `transportrecipient.Hooks(f(g(h())))`.
-func (c *TransportRecipientClient) Use(hooks ...Hook) {
-	c.hooks.TransportRecipient = append(c.hooks.TransportRecipient, hooks...)
-}
-
-// Create returns a builder for creating a TransportRecipient entity.
-func (c *TransportRecipientClient) Create() *TransportRecipientCreate {
-	mutation := newTransportRecipientMutation(c.config, OpCreate)
-	return &TransportRecipientCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of TransportRecipient entities.
-func (c *TransportRecipientClient) CreateBulk(builders ...*TransportRecipientCreate) *TransportRecipientCreateBulk {
-	return &TransportRecipientCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for TransportRecipient.
-func (c *TransportRecipientClient) Update() *TransportRecipientUpdate {
-	mutation := newTransportRecipientMutation(c.config, OpUpdate)
-	return &TransportRecipientUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *TransportRecipientClient) UpdateOne(tr *TransportRecipient) *TransportRecipientUpdateOne {
-	mutation := newTransportRecipientMutation(c.config, OpUpdateOne, withTransportRecipient(tr))
-	return &TransportRecipientUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *TransportRecipientClient) UpdateOneID(id int) *TransportRecipientUpdateOne {
-	mutation := newTransportRecipientMutation(c.config, OpUpdateOne, withTransportRecipientID(id))
-	return &TransportRecipientUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for TransportRecipient.
-func (c *TransportRecipientClient) Delete() *TransportRecipientDelete {
-	mutation := newTransportRecipientMutation(c.config, OpDelete)
-	return &TransportRecipientDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *TransportRecipientClient) DeleteOne(tr *TransportRecipient) *TransportRecipientDeleteOne {
-	return c.DeleteOneID(tr.ID)
-}
-
-// DeleteOne returns a builder for deleting the given entity by its id.
-func (c *TransportRecipientClient) DeleteOneID(id int) *TransportRecipientDeleteOne {
-	builder := c.Delete().Where(transportrecipient.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &TransportRecipientDeleteOne{builder}
-}
-
-// Query returns a query builder for TransportRecipient.
-func (c *TransportRecipientClient) Query() *TransportRecipientQuery {
-	return &TransportRecipientQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a TransportRecipient entity by its id.
-func (c *TransportRecipientClient) Get(ctx context.Context, id int) (*TransportRecipient, error) {
-	return c.Query().Where(transportrecipient.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *TransportRecipientClient) GetX(ctx context.Context, id int) *TransportRecipient {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a TransportRecipient.
-func (c *TransportRecipientClient) QueryTenant(tr *TransportRecipient) *TenantQuery {
-	query := &TenantQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := tr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(transportrecipient.Table, transportrecipient.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, transportrecipient.TenantTable, transportrecipient.TenantColumn),
-		)
-		fromV = sqlgraph.Neighbors(tr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTransportInstance queries the TransportInstance edge of a TransportRecipient.
-func (c *TransportRecipientClient) QueryTransportInstance(tr *TransportRecipient) *TransportInstanceQuery {
-	query := &TransportInstanceQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := tr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(transportrecipient.Table, transportrecipient.FieldID, id),
-			sqlgraph.To(transportinstance.Table, transportinstance.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, transportrecipient.TransportInstanceTable, transportrecipient.TransportInstanceColumn),
-		)
-		fromV = sqlgraph.Neighbors(tr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAppRecipient queries the AppRecipient edge of a TransportRecipient.
-func (c *TransportRecipientClient) QueryAppRecipient(tr *TransportRecipient) *AppQuery {
-	query := &AppQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := tr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(transportrecipient.Table, transportrecipient.FieldID, id),
-			sqlgraph.To(app.Table, app.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, transportrecipient.AppRecipientTable, transportrecipient.AppRecipientPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(tr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryGroupRecipient queries the GroupRecipient edge of a TransportRecipient.
-func (c *TransportRecipientClient) QueryGroupRecipient(tr *TransportRecipient) *GroupQuery {
-	query := &GroupQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := tr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(transportrecipient.Table, transportrecipient.FieldID, id),
-			sqlgraph.To(group.Table, group.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, transportrecipient.GroupRecipientTable, transportrecipient.GroupRecipientPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(tr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUserRecipient queries the UserRecipient edge of a TransportRecipient.
-func (c *TransportRecipientClient) QueryUserRecipient(tr *TransportRecipient) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := tr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(transportrecipient.Table, transportrecipient.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, transportrecipient.UserRecipientTable, transportrecipient.UserRecipientPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(tr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *TransportRecipientClient) Hooks() []Hook {
-	hooks := c.hooks.TransportRecipient
-	return append(hooks[:len(hooks):len(hooks)], transportrecipient.Hooks[:]...)
-}
-
-// UserClient is a client for the User schema.
-type UserClient struct {
-	config
-}
-
-// NewUserClient returns a client for the User from the given config.
-func NewUserClient(c config) *UserClient {
-	return &UserClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `user.Hooks(f(g(h())))`.
-func (c *UserClient) Use(hooks ...Hook) {
-	c.hooks.User = append(c.hooks.User, hooks...)
-}
-
-// Create returns a builder for creating a User entity.
-func (c *UserClient) Create() *UserCreate {
-	mutation := newUserMutation(c.config, OpCreate)
-	return &UserCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of User entities.
-func (c *UserClient) CreateBulk(builders ...*UserCreate) *UserCreateBulk {
-	return &UserCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for User.
-func (c *UserClient) Update() *UserUpdate {
-	mutation := newUserMutation(c.config, OpUpdate)
-	return &UserUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
-	mutation := newUserMutation(c.config, OpUpdateOne, withUser(u))
-	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *UserClient) UpdateOneID(id int) *UserUpdateOne {
-	mutation := newUserMutation(c.config, OpUpdateOne, withUserID(id))
-	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for User.
-func (c *UserClient) Delete() *UserDelete {
-	mutation := newUserMutation(c.config, OpDelete)
-	return &UserDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
-	return c.DeleteOneID(u.ID)
-}
-
-// DeleteOne returns a builder for deleting the given entity by its id.
-func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
-	builder := c.Delete().Where(user.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &UserDeleteOne{builder}
-}
-
-// Query returns a query builder for User.
-func (c *UserClient) Query() *UserQuery {
-	return &UserQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a User entity by its id.
-func (c *UserClient) Get(ctx context.Context, id int) (*User, error) {
-	return c.Query().Where(user.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *UserClient) GetX(ctx context.Context, id int) *User {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a User.
-func (c *UserClient) QueryTenant(u *User) *TenantQuery {
-	query := &TenantQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, user.TenantTable, user.TenantColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMetadata queries the metadata edge of a User.
-func (c *UserClient) QueryMetadata(u *User) *UserMetaDataQuery {
-	query := &UserMetaDataQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(usermetadata.Table, usermetadata.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.MetadataTable, user.MetadataColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFilters queries the filters edge of a User.
-func (c *UserClient) QueryFilters(u *User) *FilterQuery {
-	query := &FilterQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(filter.Table, filter.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, user.FiltersTable, user.FiltersPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryGroups queries the groups edge of a User.
-func (c *UserClient) QueryGroups(u *User) *GroupQuery {
-	query := &GroupQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(group.Table, group.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, user.GroupsTable, user.GroupsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTransportRecipients queries the TransportRecipients edge of a User.
-func (c *UserClient) QueryTransportRecipients(u *User) *TransportRecipientQuery {
-	query := &TransportRecipientQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(transportrecipient.Table, transportrecipient.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, user.TransportRecipientsTable, user.TransportRecipientsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *UserClient) Hooks() []Hook {
-	hooks := c.hooks.User
-	return append(hooks[:len(hooks):len(hooks)], user.Hooks[:]...)
-}
-
-// UserMetaDataClient is a client for the UserMetaData schema.
-type UserMetaDataClient struct {
-	config
-}
-
-// NewUserMetaDataClient returns a client for the UserMetaData from the given config.
-func NewUserMetaDataClient(c config) *UserMetaDataClient {
-	return &UserMetaDataClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `usermetadata.Hooks(f(g(h())))`.
-func (c *UserMetaDataClient) Use(hooks ...Hook) {
-	c.hooks.UserMetaData = append(c.hooks.UserMetaData, hooks...)
-}
-
-// Create returns a builder for creating a UserMetaData entity.
-func (c *UserMetaDataClient) Create() *UserMetaDataCreate {
-	mutation := newUserMetaDataMutation(c.config, OpCreate)
-	return &UserMetaDataCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of UserMetaData entities.
-func (c *UserMetaDataClient) CreateBulk(builders ...*UserMetaDataCreate) *UserMetaDataCreateBulk {
-	return &UserMetaDataCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for UserMetaData.
-func (c *UserMetaDataClient) Update() *UserMetaDataUpdate {
-	mutation := newUserMetaDataMutation(c.config, OpUpdate)
-	return &UserMetaDataUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *UserMetaDataClient) UpdateOne(umd *UserMetaData) *UserMetaDataUpdateOne {
-	mutation := newUserMetaDataMutation(c.config, OpUpdateOne, withUserMetaData(umd))
-	return &UserMetaDataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *UserMetaDataClient) UpdateOneID(id int) *UserMetaDataUpdateOne {
-	mutation := newUserMetaDataMutation(c.config, OpUpdateOne, withUserMetaDataID(id))
-	return &UserMetaDataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for UserMetaData.
-func (c *UserMetaDataClient) Delete() *UserMetaDataDelete {
-	mutation := newUserMetaDataMutation(c.config, OpDelete)
-	return &UserMetaDataDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *UserMetaDataClient) DeleteOne(umd *UserMetaData) *UserMetaDataDeleteOne {
-	return c.DeleteOneID(umd.ID)
-}
-
-// DeleteOne returns a builder for deleting the given entity by its id.
-func (c *UserMetaDataClient) DeleteOneID(id int) *UserMetaDataDeleteOne {
-	builder := c.Delete().Where(usermetadata.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &UserMetaDataDeleteOne{builder}
-}
-
-// Query returns a query builder for UserMetaData.
-func (c *UserMetaDataClient) Query() *UserMetaDataQuery {
-	return &UserMetaDataQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a UserMetaData entity by its id.
-func (c *UserMetaDataClient) Get(ctx context.Context, id int) (*UserMetaData, error) {
-	return c.Query().Where(usermetadata.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *UserMetaDataClient) GetX(ctx context.Context, id int) *UserMetaData {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a UserMetaData.
-func (c *UserMetaDataClient) QueryTenant(umd *UserMetaData) *TenantQuery {
-	query := &TenantQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := umd.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(usermetadata.Table, usermetadata.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, usermetadata.TenantTable, usermetadata.TenantColumn),
-		)
-		fromV = sqlgraph.Neighbors(umd.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUser queries the user edge of a UserMetaData.
-func (c *UserMetaDataClient) QueryUser(umd *UserMetaData) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := umd.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(usermetadata.Table, usermetadata.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, usermetadata.UserTable, usermetadata.UserColumn),
-		)
-		fromV = sqlgraph.Neighbors(umd.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *UserMetaDataClient) Hooks() []Hook {
-	hooks := c.hooks.UserMetaData
-	return append(hooks[:len(hooks):len(hooks)], usermetadata.Hooks[:]...)
 }

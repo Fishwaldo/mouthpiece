@@ -1,13 +1,38 @@
 package interfaces
 
+
+
 import (
 	"context"
-
-	"github.com/Fishwaldo/mouthpiece/pkg/log"
+	"time"
 )
 
 //CtxUserValue Context Key to get token.User value from Context
 type CtxUserValue struct{}
+
+//go:generate go run github.com/dmarkham/enumer -type=AppStatus -json -text -sql 
+type AppStatus int
+const (
+	Enabled AppStatus = iota
+	Disabled
+)
+
+func (AppStatus) Values() []string {
+	return AppStatusStrings()
+}
+
+type CacheAble struct {
+	lastUsed time.Time
+}
+
+func (c *CacheAble) GetLastUsed() time.Time {
+	return c.lastUsed
+}
+func (c *CacheAble) SetLastUsed() {
+	c.lastUsed = time.Now()
+}
+
+
 
 type AppDetails struct {
 	ID          uint   `doc:"App ID" gorm:"primary_key"`
@@ -18,11 +43,6 @@ type AppDetails struct {
 	URL         string `doc:"URL of Application" validate:"url"`
 }
 
-// TableName overrides the table name used by UserDetails to `users`
-func (AppDetails) TableName() string {
-	return "apps"
-}
-
 type UserDetails struct {
 	ID        uint   `doc:"User ID" gorm:"primary_key"`
 	Email     string `doc:"Email" validate:"required,email"`
@@ -31,85 +51,62 @@ type UserDetails struct {
 	Password  string `doc:"Password" json:"-" writeOnly:"true" validate:"required"`
 }
 
-// TableName overrides the table name used by UserDetails to `users`
-func (UserDetails) TableName() string {
-	return "users"
-}
-
+//go:generate go run github.com/dmarkham/enumer -type=FilterType -json -text -sql 
+type FilterType int
 const (
-	InvalidFilter = iota
+	InvalidFilter FilterType = iota
 	AppFilter
 	UserFilter
 	TransportFilter
 )
 
-type FilterType int
-
-func (ft FilterType) String() string {
-	return [...]string{"InvalidFilter", "AppFilter", "UserFilter", "TransportFilter"}[ft]
+func (FilterType) Values() []string {
+	return FilterTypeStrings()
 }
 
-type MPContext struct {
-	context.Context
-}
 
 type ctxKey struct {
 	key string
 }
 
 var (
-	userctxKey      = ctxKey{key: "user"}
-	appctxKey       = ctxKey{key: "app"}
-	groupctxKey     = ctxKey{key: "group"}
-	filterctxKey    = ctxKey{key: "filter"}
-	transportctxKey = ctxKey{key: "transport"}
+	MpctxKey      = ctxKey{key: "mp"}
 )
 
-func NewContext(ctx context.Context) *MPContext {
-	return &MPContext{ctx}
+type MpService interface {
+	GetUserService() UserServiceI
+	GetAppService() AppServiceI
+	GetGroupService() GroupServiceI
+	GetFilterService() FilterServiceI
+	GetTransportService() TransportServiceI
 }
 
-func (c *MPContext) SetUserService(usersvc UserServicierI) {
-	c.Context = context.WithValue(c.Context, userctxKey, usersvc)
+
+func GetUserService(ctx context.Context) UserServiceI {
+	return ctx.Value(MpctxKey).(MpService).GetUserService()
 }
 
-func (c *MPContext) GetUserService() UserServicierI {
-	return c.Context.Value(userctxKey).(UserServicierI)
+func GetAppService(ctx context.Context) AppServiceI {
+	return ctx.Value(MpctxKey).(MpService).GetAppService()
 }
 
-func (c *MPContext) SetAppService(appsvc AppServiceI) {
-	c.Context = context.WithValue(c.Context, appctxKey, appsvc)
+func GetGroupService(ctx context.Context) GroupServiceI {
+	return ctx.Value(MpctxKey).(MpService).GetGroupService()
 }
 
-func (c *MPContext) GetAppService() AppServiceI {
-	return c.Context.Value(appctxKey).(AppServiceI)
+func GetFilterService(ctx context.Context) FilterServiceI {
+	return ctx.Value((MpctxKey)).(MpService).GetFilterService()
 }
 
-func (c *MPContext) SetGroupService(groupsvc GroupServiceI) {
-	c.Context = context.WithValue(c.Context, groupctxKey, groupsvc)
+func GetTransportService(ctx context.Context) TransportServiceI {
+	return ctx.Value(MpctxKey).(MpService).GetTransportService()
 }
 
-func (c *MPContext) GetGroupService() GroupServiceI {
-	return c.Context.Value(groupctxKey).(GroupServiceI)
-}
-
-func (c *MPContext) SetFilterService(filtersvc FilterServiceI) {
-	c.Context = context.WithValue(c.Context, filterctxKey, filtersvc)
-}
-
-func (c *MPContext) GetFilterService() FilterServiceI {
-	if c.Context.Value((filterctxKey)).(FilterServiceI) != nil {
-		return c.Context.Value((filterctxKey)).(FilterServiceI)
-	} else {
-		log.Log.Error(nil, "Filter service is nil")
-		return nil
-	}
-}
-
-func (c *MPContext) SetTransportService(tps TransportInstance) {
-	c.Context = context.WithValue(c.Context, transportctxKey, tps)
-}
-
-func (c *MPContext) GetTransportService() TransportServiceI {
-	return c.Context.Value(transportctxKey).(TransportServiceI)
-}
+const (
+	MD_AppName = "X-AppName"
+	MD_AppDescription = "X-AppDescription"
+	MD_AppURL = "X-AppURL"
+	MD_AppIcon = "X-AppIcon"
+	MD_UserEmail = "X-UserEmail"
+	MD_UserName = "X-UserName"
+)

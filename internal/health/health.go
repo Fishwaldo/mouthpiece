@@ -5,7 +5,7 @@ import (
 	_ "fmt"
 	"time"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+//	"github.com/Fishwaldo/mouthpiece/pkg/db"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 	"github.com/alexliesenfeld/health"
 	"github.com/go-logr/logr"
@@ -27,17 +27,17 @@ func StartHealth() {
 				URL: "https://www.google.com/",
 			}),
 		}),
-		health.WithCheck(health.Check{
-			Name: "Database",
-			Check: func(ctx context.Context) error {
-				sqlDB, err := db.Db.DB()
-				if err != nil {
-					return err
-				}
+		// health.WithCheck(health.Check{
+		// 	Name: "Database",
+		// 	Check: func(ctx context.Context) error {
+		// 		sqlDB, err := db.DbClient.DB()
+		// 		if err != nil {
+		// 			return err
+		// 		}
 
-				return sqlDB.PingContext(ctx)
-			},
-		}),
+		// 		return sqlDB.PingContext(ctx)
+		// 	},
+		// }),
 		health.WithInterceptors(BasicLogger()),
 	)
 	HealthChecker.Start()

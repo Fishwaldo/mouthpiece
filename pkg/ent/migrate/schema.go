@@ -32,157 +32,253 @@ import (
 )
 
 var (
-	// AppsColumns holds the columns for the "apps" table.
-	AppsColumns = []*schema.Column{
+	// DbAppsColumns holds the columns for the "db_apps" table.
+	DbAppsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"enabled", "disabled"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"Enabled", "Disabled"}},
 		{Name: "description", Type: field.TypeString},
-		{Name: "icon", Type: field.TypeString},
-		{Name: "url", Type: field.TypeString},
+		{Name: "icon", Type: field.TypeString, Nullable: true},
+		{Name: "url", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
-	// AppsTable holds the schema information for the "apps" table.
-	AppsTable = &schema.Table{
-		Name:       "apps",
-		Columns:    AppsColumns,
-		PrimaryKey: []*schema.Column{AppsColumns[0]},
+	// DbAppsTable holds the schema information for the "db_apps" table.
+	DbAppsTable = &schema.Table{
+		Name:       "db_apps",
+		Columns:    DbAppsColumns,
+		PrimaryKey: []*schema.Column{DbAppsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "apps_tenants_tenant",
-				Columns:    []*schema.Column{AppsColumns[6]},
+				Symbol:     "db_apps_tenants_tenant",
+				Columns:    []*schema.Column{DbAppsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 	}
-	// FiltersColumns holds the columns for the "filters" table.
-	FiltersColumns = []*schema.Column{
+	// DbFiltersColumns holds the columns for the "db_filters" table.
+	DbFiltersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"InvalidFilter", "AppFilter", "UserFilter", "TransportFilter"}, Default: "InvalidFilter"},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"InvalidFilter", "AppFilter", "UserFilter", "TransportFilter"}},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
 		{Name: "filter_impl", Type: field.TypeString},
+		{Name: "config", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
-	// FiltersTable holds the schema information for the "filters" table.
-	FiltersTable = &schema.Table{
-		Name:       "filters",
-		Columns:    FiltersColumns,
-		PrimaryKey: []*schema.Column{FiltersColumns[0]},
+	// DbFiltersTable holds the schema information for the "db_filters" table.
+	DbFiltersTable = &schema.Table{
+		Name:       "db_filters",
+		Columns:    DbFiltersColumns,
+		PrimaryKey: []*schema.Column{DbFiltersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "filters_tenants_tenant",
-				Columns:    []*schema.Column{FiltersColumns[6]},
+				Symbol:     "db_filters_tenants_tenant",
+				Columns:    []*schema.Column{DbFiltersColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 	}
-	// FilterConfigsColumns holds the columns for the "filter_configs" table.
-	FilterConfigsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Size: 2147483647},
-		{Name: "value", Type: field.TypeString, Size: 2147483647},
-		{Name: "filter_config", Type: field.TypeInt},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// FilterConfigsTable holds the schema information for the "filter_configs" table.
-	FilterConfigsTable = &schema.Table{
-		Name:       "filter_configs",
-		Columns:    FilterConfigsColumns,
-		PrimaryKey: []*schema.Column{FilterConfigsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "filter_configs_filters_config",
-				Columns:    []*schema.Column{FilterConfigsColumns[3]},
-				RefColumns: []*schema.Column{FiltersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "filter_configs_tenants_tenant",
-				Columns:    []*schema.Column{FilterConfigsColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
-	// GroupsColumns holds the columns for the "groups" table.
-	GroupsColumns = []*schema.Column{
+	// DbGroupsColumns holds the columns for the "db_groups" table.
+	DbGroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "description", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
-	// GroupsTable holds the schema information for the "groups" table.
-	GroupsTable = &schema.Table{
-		Name:       "groups",
-		Columns:    GroupsColumns,
-		PrimaryKey: []*schema.Column{GroupsColumns[0]},
+	// DbGroupsTable holds the schema information for the "db_groups" table.
+	DbGroupsTable = &schema.Table{
+		Name:       "db_groups",
+		Columns:    DbGroupsColumns,
+		PrimaryKey: []*schema.Column{DbGroupsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "groups_tenants_tenant",
-				Columns:    []*schema.Column{GroupsColumns[3]},
+				Symbol:     "db_groups_tenants_tenant",
+				Columns:    []*schema.Column{DbGroupsColumns[3]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 	}
-	// MessagesColumns holds the columns for the "messages" table.
-	MessagesColumns = []*schema.Column{
+	// DbMessagesColumns holds the columns for the "db_messages" table.
+	DbMessagesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "message", Type: field.TypeString, Size: 2147483647},
 		{Name: "short_msg", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "topic", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "severity", Type: field.TypeInt, Nullable: true, Default: 3},
 		{Name: "timestamp", Type: field.TypeTime},
-		{Name: "app_messages", Type: field.TypeInt},
+		{Name: "db_app_messages", Type: field.TypeInt},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
-	// MessagesTable holds the schema information for the "messages" table.
-	MessagesTable = &schema.Table{
-		Name:       "messages",
-		Columns:    MessagesColumns,
-		PrimaryKey: []*schema.Column{MessagesColumns[0]},
+	// DbMessagesTable holds the schema information for the "db_messages" table.
+	DbMessagesTable = &schema.Table{
+		Name:       "db_messages",
+		Columns:    DbMessagesColumns,
+		PrimaryKey: []*schema.Column{DbMessagesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "messages_apps_messages",
-				Columns:    []*schema.Column{MessagesColumns[6]},
-				RefColumns: []*schema.Column{AppsColumns[0]},
+				Symbol:     "db_messages_db_apps_messages",
+				Columns:    []*schema.Column{DbMessagesColumns[6]},
+				RefColumns: []*schema.Column{DbAppsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "messages_tenants_tenant",
-				Columns:    []*schema.Column{MessagesColumns[7]},
+				Symbol:     "db_messages_tenants_tenant",
+				Columns:    []*schema.Column{DbMessagesColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 	}
-	// MsgVarsColumns holds the columns for the "msg_vars" table.
-	MsgVarsColumns = []*schema.Column{
+	// DbMessageFieldsColumns holds the columns for the "db_message_fields" table.
+	DbMessageFieldsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true, Size: 2147483647},
 		{Name: "value", Type: field.TypeString, Size: 2147483647},
-		{Name: "message_vars", Type: field.TypeUUID},
+		{Name: "db_message_fields", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
-	// MsgVarsTable holds the schema information for the "msg_vars" table.
-	MsgVarsTable = &schema.Table{
-		Name:       "msg_vars",
-		Columns:    MsgVarsColumns,
-		PrimaryKey: []*schema.Column{MsgVarsColumns[0]},
+	// DbMessageFieldsTable holds the schema information for the "db_message_fields" table.
+	DbMessageFieldsTable = &schema.Table{
+		Name:       "db_message_fields",
+		Columns:    DbMessageFieldsColumns,
+		PrimaryKey: []*schema.Column{DbMessageFieldsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "msg_vars_messages_vars",
-				Columns:    []*schema.Column{MsgVarsColumns[3]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				Symbol:     "db_message_fields_db_messages_fields",
+				Columns:    []*schema.Column{DbMessageFieldsColumns[3]},
+				RefColumns: []*schema.Column{DbMessagesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "msg_vars_tenants_tenant",
-				Columns:    []*schema.Column{MsgVarsColumns[4]},
+				Symbol:     "db_message_fields_tenants_tenant",
+				Columns:    []*schema.Column{DbMessageFieldsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// DbTransportInstancesColumns holds the columns for the "db_transport_instances" table.
+	DbTransportInstancesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "config", Type: field.TypeString},
+		{Name: "transport_provider", Type: field.TypeString},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// DbTransportInstancesTable holds the schema information for the "db_transport_instances" table.
+	DbTransportInstancesTable = &schema.Table{
+		Name:       "db_transport_instances",
+		Columns:    DbTransportInstancesColumns,
+		PrimaryKey: []*schema.Column{DbTransportInstancesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "db_transport_instances_tenants_tenant",
+				Columns:    []*schema.Column{DbTransportInstancesColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// DbTransportRecipientsColumns holds the columns for the "db_transport_recipients" table.
+	DbTransportRecipientsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "config", Type: field.TypeString},
+		{Name: "db_group_transport_recipients", Type: field.TypeInt, Nullable: true},
+		{Name: "db_transport_instances_transport_recipients", Type: field.TypeInt},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "db_user_transport_recipients", Type: field.TypeInt, Nullable: true},
+	}
+	// DbTransportRecipientsTable holds the schema information for the "db_transport_recipients" table.
+	DbTransportRecipientsTable = &schema.Table{
+		Name:       "db_transport_recipients",
+		Columns:    DbTransportRecipientsColumns,
+		PrimaryKey: []*schema.Column{DbTransportRecipientsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "db_transport_recipients_db_groups_TransportRecipients",
+				Columns:    []*schema.Column{DbTransportRecipientsColumns[4]},
+				RefColumns: []*schema.Column{DbGroupsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "db_transport_recipients_db_transport_instances_TransportRecipients",
+				Columns:    []*schema.Column{DbTransportRecipientsColumns[5]},
+				RefColumns: []*schema.Column{DbTransportInstancesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "db_transport_recipients_tenants_tenant",
+				Columns:    []*schema.Column{DbTransportRecipientsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "db_transport_recipients_db_users_TransportRecipients",
+				Columns:    []*schema.Column{DbTransportRecipientsColumns[7]},
+				RefColumns: []*schema.Column{DbUsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// DbUsersColumns holds the columns for the "db_users" table.
+	DbUsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "email", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// DbUsersTable holds the schema information for the "db_users" table.
+	DbUsersTable = &schema.Table{
+		Name:       "db_users",
+		Columns:    DbUsersColumns,
+		PrimaryKey: []*schema.Column{DbUsersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "db_users_tenants_tenant",
+				Columns:    []*schema.Column{DbUsersColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dbuser_email_tenant_id",
+				Unique:  true,
+				Columns: []*schema.Column{DbUsersColumns[1], DbUsersColumns[4]},
+			},
+		},
+	}
+	// DbUserMetaDataColumns holds the columns for the "db_user_meta_data" table.
+	DbUserMetaDataColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 2147483647},
+		{Name: "value", Type: field.TypeString, Size: 2147483647},
+		{Name: "db_user_metadata", Type: field.TypeInt},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// DbUserMetaDataTable holds the schema information for the "db_user_meta_data" table.
+	DbUserMetaDataTable = &schema.Table{
+		Name:       "db_user_meta_data",
+		Columns:    DbUserMetaDataColumns,
+		PrimaryKey: []*schema.Column{DbUserMetaDataColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "db_user_meta_data_db_users_metadata",
+				Columns:    []*schema.Column{DbUserMetaDataColumns[3]},
+				RefColumns: []*schema.Column{DbUsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "db_user_meta_data_tenants_tenant",
+				Columns:    []*schema.Column{DbUserMetaDataColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -199,366 +295,175 @@ var (
 		Columns:    TenantsColumns,
 		PrimaryKey: []*schema.Column{TenantsColumns[0]},
 	}
-	// TransportInstancesColumns holds the columns for the "transport_instances" table.
-	TransportInstancesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "description", Type: field.TypeString},
-		{Name: "tenant_id", Type: field.TypeInt},
+	// DbAppFiltersColumns holds the columns for the "db_app_filters" table.
+	DbAppFiltersColumns = []*schema.Column{
+		{Name: "db_app_id", Type: field.TypeInt},
+		{Name: "db_filter_id", Type: field.TypeInt},
 	}
-	// TransportInstancesTable holds the schema information for the "transport_instances" table.
-	TransportInstancesTable = &schema.Table{
-		Name:       "transport_instances",
-		Columns:    TransportInstancesColumns,
-		PrimaryKey: []*schema.Column{TransportInstancesColumns[0]},
+	// DbAppFiltersTable holds the schema information for the "db_app_filters" table.
+	DbAppFiltersTable = &schema.Table{
+		Name:       "db_app_filters",
+		Columns:    DbAppFiltersColumns,
+		PrimaryKey: []*schema.Column{DbAppFiltersColumns[0], DbAppFiltersColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "transport_instances_tenants_tenant",
-				Columns:    []*schema.Column{TransportInstancesColumns[3]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
-	// TransportRecipientsColumns holds the columns for the "transport_recipients" table.
-	TransportRecipientsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "description", Type: field.TypeString},
-		{Name: "transport_instance_transport_recipients", Type: field.TypeInt},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// TransportRecipientsTable holds the schema information for the "transport_recipients" table.
-	TransportRecipientsTable = &schema.Table{
-		Name:       "transport_recipients",
-		Columns:    TransportRecipientsColumns,
-		PrimaryKey: []*schema.Column{TransportRecipientsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "transport_recipients_transport_instances_TransportRecipients",
-				Columns:    []*schema.Column{TransportRecipientsColumns[3]},
-				RefColumns: []*schema.Column{TransportInstancesColumns[0]},
+				Symbol:     "db_app_filters_db_app_id",
+				Columns:    []*schema.Column{DbAppFiltersColumns[0]},
+				RefColumns: []*schema.Column{DbAppsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "transport_recipients_tenants_tenant",
-				Columns:    []*schema.Column{TransportRecipientsColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
-	// UsersColumns holds the columns for the "users" table.
-	UsersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "email", Type: field.TypeString},
-		{Name: "name", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// UsersTable holds the schema information for the "users" table.
-	UsersTable = &schema.Table{
-		Name:       "users",
-		Columns:    UsersColumns,
-		PrimaryKey: []*schema.Column{UsersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "users_tenants_tenant",
-				Columns:    []*schema.Column{UsersColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "user_email_tenant_id",
-				Unique:  true,
-				Columns: []*schema.Column{UsersColumns[1], UsersColumns[4]},
-			},
-		},
-	}
-	// UserMetaDataColumns holds the columns for the "user_meta_data" table.
-	UserMetaDataColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Size: 2147483647},
-		{Name: "value", Type: field.TypeString, Size: 2147483647},
-		{Name: "user_metadata", Type: field.TypeInt},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// UserMetaDataTable holds the schema information for the "user_meta_data" table.
-	UserMetaDataTable = &schema.Table{
-		Name:       "user_meta_data",
-		Columns:    UserMetaDataColumns,
-		PrimaryKey: []*schema.Column{UserMetaDataColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_meta_data_users_metadata",
-				Columns:    []*schema.Column{UserMetaDataColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "user_meta_data_tenants_tenant",
-				Columns:    []*schema.Column{UserMetaDataColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
-	// AppFiltersColumns holds the columns for the "app_filters" table.
-	AppFiltersColumns = []*schema.Column{
-		{Name: "app_id", Type: field.TypeInt},
-		{Name: "filter_id", Type: field.TypeInt},
-	}
-	// AppFiltersTable holds the schema information for the "app_filters" table.
-	AppFiltersTable = &schema.Table{
-		Name:       "app_filters",
-		Columns:    AppFiltersColumns,
-		PrimaryKey: []*schema.Column{AppFiltersColumns[0], AppFiltersColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "app_filters_app_id",
-				Columns:    []*schema.Column{AppFiltersColumns[0]},
-				RefColumns: []*schema.Column{AppsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "app_filters_filter_id",
-				Columns:    []*schema.Column{AppFiltersColumns[1]},
-				RefColumns: []*schema.Column{FiltersColumns[0]},
+				Symbol:     "db_app_filters_db_filter_id",
+				Columns:    []*schema.Column{DbAppFiltersColumns[1]},
+				RefColumns: []*schema.Column{DbFiltersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// AppGroupsColumns holds the columns for the "app_groups" table.
-	AppGroupsColumns = []*schema.Column{
-		{Name: "app_id", Type: field.TypeInt},
-		{Name: "group_id", Type: field.TypeInt},
+	// DbAppGroupsColumns holds the columns for the "db_app_groups" table.
+	DbAppGroupsColumns = []*schema.Column{
+		{Name: "db_app_id", Type: field.TypeInt},
+		{Name: "db_group_id", Type: field.TypeInt},
 	}
-	// AppGroupsTable holds the schema information for the "app_groups" table.
-	AppGroupsTable = &schema.Table{
-		Name:       "app_groups",
-		Columns:    AppGroupsColumns,
-		PrimaryKey: []*schema.Column{AppGroupsColumns[0], AppGroupsColumns[1]},
+	// DbAppGroupsTable holds the schema information for the "db_app_groups" table.
+	DbAppGroupsTable = &schema.Table{
+		Name:       "db_app_groups",
+		Columns:    DbAppGroupsColumns,
+		PrimaryKey: []*schema.Column{DbAppGroupsColumns[0], DbAppGroupsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "app_groups_app_id",
-				Columns:    []*schema.Column{AppGroupsColumns[0]},
-				RefColumns: []*schema.Column{AppsColumns[0]},
+				Symbol:     "db_app_groups_db_app_id",
+				Columns:    []*schema.Column{DbAppGroupsColumns[0]},
+				RefColumns: []*schema.Column{DbAppsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "app_groups_group_id",
-				Columns:    []*schema.Column{AppGroupsColumns[1]},
-				RefColumns: []*schema.Column{GroupsColumns[0]},
+				Symbol:     "db_app_groups_db_group_id",
+				Columns:    []*schema.Column{DbAppGroupsColumns[1]},
+				RefColumns: []*schema.Column{DbGroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// AppTransportRecipientsColumns holds the columns for the "app_TransportRecipients" table.
-	AppTransportRecipientsColumns = []*schema.Column{
-		{Name: "app_id", Type: field.TypeInt},
-		{Name: "transport_recipient_id", Type: field.TypeInt},
+	// DbFilterGroupsColumns holds the columns for the "db_filter_groups" table.
+	DbFilterGroupsColumns = []*schema.Column{
+		{Name: "db_filter_id", Type: field.TypeInt},
+		{Name: "db_group_id", Type: field.TypeInt},
 	}
-	// AppTransportRecipientsTable holds the schema information for the "app_TransportRecipients" table.
-	AppTransportRecipientsTable = &schema.Table{
-		Name:       "app_TransportRecipients",
-		Columns:    AppTransportRecipientsColumns,
-		PrimaryKey: []*schema.Column{AppTransportRecipientsColumns[0], AppTransportRecipientsColumns[1]},
+	// DbFilterGroupsTable holds the schema information for the "db_filter_groups" table.
+	DbFilterGroupsTable = &schema.Table{
+		Name:       "db_filter_groups",
+		Columns:    DbFilterGroupsColumns,
+		PrimaryKey: []*schema.Column{DbFilterGroupsColumns[0], DbFilterGroupsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "app_TransportRecipients_app_id",
-				Columns:    []*schema.Column{AppTransportRecipientsColumns[0]},
-				RefColumns: []*schema.Column{AppsColumns[0]},
+				Symbol:     "db_filter_groups_db_filter_id",
+				Columns:    []*schema.Column{DbFilterGroupsColumns[0]},
+				RefColumns: []*schema.Column{DbFiltersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "app_TransportRecipients_transport_recipient_id",
-				Columns:    []*schema.Column{AppTransportRecipientsColumns[1]},
-				RefColumns: []*schema.Column{TransportRecipientsColumns[0]},
+				Symbol:     "db_filter_groups_db_group_id",
+				Columns:    []*schema.Column{DbFilterGroupsColumns[1]},
+				RefColumns: []*schema.Column{DbGroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// FilterGroupsColumns holds the columns for the "filter_groups" table.
-	FilterGroupsColumns = []*schema.Column{
-		{Name: "filter_id", Type: field.TypeInt},
-		{Name: "group_id", Type: field.TypeInt},
+	// DbUserFiltersColumns holds the columns for the "db_user_filters" table.
+	DbUserFiltersColumns = []*schema.Column{
+		{Name: "db_user_id", Type: field.TypeInt},
+		{Name: "db_filter_id", Type: field.TypeInt},
 	}
-	// FilterGroupsTable holds the schema information for the "filter_groups" table.
-	FilterGroupsTable = &schema.Table{
-		Name:       "filter_groups",
-		Columns:    FilterGroupsColumns,
-		PrimaryKey: []*schema.Column{FilterGroupsColumns[0], FilterGroupsColumns[1]},
+	// DbUserFiltersTable holds the schema information for the "db_user_filters" table.
+	DbUserFiltersTable = &schema.Table{
+		Name:       "db_user_filters",
+		Columns:    DbUserFiltersColumns,
+		PrimaryKey: []*schema.Column{DbUserFiltersColumns[0], DbUserFiltersColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "filter_groups_filter_id",
-				Columns:    []*schema.Column{FilterGroupsColumns[0]},
-				RefColumns: []*schema.Column{FiltersColumns[0]},
+				Symbol:     "db_user_filters_db_user_id",
+				Columns:    []*schema.Column{DbUserFiltersColumns[0]},
+				RefColumns: []*schema.Column{DbUsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "filter_groups_group_id",
-				Columns:    []*schema.Column{FilterGroupsColumns[1]},
-				RefColumns: []*schema.Column{GroupsColumns[0]},
+				Symbol:     "db_user_filters_db_filter_id",
+				Columns:    []*schema.Column{DbUserFiltersColumns[1]},
+				RefColumns: []*schema.Column{DbFiltersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// GroupTransportRecipientsColumns holds the columns for the "group_TransportRecipients" table.
-	GroupTransportRecipientsColumns = []*schema.Column{
-		{Name: "group_id", Type: field.TypeInt},
-		{Name: "transport_recipient_id", Type: field.TypeInt},
+	// DbUserGroupsColumns holds the columns for the "db_user_groups" table.
+	DbUserGroupsColumns = []*schema.Column{
+		{Name: "db_user_id", Type: field.TypeInt},
+		{Name: "db_group_id", Type: field.TypeInt},
 	}
-	// GroupTransportRecipientsTable holds the schema information for the "group_TransportRecipients" table.
-	GroupTransportRecipientsTable = &schema.Table{
-		Name:       "group_TransportRecipients",
-		Columns:    GroupTransportRecipientsColumns,
-		PrimaryKey: []*schema.Column{GroupTransportRecipientsColumns[0], GroupTransportRecipientsColumns[1]},
+	// DbUserGroupsTable holds the schema information for the "db_user_groups" table.
+	DbUserGroupsTable = &schema.Table{
+		Name:       "db_user_groups",
+		Columns:    DbUserGroupsColumns,
+		PrimaryKey: []*schema.Column{DbUserGroupsColumns[0], DbUserGroupsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "group_TransportRecipients_group_id",
-				Columns:    []*schema.Column{GroupTransportRecipientsColumns[0]},
-				RefColumns: []*schema.Column{GroupsColumns[0]},
+				Symbol:     "db_user_groups_db_user_id",
+				Columns:    []*schema.Column{DbUserGroupsColumns[0]},
+				RefColumns: []*schema.Column{DbUsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "group_TransportRecipients_transport_recipient_id",
-				Columns:    []*schema.Column{GroupTransportRecipientsColumns[1]},
-				RefColumns: []*schema.Column{TransportRecipientsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// UserFiltersColumns holds the columns for the "user_filters" table.
-	UserFiltersColumns = []*schema.Column{
-		{Name: "user_id", Type: field.TypeInt},
-		{Name: "filter_id", Type: field.TypeInt},
-	}
-	// UserFiltersTable holds the schema information for the "user_filters" table.
-	UserFiltersTable = &schema.Table{
-		Name:       "user_filters",
-		Columns:    UserFiltersColumns,
-		PrimaryKey: []*schema.Column{UserFiltersColumns[0], UserFiltersColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_filters_user_id",
-				Columns:    []*schema.Column{UserFiltersColumns[0]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "user_filters_filter_id",
-				Columns:    []*schema.Column{UserFiltersColumns[1]},
-				RefColumns: []*schema.Column{FiltersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// UserGroupsColumns holds the columns for the "user_groups" table.
-	UserGroupsColumns = []*schema.Column{
-		{Name: "user_id", Type: field.TypeInt},
-		{Name: "group_id", Type: field.TypeInt},
-	}
-	// UserGroupsTable holds the schema information for the "user_groups" table.
-	UserGroupsTable = &schema.Table{
-		Name:       "user_groups",
-		Columns:    UserGroupsColumns,
-		PrimaryKey: []*schema.Column{UserGroupsColumns[0], UserGroupsColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_groups_user_id",
-				Columns:    []*schema.Column{UserGroupsColumns[0]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "user_groups_group_id",
-				Columns:    []*schema.Column{UserGroupsColumns[1]},
-				RefColumns: []*schema.Column{GroupsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// UserTransportRecipientsColumns holds the columns for the "user_TransportRecipients" table.
-	UserTransportRecipientsColumns = []*schema.Column{
-		{Name: "user_id", Type: field.TypeInt},
-		{Name: "transport_recipient_id", Type: field.TypeInt},
-	}
-	// UserTransportRecipientsTable holds the schema information for the "user_TransportRecipients" table.
-	UserTransportRecipientsTable = &schema.Table{
-		Name:       "user_TransportRecipients",
-		Columns:    UserTransportRecipientsColumns,
-		PrimaryKey: []*schema.Column{UserTransportRecipientsColumns[0], UserTransportRecipientsColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_TransportRecipients_user_id",
-				Columns:    []*schema.Column{UserTransportRecipientsColumns[0]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "user_TransportRecipients_transport_recipient_id",
-				Columns:    []*schema.Column{UserTransportRecipientsColumns[1]},
-				RefColumns: []*schema.Column{TransportRecipientsColumns[0]},
+				Symbol:     "db_user_groups_db_group_id",
+				Columns:    []*schema.Column{DbUserGroupsColumns[1]},
+				RefColumns: []*schema.Column{DbGroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		AppsTable,
-		FiltersTable,
-		FilterConfigsTable,
-		GroupsTable,
-		MessagesTable,
-		MsgVarsTable,
+		DbAppsTable,
+		DbFiltersTable,
+		DbGroupsTable,
+		DbMessagesTable,
+		DbMessageFieldsTable,
+		DbTransportInstancesTable,
+		DbTransportRecipientsTable,
+		DbUsersTable,
+		DbUserMetaDataTable,
 		TenantsTable,
-		TransportInstancesTable,
-		TransportRecipientsTable,
-		UsersTable,
-		UserMetaDataTable,
-		AppFiltersTable,
-		AppGroupsTable,
-		AppTransportRecipientsTable,
-		FilterGroupsTable,
-		GroupTransportRecipientsTable,
-		UserFiltersTable,
-		UserGroupsTable,
-		UserTransportRecipientsTable,
+		DbAppFiltersTable,
+		DbAppGroupsTable,
+		DbFilterGroupsTable,
+		DbUserFiltersTable,
+		DbUserGroupsTable,
 	}
 )
 
 func init() {
-	AppsTable.ForeignKeys[0].RefTable = TenantsTable
-	FiltersTable.ForeignKeys[0].RefTable = TenantsTable
-	FilterConfigsTable.ForeignKeys[0].RefTable = FiltersTable
-	FilterConfigsTable.ForeignKeys[1].RefTable = TenantsTable
-	GroupsTable.ForeignKeys[0].RefTable = TenantsTable
-	MessagesTable.ForeignKeys[0].RefTable = AppsTable
-	MessagesTable.ForeignKeys[1].RefTable = TenantsTable
-	MsgVarsTable.ForeignKeys[0].RefTable = MessagesTable
-	MsgVarsTable.ForeignKeys[1].RefTable = TenantsTable
-	TransportInstancesTable.ForeignKeys[0].RefTable = TenantsTable
-	TransportRecipientsTable.ForeignKeys[0].RefTable = TransportInstancesTable
-	TransportRecipientsTable.ForeignKeys[1].RefTable = TenantsTable
-	UsersTable.ForeignKeys[0].RefTable = TenantsTable
-	UserMetaDataTable.ForeignKeys[0].RefTable = UsersTable
-	UserMetaDataTable.ForeignKeys[1].RefTable = TenantsTable
-	AppFiltersTable.ForeignKeys[0].RefTable = AppsTable
-	AppFiltersTable.ForeignKeys[1].RefTable = FiltersTable
-	AppGroupsTable.ForeignKeys[0].RefTable = AppsTable
-	AppGroupsTable.ForeignKeys[1].RefTable = GroupsTable
-	AppTransportRecipientsTable.ForeignKeys[0].RefTable = AppsTable
-	AppTransportRecipientsTable.ForeignKeys[1].RefTable = TransportRecipientsTable
-	FilterGroupsTable.ForeignKeys[0].RefTable = FiltersTable
-	FilterGroupsTable.ForeignKeys[1].RefTable = GroupsTable
-	GroupTransportRecipientsTable.ForeignKeys[0].RefTable = GroupsTable
-	GroupTransportRecipientsTable.ForeignKeys[1].RefTable = TransportRecipientsTable
-	UserFiltersTable.ForeignKeys[0].RefTable = UsersTable
-	UserFiltersTable.ForeignKeys[1].RefTable = FiltersTable
-	UserGroupsTable.ForeignKeys[0].RefTable = UsersTable
-	UserGroupsTable.ForeignKeys[1].RefTable = GroupsTable
-	UserTransportRecipientsTable.ForeignKeys[0].RefTable = UsersTable
-	UserTransportRecipientsTable.ForeignKeys[1].RefTable = TransportRecipientsTable
+	DbAppsTable.ForeignKeys[0].RefTable = TenantsTable
+	DbFiltersTable.ForeignKeys[0].RefTable = TenantsTable
+	DbGroupsTable.ForeignKeys[0].RefTable = TenantsTable
+	DbMessagesTable.ForeignKeys[0].RefTable = DbAppsTable
+	DbMessagesTable.ForeignKeys[1].RefTable = TenantsTable
+	DbMessageFieldsTable.ForeignKeys[0].RefTable = DbMessagesTable
+	DbMessageFieldsTable.ForeignKeys[1].RefTable = TenantsTable
+	DbTransportInstancesTable.ForeignKeys[0].RefTable = TenantsTable
+	DbTransportRecipientsTable.ForeignKeys[0].RefTable = DbGroupsTable
+	DbTransportRecipientsTable.ForeignKeys[1].RefTable = DbTransportInstancesTable
+	DbTransportRecipientsTable.ForeignKeys[2].RefTable = TenantsTable
+	DbTransportRecipientsTable.ForeignKeys[3].RefTable = DbUsersTable
+	DbUsersTable.ForeignKeys[0].RefTable = TenantsTable
+	DbUserMetaDataTable.ForeignKeys[0].RefTable = DbUsersTable
+	DbUserMetaDataTable.ForeignKeys[1].RefTable = TenantsTable
+	DbAppFiltersTable.ForeignKeys[0].RefTable = DbAppsTable
+	DbAppFiltersTable.ForeignKeys[1].RefTable = DbFiltersTable
+	DbAppGroupsTable.ForeignKeys[0].RefTable = DbAppsTable
+	DbAppGroupsTable.ForeignKeys[1].RefTable = DbGroupsTable
+	DbFilterGroupsTable.ForeignKeys[0].RefTable = DbFiltersTable
+	DbFilterGroupsTable.ForeignKeys[1].RefTable = DbGroupsTable
+	DbUserFiltersTable.ForeignKeys[0].RefTable = DbUsersTable
+	DbUserFiltersTable.ForeignKeys[1].RefTable = DbFiltersTable
+	DbUserGroupsTable.ForeignKeys[0].RefTable = DbUsersTable
+	DbUserGroupsTable.ForeignKeys[1].RefTable = DbGroupsTable
 }

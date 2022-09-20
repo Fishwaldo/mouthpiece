@@ -30,35 +30,32 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// App is the predicate function for app builders.
-type App func(*sql.Selector)
+// DbApp is the predicate function for dbapp builders.
+type DbApp func(*sql.Selector)
 
-// Filter is the predicate function for filter builders.
-type Filter func(*sql.Selector)
+// DbFilter is the predicate function for dbfilter builders.
+type DbFilter func(*sql.Selector)
 
-// FilterConfig is the predicate function for filterconfig builders.
-type FilterConfig func(*sql.Selector)
+// DbGroup is the predicate function for dbgroup builders.
+type DbGroup func(*sql.Selector)
 
-// Group is the predicate function for group builders.
-type Group func(*sql.Selector)
+// DbMessage is the predicate function for dbmessage builders.
+type DbMessage func(*sql.Selector)
 
-// Message is the predicate function for message builders.
-type Message func(*sql.Selector)
+// DbMessageFields is the predicate function for dbmessagefields builders.
+type DbMessageFields func(*sql.Selector)
 
-// MsgVar is the predicate function for msgvar builders.
-type MsgVar func(*sql.Selector)
+// DbTransportInstances is the predicate function for dbtransportinstances builders.
+type DbTransportInstances func(*sql.Selector)
+
+// DbTransportRecipients is the predicate function for dbtransportrecipients builders.
+type DbTransportRecipients func(*sql.Selector)
+
+// DbUser is the predicate function for dbuser builders.
+type DbUser func(*sql.Selector)
+
+// DbUserMetaData is the predicate function for dbusermetadata builders.
+type DbUserMetaData func(*sql.Selector)
 
 // Tenant is the predicate function for tenant builders.
 type Tenant func(*sql.Selector)
-
-// TransportInstance is the predicate function for transportinstance builders.
-type TransportInstance func(*sql.Selector)
-
-// TransportRecipient is the predicate function for transportrecipient builders.
-type TransportRecipient func(*sql.Selector)
-
-// User is the predicate function for user builders.
-type User func(*sql.Selector)
-
-// UserMetaData is the predicate function for usermetadata builders.
-type UserMetaData func(*sql.Selector)

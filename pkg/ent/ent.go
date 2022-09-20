@@ -34,17 +34,16 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/app"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/filter"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/filterconfig"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/group"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/message"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/msgvar"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbfilter"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbgroup"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessage"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessagefields"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportinstances"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportrecipients"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbusermetadata"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/transportinstance"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/transportrecipient"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/user"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/usermetadata"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -65,17 +64,16 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		app.Table:                app.ValidColumn,
-		filter.Table:             filter.ValidColumn,
-		filterconfig.Table:       filterconfig.ValidColumn,
-		group.Table:              group.ValidColumn,
-		message.Table:            message.ValidColumn,
-		msgvar.Table:             msgvar.ValidColumn,
-		tenant.Table:             tenant.ValidColumn,
-		transportinstance.Table:  transportinstance.ValidColumn,
-		transportrecipient.Table: transportrecipient.ValidColumn,
-		user.Table:               user.ValidColumn,
-		usermetadata.Table:       usermetadata.ValidColumn,
+		dbapp.Table:                 dbapp.ValidColumn,
+		dbfilter.Table:              dbfilter.ValidColumn,
+		dbgroup.Table:               dbgroup.ValidColumn,
+		dbmessage.Table:             dbmessage.ValidColumn,
+		dbmessagefields.Table:       dbmessagefields.ValidColumn,
+		dbtransportinstances.Table:  dbtransportinstances.ValidColumn,
+		dbtransportrecipients.Table: dbtransportrecipients.ValidColumn,
+		dbuser.Table:                dbuser.ValidColumn,
+		dbusermetadata.Table:        dbusermetadata.ValidColumn,
+		tenant.Table:                tenant.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

@@ -33,80 +33,119 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 )
 
-// The AppFunc type is an adapter to allow the use of ordinary
-// function as App mutator.
-type AppFunc func(context.Context, *ent.AppMutation) (ent.Value, error)
+// The DbAppFunc type is an adapter to allow the use of ordinary
+// function as DbApp mutator.
+type DbAppFunc func(context.Context, *ent.DbAppMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AppFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.AppMutation)
+func (f DbAppFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DbAppMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AppMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DbAppMutation", m)
 	}
 	return f(ctx, mv)
 }
 
-// The FilterFunc type is an adapter to allow the use of ordinary
-// function as Filter mutator.
-type FilterFunc func(context.Context, *ent.FilterMutation) (ent.Value, error)
+// The DbFilterFunc type is an adapter to allow the use of ordinary
+// function as DbFilter mutator.
+type DbFilterFunc func(context.Context, *ent.DbFilterMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f FilterFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.FilterMutation)
+func (f DbFilterFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DbFilterMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FilterMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DbFilterMutation", m)
 	}
 	return f(ctx, mv)
 }
 
-// The FilterConfigFunc type is an adapter to allow the use of ordinary
-// function as FilterConfig mutator.
-type FilterConfigFunc func(context.Context, *ent.FilterConfigMutation) (ent.Value, error)
+// The DbGroupFunc type is an adapter to allow the use of ordinary
+// function as DbGroup mutator.
+type DbGroupFunc func(context.Context, *ent.DbGroupMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f FilterConfigFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.FilterConfigMutation)
+func (f DbGroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DbGroupMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FilterConfigMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DbGroupMutation", m)
 	}
 	return f(ctx, mv)
 }
 
-// The GroupFunc type is an adapter to allow the use of ordinary
-// function as Group mutator.
-type GroupFunc func(context.Context, *ent.GroupMutation) (ent.Value, error)
+// The DbMessageFunc type is an adapter to allow the use of ordinary
+// function as DbMessage mutator.
+type DbMessageFunc func(context.Context, *ent.DbMessageMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f GroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.GroupMutation)
+func (f DbMessageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DbMessageMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GroupMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DbMessageMutation", m)
 	}
 	return f(ctx, mv)
 }
 
-// The MessageFunc type is an adapter to allow the use of ordinary
-// function as Message mutator.
-type MessageFunc func(context.Context, *ent.MessageMutation) (ent.Value, error)
+// The DbMessageFieldsFunc type is an adapter to allow the use of ordinary
+// function as DbMessageFields mutator.
+type DbMessageFieldsFunc func(context.Context, *ent.DbMessageFieldsMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f MessageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.MessageMutation)
+func (f DbMessageFieldsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DbMessageFieldsMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MessageMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DbMessageFieldsMutation", m)
 	}
 	return f(ctx, mv)
 }
 
-// The MsgVarFunc type is an adapter to allow the use of ordinary
-// function as MsgVar mutator.
-type MsgVarFunc func(context.Context, *ent.MsgVarMutation) (ent.Value, error)
+// The DbTransportInstancesFunc type is an adapter to allow the use of ordinary
+// function as DbTransportInstances mutator.
+type DbTransportInstancesFunc func(context.Context, *ent.DbTransportInstancesMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f MsgVarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.MsgVarMutation)
+func (f DbTransportInstancesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DbTransportInstancesMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MsgVarMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DbTransportInstancesMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The DbTransportRecipientsFunc type is an adapter to allow the use of ordinary
+// function as DbTransportRecipients mutator.
+type DbTransportRecipientsFunc func(context.Context, *ent.DbTransportRecipientsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DbTransportRecipientsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DbTransportRecipientsMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DbTransportRecipientsMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The DbUserFunc type is an adapter to allow the use of ordinary
+// function as DbUser mutator.
+type DbUserFunc func(context.Context, *ent.DbUserMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DbUserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DbUserMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DbUserMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The DbUserMetaDataFunc type is an adapter to allow the use of ordinary
+// function as DbUserMetaData mutator.
+type DbUserMetaDataFunc func(context.Context, *ent.DbUserMetaDataMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DbUserMetaDataFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.DbUserMetaDataMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DbUserMetaDataMutation", m)
 	}
 	return f(ctx, mv)
 }
@@ -120,58 +159,6 @@ func (f TenantFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	mv, ok := m.(*ent.TenantMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TenantMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The TransportInstanceFunc type is an adapter to allow the use of ordinary
-// function as TransportInstance mutator.
-type TransportInstanceFunc func(context.Context, *ent.TransportInstanceMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f TransportInstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.TransportInstanceMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TransportInstanceMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The TransportRecipientFunc type is an adapter to allow the use of ordinary
-// function as TransportRecipient mutator.
-type TransportRecipientFunc func(context.Context, *ent.TransportRecipientMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f TransportRecipientFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.TransportRecipientMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TransportRecipientMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The UserFunc type is an adapter to allow the use of ordinary
-// function as User mutator.
-type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.UserMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The UserMetaDataFunc type is an adapter to allow the use of ordinary
-// function as UserMetaData mutator.
-type UserMetaDataFunc func(context.Context, *ent.UserMetaDataMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f UserMetaDataFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.UserMetaDataMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMetaDataMutation", m)
 	}
 	return f(ctx, mv)
 }

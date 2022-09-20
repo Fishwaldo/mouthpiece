@@ -48,17 +48,16 @@ type config struct {
 
 // hooks per client, for fast access.
 type hooks struct {
-	App                []ent.Hook
-	Filter             []ent.Hook
-	FilterConfig       []ent.Hook
-	Group              []ent.Hook
-	Message            []ent.Hook
-	MsgVar             []ent.Hook
-	Tenant             []ent.Hook
-	TransportInstance  []ent.Hook
-	TransportRecipient []ent.Hook
-	User               []ent.Hook
-	UserMetaData       []ent.Hook
+	DbApp                 []ent.Hook
+	DbFilter              []ent.Hook
+	DbGroup               []ent.Hook
+	DbMessage             []ent.Hook
+	DbMessageFields       []ent.Hook
+	DbTransportInstances  []ent.Hook
+	DbTransportRecipients []ent.Hook
+	DbUser                []ent.Hook
+	DbUserMetaData        []ent.Hook
+	Tenant                []ent.Hook
 }
 
 // Options applies the options on the config object.

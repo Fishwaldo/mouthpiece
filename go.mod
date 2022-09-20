@@ -49,6 +49,7 @@ require (
 	github.com/danielgtaylor/casing v0.0.0-20210126043903-4e55e6373ac3 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.0 // indirect
 	github.com/dghubble/oauth1 v0.7.1 // indirect
+	github.com/dmarkham/enumer v1.5.6 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -94,6 +95,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/nullrocks/identicon v0.0.0-20180626043057-7875f45b0022 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
+	github.com/pascaldekloe/name v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

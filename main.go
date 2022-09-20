@@ -28,6 +28,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"net/url"
 
 	"strings"
 
@@ -42,6 +43,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 	"github.com/Fishwaldo/mouthpiece/pkg/msg"
+
 	// "github.com/Fishwaldo/mouthpiece/pkg/transport"
 	// "github.com/Fishwaldo/mouthpiece/pkg/users"
 
@@ -53,8 +55,8 @@ import (
 
 	//	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"entgo.io/ent/dialect"
 
-	"github.com/glebarez/sqlite"
 )
 
 //go:embed config
@@ -120,8 +122,13 @@ func main() {
 	fmt.Println(bi.String())
 
 	ctx := interfaces.NewContext(context.Background())
-	db := sqlite.Open("test.db?cache=shared&mode=rwc")
-	mps := mouthpiece.NewMouthPiece(ctx, db, mpserver.InitLogger())
+	db := sqlite.Open("test.db?cache=shared&mode=rwc&_fk=1")
+
+
+	dbType := dialect.SQLite
+	dbConnString := "file:test.db?cache=shared&mode=rwc&_fk=1"
+
+	mps := mouthpiece.NewMouthPiece(ctx, dbType, dbConnString, mpserver.InitLogger())
 	mps.Start()
 	mps.SeedMouthPieceApp(context.Background())
 

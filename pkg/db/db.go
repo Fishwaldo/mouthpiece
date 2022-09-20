@@ -2,30 +2,63 @@ package db
 
 import (
 	"context"
-	_ "fmt"
+	"fmt"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/migrate"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/rules"
+	_ "github.com/Fishwaldo/mouthpiece/pkg/ent/runtime"
 
-	"gorm.io/gorm"
-	//ll "gorm.io/gorm/logger"
-
-	"github.com/vchitai/logrgorm2"
+	"entgo.io/ent/dialect"
 )
 
-var Db *gorm.DB
+var DbClient *ent.Client
 
-func Initialize(db gorm.Dialector) *gorm.DB {
+func Initialize(driver, dbconnectstring string) (*ent.Client, error) {
 	var err error
-	logger := logrgorm2.New(log.Log.WithName("Database"))
-	logger = logger.IgnoreRecordNotFoundError(true)
-	Db, err = gorm.Open(db, &gorm.Config{Logger: logger})
-	if err != nil {
-		panic(err)
+	switch driver {
+	case
+		dialect.MySQL,
+		dialect.Postgres,
+		dialect.SQLite:
+		if DbClient, err = ent.Open(driver, dbconnectstring, ent.Log(dbLog)); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unsupported driver %q", driver)
 	}
-	//Db.Logger = logger
-	//Db.Logger.LogMode(ll.Info)
-	Db.Logger.Error(context.Background(), "Database Connection Established")
 
-	log.Log.Info("Database Initialized")
-	return Db
+	DbClient.Schema.Create(context.Background(), migrate.WithGlobalUniqueID(true))
+
+	/* create our default Tenant if it doesn't exist */
+
+	tntrole := &rules.UserViewer{
+		Role: rules.GlobalAdmin,
+	}
+	ctx := rules.NewContext(context.Background(), tntrole)
+	if DbClient.Tenant.Query().CountX(ctx) == 0 {
+		DbClient.Tenant.Create().SetName("default").Save(ctx)
+	}
+
+	return DbClient.Debug(), nil
+}
+
+func dbLog(args ...interface{}) {
+	logline := fmt.Sprint(args...)
+	log.Log.WithName("DB").Info(logline)
+}
+
+func GetDefaultTenant() *ent.Tenant {
+	tntrole := &rules.UserViewer{
+		Role: rules.GlobalAdmin,
+	}
+	ctx := rules.NewContext(context.Background(), tntrole)
+	tnt, err := DbClient.Tenant.Query().Where(tenant.Name("default")).Only(ctx)
+	if err != nil {
+		log.Log.WithName("DB").Error(err, "Unable to find default tenant")
+		return nil
+	}
+	return tnt
 }
