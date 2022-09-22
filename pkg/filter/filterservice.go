@@ -18,13 +18,13 @@ import (
 
 type FilterService struct {
 	fltMutex sync.Mutex
-	Filters  map[string]interfaces.FilterI
+	FilterCache  map[int]interfaces.FilterI
 	log logr.Logger
 }
 
 func NewFilterService(ctx context.Context, logger logr.Logger) *FilterService {
 	fs := &FilterService{
-		Filters: make(map[string]interfaces.FilterI),
+		FilterCache: make(map[int]interfaces.FilterI),
 		log: logger.WithName("FilterService"),
 	}
 	fs.log.V(1).Info("New Filter Service")
@@ -45,15 +45,15 @@ func (fs *FilterService) expireFilters() {
 		select {
 //		case <-fs.ctx.Done():
 //			return
-		case <-time.After(time.Second * 60):
+		case <-time.After(1 * time.Second):
 			fs.fltMutex.Lock()
-			defer fs.fltMutex.Unlock()
-			for name, flt := range fs.Filters {
-				if flt.GetLastUsed().Add(time.Second * 60).Before(time.Now()) {
-					fs.log.Info("Expiring Filter", "name", name, "lastUsed", flt.GetLastUsed())
-					delete(fs.Filters, name)
+			for name, flt := range fs.FilterCache {
+				if flt.GetLastUsed().Add(interfaces.Config.ExpireFilters).Before(time.Now()) {
+					fs.log.Info("Expiring Filter From Cache", "name", name, "lastUsed", flt.GetLastUsed())
+					delete(fs.FilterCache, flt.GetID())
 				}
 			}
+			fs.fltMutex.Unlock()
 		}
 	}
 }
@@ -70,17 +70,21 @@ func (fs *FilterService) Load(ctx context.Context, dbflt any) (interfaces.Filter
 		return nil, mperror.ErrInternalError
 	}
 	flt.SetLastUsed()
-	fs.Filters[flt.GetName()] = flt
+	fs.FilterCache[flt.GetID()] = flt
 	return flt, nil
 }
 
 func (fs *FilterService) Get(ctx context.Context, name string, scripttype interfaces.FilterType) (interfaces.FilterI, error) {
 	fs.fltMutex.Lock()
 	defer fs.fltMutex.Unlock()
-	if v, ok := fs.Filters[name]; ok {
-		v.SetLastUsed()
-		return v, nil
+	for _, v := range fs.FilterCache {
+		if v.GetName() == name && v.GetType() == scripttype.String() {
+			v.SetLastUsed()
+			return v, nil
+		}
 	}
+
+	fs.log.V(1).Info("Filter not found in cache", "name", name)
 	dbflt, err := db.DbClient.DbFilter.Query().Where(dbfilter.Name(name), dbfilter.TypeEQ(scripttype)).Only(ctx)
 	if err != nil {
 		fs.log.Error(err, "Error getting filter", "name", name)
@@ -92,7 +96,7 @@ func (fs *FilterService) Get(ctx context.Context, name string, scripttype interf
 		return nil, mperror.ErrInternalError
 	}
 	flt.SetLastUsed()
-	fs.Filters[name] = flt
+	fs.FilterCache[flt.GetID()] = flt
 	return flt, nil
 }
 
@@ -100,13 +104,14 @@ func (fs *FilterService) GetByID(ctx context.Context, id int, scripttype interfa
 	var flt interfaces.FilterI
 	fs.fltMutex.Lock()
 	defer fs.fltMutex.Unlock()
-	for _, v := range fs.Filters {
-		if v.GetID() == id {
-			v.SetLastUsed()
-			return v, nil
+	if flt, ok := fs.FilterCache[id]; ok {
+		if flt.GetType() == scripttype.String() {
+			flt.SetLastUsed()
+			return flt, nil
 		}
 	}
-	
+
+	fs.log.V(1).Info("Filter not found in cache", "id", id)
 	dbflt, err := db.DbClient.DbFilter.Query().Where(dbfilter.ID(id), dbfilter.TypeEQ(scripttype)).Only(ctx)
 	if err != nil {
 		fs.log.Error(err, "Error getting filter", "id", id)
@@ -118,7 +123,7 @@ func (fs *FilterService) GetByID(ctx context.Context, id int, scripttype interfa
 		return nil, mperror.ErrInternalError
 	}
 	flt.SetLastUsed()
-	fs.Filters[flt.GetName()] = flt
+	fs.FilterCache[flt.GetID()] = flt
 
 	return flt, nil
 }
@@ -133,7 +138,8 @@ func (fs *FilterService) Create(ctx context.Context, fltimpl string, name string
 		fs.log.Error(nil, "Error creating filter", "name", name)
 		return nil, mperror.ErrInternalError
 	} else {
-		fs.Filters[name] = flt
+		flt.SetLastUsed()
+		fs.FilterCache[flt.GetID()] = flt
 		return flt, nil
 	}
 	

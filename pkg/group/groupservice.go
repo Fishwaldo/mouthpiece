@@ -42,7 +42,7 @@ func (gs *GroupService) Create(ctx context.Context, name string, description str
 	grp, err = newGroup(ctx, gs.log, name, description)
 	if err != nil {
 		gs.log.Error(err, "Error creating group", "name", name)
-		return nil, err
+		return nil, mperror.ErrInternalError
 	} else {
 		return grp, nil
 	}
@@ -61,7 +61,7 @@ func (gs *GroupService) Delete(ctx context.Context, group interfaces.GroupI) err
 	if err != nil {
 		gs.log.Error(err, "Error deleting group", "name", group.GetName())
 	}
-	return err
+	return nil
 }
 
 func (gs *GroupService) GetByID(ctx context.Context, id int) (interfaces.GroupI, error) {
@@ -89,7 +89,7 @@ func (gs *GroupService) GetAll(ctx context.Context) ([]interfaces.GroupI, error)
 	groups, err := db.DbClient.DbGroup.Query().All(ctx)
 	if err != nil {
 		gs.log.Error(err, "Error getting all groups")
-		return nil, err
+		return nil, mperror.ErrInternalError
 	}
 	var g []interfaces.GroupI
 	for _, grp := range groups {

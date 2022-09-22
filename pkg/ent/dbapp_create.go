@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
@@ -47,6 +48,7 @@ type DbAppCreate struct {
 	config
 	mutation *DbAppMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
@@ -294,6 +296,7 @@ func (dac *DbAppCreate) createSpec() (*DbApp, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = dac.conflict
 	if value, ok := dac.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -414,6 +417,314 @@ func (dac *DbAppCreate) createSpec() (*DbApp, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbApp.Create().
+//		SetTenantID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbAppUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dac *DbAppCreate) OnConflict(opts ...sql.ConflictOption) *DbAppUpsertOne {
+	dac.conflict = opts
+	return &DbAppUpsertOne{
+		create: dac,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbApp.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dac *DbAppCreate) OnConflictColumns(columns ...string) *DbAppUpsertOne {
+	dac.conflict = append(dac.conflict, sql.ConflictColumns(columns...))
+	return &DbAppUpsertOne{
+		create: dac,
+	}
+}
+
+type (
+	// DbAppUpsertOne is the builder for "upsert"-ing
+	//  one DbApp node.
+	DbAppUpsertOne struct {
+		create *DbAppCreate
+	}
+
+	// DbAppUpsert is the "OnConflict" setter.
+	DbAppUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbAppUpsert) SetTenantID(v int) *DbAppUpsert {
+	u.Set(dbapp.FieldTenantID, v)
+	return u
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbAppUpsert) UpdateTenantID() *DbAppUpsert {
+	u.SetExcluded(dbapp.FieldTenantID)
+	return u
+}
+
+// SetName sets the "Name" field.
+func (u *DbAppUpsert) SetName(v string) *DbAppUpsert {
+	u.Set(dbapp.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbAppUpsert) UpdateName() *DbAppUpsert {
+	u.SetExcluded(dbapp.FieldName)
+	return u
+}
+
+// SetStatus sets the "Status" field.
+func (u *DbAppUpsert) SetStatus(v interfaces.AppStatus) *DbAppUpsert {
+	u.Set(dbapp.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "Status" field to the value that was provided on create.
+func (u *DbAppUpsert) UpdateStatus() *DbAppUpsert {
+	u.SetExcluded(dbapp.FieldStatus)
+	return u
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbAppUpsert) SetDescription(v string) *DbAppUpsert {
+	u.Set(dbapp.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbAppUpsert) UpdateDescription() *DbAppUpsert {
+	u.SetExcluded(dbapp.FieldDescription)
+	return u
+}
+
+// SetIcon sets the "icon" field.
+func (u *DbAppUpsert) SetIcon(v string) *DbAppUpsert {
+	u.Set(dbapp.FieldIcon, v)
+	return u
+}
+
+// UpdateIcon sets the "icon" field to the value that was provided on create.
+func (u *DbAppUpsert) UpdateIcon() *DbAppUpsert {
+	u.SetExcluded(dbapp.FieldIcon)
+	return u
+}
+
+// ClearIcon clears the value of the "icon" field.
+func (u *DbAppUpsert) ClearIcon() *DbAppUpsert {
+	u.SetNull(dbapp.FieldIcon)
+	return u
+}
+
+// SetURL sets the "url" field.
+func (u *DbAppUpsert) SetURL(v string) *DbAppUpsert {
+	u.Set(dbapp.FieldURL, v)
+	return u
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *DbAppUpsert) UpdateURL() *DbAppUpsert {
+	u.SetExcluded(dbapp.FieldURL)
+	return u
+}
+
+// ClearURL clears the value of the "url" field.
+func (u *DbAppUpsert) ClearURL() *DbAppUpsert {
+	u.SetNull(dbapp.FieldURL)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.DbApp.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbAppUpsertOne) UpdateNewValues() *DbAppUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//  client.DbApp.Create().
+//      OnConflict(sql.ResolveWithIgnore()).
+//      Exec(ctx)
+//
+func (u *DbAppUpsertOne) Ignore() *DbAppUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbAppUpsertOne) DoNothing() *DbAppUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbAppCreate.OnConflict
+// documentation for more info.
+func (u *DbAppUpsertOne) Update(set func(*DbAppUpsert)) *DbAppUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbAppUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbAppUpsertOne) SetTenantID(v int) *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbAppUpsertOne) UpdateTenantID() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbAppUpsertOne) SetName(v string) *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbAppUpsertOne) UpdateName() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetStatus sets the "Status" field.
+func (u *DbAppUpsertOne) SetStatus(v interfaces.AppStatus) *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "Status" field to the value that was provided on create.
+func (u *DbAppUpsertOne) UpdateStatus() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbAppUpsertOne) SetDescription(v string) *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbAppUpsertOne) UpdateDescription() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// SetIcon sets the "icon" field.
+func (u *DbAppUpsertOne) SetIcon(v string) *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetIcon(v)
+	})
+}
+
+// UpdateIcon sets the "icon" field to the value that was provided on create.
+func (u *DbAppUpsertOne) UpdateIcon() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateIcon()
+	})
+}
+
+// ClearIcon clears the value of the "icon" field.
+func (u *DbAppUpsertOne) ClearIcon() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.ClearIcon()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *DbAppUpsertOne) SetURL(v string) *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *DbAppUpsertOne) UpdateURL() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// ClearURL clears the value of the "url" field.
+func (u *DbAppUpsertOne) ClearURL() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.ClearURL()
+	})
+}
+
+// Exec executes the query.
+func (u *DbAppUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbAppCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbAppUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DbAppUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DbAppUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 func (dac *DbAppCreate) SetDbAppFromStruct(input *DbApp) *DbAppCreate {
 
 	dac.SetTenantID(input.TenantID)
@@ -435,6 +746,7 @@ func (dac *DbAppCreate) SetDbAppFromStruct(input *DbApp) *DbAppCreate {
 type DbAppCreateBulk struct {
 	config
 	builders []*DbAppCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the DbApp entities in the database.
@@ -460,6 +772,7 @@ func (dacb *DbAppCreateBulk) Save(ctx context.Context) ([]*DbApp, error) {
 					_, err = mutators[i+1].Mutate(root, dacb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = dacb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, dacb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -510,6 +823,209 @@ func (dacb *DbAppCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (dacb *DbAppCreateBulk) ExecX(ctx context.Context) {
 	if err := dacb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbApp.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbAppUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dacb *DbAppCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbAppUpsertBulk {
+	dacb.conflict = opts
+	return &DbAppUpsertBulk{
+		create: dacb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbApp.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dacb *DbAppCreateBulk) OnConflictColumns(columns ...string) *DbAppUpsertBulk {
+	dacb.conflict = append(dacb.conflict, sql.ConflictColumns(columns...))
+	return &DbAppUpsertBulk{
+		create: dacb,
+	}
+}
+
+// DbAppUpsertBulk is the builder for "upsert"-ing
+// a bulk of DbApp nodes.
+type DbAppUpsertBulk struct {
+	create *DbAppCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.DbApp.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbAppUpsertBulk) UpdateNewValues() *DbAppUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DbApp.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+//
+func (u *DbAppUpsertBulk) Ignore() *DbAppUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbAppUpsertBulk) DoNothing() *DbAppUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbAppCreateBulk.OnConflict
+// documentation for more info.
+func (u *DbAppUpsertBulk) Update(set func(*DbAppUpsert)) *DbAppUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbAppUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbAppUpsertBulk) SetTenantID(v int) *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbAppUpsertBulk) UpdateTenantID() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbAppUpsertBulk) SetName(v string) *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbAppUpsertBulk) UpdateName() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetStatus sets the "Status" field.
+func (u *DbAppUpsertBulk) SetStatus(v interfaces.AppStatus) *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "Status" field to the value that was provided on create.
+func (u *DbAppUpsertBulk) UpdateStatus() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbAppUpsertBulk) SetDescription(v string) *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbAppUpsertBulk) UpdateDescription() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// SetIcon sets the "icon" field.
+func (u *DbAppUpsertBulk) SetIcon(v string) *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetIcon(v)
+	})
+}
+
+// UpdateIcon sets the "icon" field to the value that was provided on create.
+func (u *DbAppUpsertBulk) UpdateIcon() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateIcon()
+	})
+}
+
+// ClearIcon clears the value of the "icon" field.
+func (u *DbAppUpsertBulk) ClearIcon() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.ClearIcon()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *DbAppUpsertBulk) SetURL(v string) *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *DbAppUpsertBulk) UpdateURL() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// ClearURL clears the value of the "url" field.
+func (u *DbAppUpsertBulk) ClearURL() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.ClearURL()
+	})
+}
+
+// Exec executes the query.
+func (u *DbAppUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DbAppCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbAppCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbAppUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

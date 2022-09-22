@@ -26,7 +26,7 @@ func newGroup(ctx context.Context, logger logr.Logger, name string, description 
 		Save(ctx)
 	if err != nil {
 		newlogger.Error(err, "Error creating group")
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	}
 	group := &Group{
 		dbGroup: dbgrp,
@@ -34,14 +34,14 @@ func newGroup(ctx context.Context, logger logr.Logger, name string, description 
 	}
 	if err := group.init(); err != nil {
 		group.log.Error(err, "Error initializing group")
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	}
 	group.log.V(1).Info("New Group Created")
 	return group, nil
 }
 
 func (g *Group) init() error {
-	return nil
+	return mperror.FilterErrors(nil)
 }
 
 func (g *Group) Load(ctx context.Context, logger logr.Logger, newgroup any) error {
@@ -61,11 +61,12 @@ func (g *Group) Save(ctx context.Context) (err error) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	g.dbGroup, err = g.dbGroup.Update().Save(ctx)
+	dbtmp, err := g.dbGroup.Update().Save(ctx)
 	if err != nil {
 		g.log.Error(err, "Error saving group")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	g.dbGroup = dbtmp
 	return nil
 }
 
@@ -87,11 +88,12 @@ func (g *Group) SetName(ctx context.Context, name string) (err error) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	g.dbGroup, err = g.dbGroup.Update().SetName(name).Save(ctx)
+	dbtmp, err := g.dbGroup.Update().SetName(name).Save(ctx)
 	if err != nil {
 		g.log.Error(err, "Error setting name")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	g.dbGroup = dbtmp
 	return nil
 }
 
@@ -106,11 +108,12 @@ func (g *Group) SetDescription(ctx context.Context, description string) (err err
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	g.dbGroup, err = g.dbGroup.Update().SetDescription(description).Save(ctx)
+	dbtmp, err := g.dbGroup.Update().SetDescription(description).Save(ctx)
 	if err != nil {
 		g.log.Error(err, "Error setting description")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	g.dbGroup = dbtmp
 	return nil
 }
 
@@ -124,7 +127,6 @@ func (g *Group) GetApps(ctx context.Context) []interfaces.AppI {
 	} else {
 		appsvc := interfaces.GetAppService(ctx)
 		var ret []interfaces.AppI
-		ret = make([]interfaces.AppI, len(apps))
 		for _, app := range apps {
 			if appi, err := appsvc.Load(ctx, app); err != nil {
 				g.log.Error(err, "Error Loading App for Group", "app", app.ID)
@@ -141,11 +143,12 @@ func (g *Group) AddApp(ctx context.Context, app interfaces.AppI) (err error) {
 	defer g.lock.Unlock()
 
 	g.log.Info("Adding App to Group", "app", app.GetName())
-	g.dbGroup, err = g.dbGroup.Update().AddAppIDs(app.GetID()).Save(ctx)
+	dbtmp, err := g.dbGroup.Update().AddAppIDs(app.GetID()).Save(ctx)
 	if err != nil {
 		g.log.Error(err, "Error adding app to group")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	g.dbGroup = dbtmp
 	return nil
 }
 
@@ -154,11 +157,12 @@ func (g *Group) DelApp(ctx context.Context, app interfaces.AppI) (err error) {
 	defer g.lock.Unlock()
 
 	g.log.Info("Deleting App from Group", "app", app)
-	g.dbGroup, err = g.dbGroup.Update().RemoveAppIDs(app.GetID()).Save(ctx)
+	dbtmp, err := g.dbGroup.Update().RemoveAppIDs(app.GetID()).Save(ctx)
 	if err != nil {
 		g.log.Error(err, "Error deleting app from group")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	g.dbGroup = dbtmp
 	return nil
 }
 
@@ -188,11 +192,12 @@ func (g *Group) AddUser(ctx context.Context, user interfaces.UserI) (err error) 
 	defer g.lock.Unlock()
 
 	g.log.Info("Adding User to Group")
-	g.dbGroup, err = g.dbGroup.Update().AddUserIDs(user.GetID()).Save(ctx)
+	dbtmp, err := g.dbGroup.Update().AddUserIDs(user.GetID()).Save(ctx)
 	if err != nil {
 		g.log.Error(err, "Error adding user to group")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	g.dbGroup = dbtmp
 	return nil
 }
 
@@ -201,11 +206,12 @@ func (g *Group) DelUser(ctx context.Context, user interfaces.UserI) (err error) 
 	defer g.lock.Unlock()
 
 	g.log.Info("Deleting User from Group", "user", user)
-	g.dbGroup, err = g.dbGroup.Update().RemoveUserIDs(user.GetID()).Save(ctx)
+	dbtmp, err := g.dbGroup.Update().RemoveUserIDs(user.GetID()).Save(ctx)
 	if err != nil {
 		g.log.Error(err, "Error deleting user from group")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	g.dbGroup = dbtmp
 	return nil
 }
 
@@ -235,11 +241,12 @@ func (g *Group) AddTransportRecipient(ctx context.Context, tid interfaces.Transp
 	defer g.lock.Unlock()
 
 	g.log.Info("Adding Transport to Group", "tid", tid)
-	g.dbGroup, err = g.dbGroup.Update().AddTransportRecipientIDs(tid.GetID()).Save(ctx)
+	dbtmp, err := g.dbGroup.Update().AddTransportRecipientIDs(tid.GetID()).Save(ctx)
 	if err != nil {
 		g.log.Error(err, "Error adding transport to group")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	g.dbGroup = dbtmp
 	return nil
 }
 
@@ -248,11 +255,12 @@ func (g *Group) DelTransportRecipient(ctx context.Context, tid interfaces.Transp
 	defer g.lock.Unlock()
 
 	g.log.Info("Deleting Transport from Group", "tid", tid)
-	g.dbGroup, err = g.dbGroup.Update().RemoveTransportRecipientIDs(tid.GetID()).Save(ctx)
+	dbtmp, err := g.dbGroup.Update().RemoveTransportRecipientIDs(tid.GetID()).Save(ctx)
 	if err != nil {
 		g.log.Error(err, "Error deleting transport from group")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	g.dbGroup = dbtmp
 	return nil
 }
 

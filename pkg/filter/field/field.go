@@ -3,7 +3,6 @@ package field
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -14,8 +13,6 @@ import (
 
 func init() {
 	filter.RegisterFilterImpl("FieldFilter", FieldFilterFactory{})
-	fmt.Printf("%s\n", filter.GetFilterImpls(context.Background()))
-
 }
 
 type FieldFilterOp int

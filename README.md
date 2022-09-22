@@ -5,3 +5,13 @@
 [![Build](https://github.com/Fishwaldo/mouthpiece/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/Fishwaldo/mouthpiece/actions/workflows/build.yml)
 
 WIP
+
+
+
+
+Testing
+
+Debug Logs:
+
+MP_DEBUG_LOG=10 go test ./... -v
+

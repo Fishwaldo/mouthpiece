@@ -38,7 +38,7 @@ func newTransportInstance(ctx context.Context, log logr.Logger, trp interfaces.T
 		SetConfig(string(jsonconfig)).
 		Save(ctx); err != nil {
 		newlog.Error(err, "Failed to Save Transport Instance")
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 
 	ti := &TransportInstance{
@@ -50,7 +50,7 @@ func newTransportInstance(ctx context.Context, log logr.Logger, trp interfaces.T
 	ti.impl, err = trp.CreateInstance(ctx, newlog, name, config)
 	if err != nil {
 		ti.log.Error(err, "Failed to Create Transport Instance")
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 
 	if err := ti.SetConfig(ctx, config); err != nil {
@@ -60,32 +60,30 @@ func newTransportInstance(ctx context.Context, log logr.Logger, trp interfaces.T
 
 	if err := ti.init(ctx); err != nil {
 		ti.log.Error(err, "Failed to Init Transport Instance")
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 
 	if err := ti.Start(ctx); err != nil {
 		newlog.Error(err, "Failed to Start Transport Instance")
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 	ti.log.V(1).Info("New Transport Instance Created")
 	return ti, nil
 }
 
 func (ti *TransportInstance) Load(ctx context.Context, logger logr.Logger, dbTpi any) error {
-	ti.lock.Lock()
-	defer ti.lock.Unlock()
 	var ok bool
 	if ti.dbTi, ok = dbTpi.(*ent.DbTransportInstances); !ok {
 		logger.Error(mperror.ErrInvalidType, "Invalid Config Type", "Type", fmt.Sprintf("%T", dbTpi))
 		return mperror.ErrInvalidType
 	}
-	ti.log = ti.log.WithName("TransportInstance").WithValues("TransportInstance", ti.dbTi.Name)
+	ti.log = logger.WithName("TransportInstance").WithValues("TransportInstance", ti.dbTi.Name)
 
 	var trp interfaces.TransportProvider
 	var err error
 	if trp, err = interfaces.GetTransportService(ctx).GetTransportProvider(ctx, ti.dbTi.TransportProvider); err != nil {
 		ti.log.Error(err, "Failed to get Transport Provider")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 
 	ti.transportProvider = trp
@@ -93,22 +91,22 @@ func (ti *TransportInstance) Load(ctx context.Context, logger logr.Logger, dbTpi
 	config, err := ti.transportProvider.LoadConfigFromJSON(ctx, ti.dbTi.Config)
 	if err != nil {
 		ti.log.Error(err, "Failed to Load Config")
-		return mperror.ErrTransportConfigInvalid
+		return mperror.FilterErrors(err)
 	}
 
 	if ti.impl, err = ti.transportProvider.CreateInstance(ctx, ti.log, ti.dbTi.Name, config); err != nil {
 		ti.log.Error(err, "Failed to Create Transport Instance Implemntation")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 
 	if err := ti.init(ctx); err != nil {
 		ti.log.Error(err, "Error Initializing Transport Instance")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 
 	if err := ti.Start(ctx); err != nil {
 		ti.log.Error(err, "Error Starting Transport Instance")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 	ti.log.Info("Loading Transport Instance")
 	return nil
@@ -133,10 +131,13 @@ func (ti *TransportInstance) GetName() string {
 func (ti *TransportInstance) SetName(ctx context.Context, name string) error {
 	ti.lock.Lock()
 	defer ti.lock.Unlock()
-	var err error
-	if ti.dbTi, err = ti.dbTi.Update().SetName(name).Save(ctx); err != nil {
-		return err
+	
+	dbtmp, err := ti.dbTi.Update().SetName(name).Save(ctx)
+	if err != nil {
+		ti.log.Error(err, "Failed to Update Name")
+		return mperror.FilterErrors(err)
 	}
+	ti.dbTi = dbtmp
 	return nil
 }
 
@@ -149,11 +150,12 @@ func (ti *TransportInstance) GetDescription() string {
 func (ti *TransportInstance) SetDescription(ctx context.Context, description string) error {
 	ti.lock.Lock()
 	defer ti.lock.Unlock()
-	var err error
-	if ti.dbTi, err = ti.dbTi.Update().SetDescription(description).Save(ctx); err != nil {
+	dbtmp, err := ti.dbTi.Update().SetDescription(description).Save(ctx)
+	if err != nil {
 		ti.log.Error(err, "Failed to Set Description")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	ti.dbTi = dbtmp
 	return nil
 }
 
@@ -162,7 +164,7 @@ func (ti *TransportInstance) SetConfig(ctx context.Context, config interfaces.Ma
 	defer ti.lock.Unlock()
 	if err := ti.impl.SetConfig(ctx, config); err != nil {
 		ti.log.Error(err, "Failed to Validate Config")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 
 	dbconfig, err := config.AsJSON()
@@ -171,10 +173,12 @@ func (ti *TransportInstance) SetConfig(ctx context.Context, config interfaces.Ma
 		return mperror.ErrTransportConfigInvalid
 	}
 
-	if ti.dbTi, err = ti.dbTi.Update().SetConfig(string(dbconfig)).Save(ctx); err != nil {
+	dbtmp, err := ti.dbTi.Update().SetConfig(string(dbconfig)).Save(ctx)
+	if err != nil {
 		ti.log.Error(err, "Failed to save config to DB")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	ti.dbTi = dbtmp
 	return nil
 }
 
@@ -189,33 +193,34 @@ func (ti *TransportInstance) Start(ctx context.Context) error {
 	ti.lock.Lock()
 	defer ti.lock.Unlock()
 	ti.log.Info("Starting Transport Instance")
-	return ti.impl.Start(ctx)
+	return mperror.FilterErrors(ti.impl.Start(ctx))
 }
 
 func (ti *TransportInstance) Stop(ctx context.Context) error {
 	ti.lock.Lock()
 	defer ti.lock.Unlock()
 	ti.log.Info("Stopping Transport Instance")
-	return ti.impl.Stop(ctx)
+	return mperror.FilterErrors(ti.impl.Stop(ctx))
 }
 
 func (ti *TransportInstance) Send(ctx context.Context, tpr interfaces.TransportRecipient, msg interfaces.MessageI) error {
 	ti.lock.Lock()
 	defer ti.lock.Unlock()
 	ti.log.Info("Sending Message", "Message", msg.GetID())
-	return ti.impl.Send(ctx, tpr, msg)
+	return mperror.FilterErrors(ti.impl.Send(ctx, tpr, msg))
 }
 
 func (ti *TransportInstance) ValidateTransportRecipientConfig(ctx context.Context, config interfaces.MarshableConfigI) error {
 	ti.lock.Lock()
 	defer ti.lock.Unlock()
-	return ti.impl.ValidateTransportRecipientConfig(ctx, config)
+	return mperror.FilterErrors(ti.impl.ValidateTransportRecipientConfig(ctx, config))
 }
 
 func (ti *TransportInstance) LoadTransportReciepientConfig(ctx context.Context, config string) (interfaces.MarshableConfigI, error) {
 	ti.lock.Lock()
 	defer ti.lock.Unlock()
-	return ti.impl.LoadTransportReciepientConfig(ctx, config)
+	cfg, err := ti.impl.LoadTransportReciepientConfig(ctx, config)
+	return cfg, mperror.FilterErrors(err)
 }
 
 var _ interfaces.TransportInstance = (*TransportInstance)(nil)

@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
-	"github.com/hedwigz/entviz"
+//	"github.com/hedwigz/entviz"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 	// second template is provided with the `Templates` option.
 	opts := []entc.Option{
 		entc.TemplateDir("./template/"),
-		entc.Extensions(entviz.Extension{}),
+//		entc.Extensions(entviz.Extension{}),
 	}
 	err := entc.Generate("./schema", &gen.Config{
 		Header: `
@@ -58,6 +58,7 @@ func main() {
 			gen.FeatureSnapshot,
 			gen.FeaturePrivacy,
 			gen.FeatureEntQL,
+			gen.FeatureUpsert,
 		},
 	}, opts...)
 	if err != nil {

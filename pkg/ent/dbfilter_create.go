@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
@@ -46,6 +47,7 @@ type DbFilterCreate struct {
 	config
 	mutation *DbFilterMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
@@ -307,6 +309,7 @@ func (dfc *DbFilterCreate) createSpec() (*DbFilter, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = dfc.conflict
 	if value, ok := dfc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -435,6 +438,332 @@ func (dfc *DbFilterCreate) createSpec() (*DbFilter, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbFilter.Create().
+//		SetTenantID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbFilterUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dfc *DbFilterCreate) OnConflict(opts ...sql.ConflictOption) *DbFilterUpsertOne {
+	dfc.conflict = opts
+	return &DbFilterUpsertOne{
+		create: dfc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbFilter.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dfc *DbFilterCreate) OnConflictColumns(columns ...string) *DbFilterUpsertOne {
+	dfc.conflict = append(dfc.conflict, sql.ConflictColumns(columns...))
+	return &DbFilterUpsertOne{
+		create: dfc,
+	}
+}
+
+type (
+	// DbFilterUpsertOne is the builder for "upsert"-ing
+	//  one DbFilter node.
+	DbFilterUpsertOne struct {
+		create *DbFilterCreate
+	}
+
+	// DbFilterUpsert is the "OnConflict" setter.
+	DbFilterUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbFilterUpsert) SetTenantID(v int) *DbFilterUpsert {
+	u.Set(dbfilter.FieldTenantID, v)
+	return u
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbFilterUpsert) UpdateTenantID() *DbFilterUpsert {
+	u.SetExcluded(dbfilter.FieldTenantID)
+	return u
+}
+
+// SetName sets the "Name" field.
+func (u *DbFilterUpsert) SetName(v string) *DbFilterUpsert {
+	u.Set(dbfilter.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbFilterUpsert) UpdateName() *DbFilterUpsert {
+	u.SetExcluded(dbfilter.FieldName)
+	return u
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbFilterUpsert) SetDescription(v string) *DbFilterUpsert {
+	u.Set(dbfilter.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbFilterUpsert) UpdateDescription() *DbFilterUpsert {
+	u.SetExcluded(dbfilter.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbFilterUpsert) ClearDescription() *DbFilterUpsert {
+	u.SetNull(dbfilter.FieldDescription)
+	return u
+}
+
+// SetType sets the "Type" field.
+func (u *DbFilterUpsert) SetType(v interfaces.FilterType) *DbFilterUpsert {
+	u.Set(dbfilter.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *DbFilterUpsert) UpdateType() *DbFilterUpsert {
+	u.SetExcluded(dbfilter.FieldType)
+	return u
+}
+
+// SetEnabled sets the "Enabled" field.
+func (u *DbFilterUpsert) SetEnabled(v bool) *DbFilterUpsert {
+	u.Set(dbfilter.FieldEnabled, v)
+	return u
+}
+
+// UpdateEnabled sets the "Enabled" field to the value that was provided on create.
+func (u *DbFilterUpsert) UpdateEnabled() *DbFilterUpsert {
+	u.SetExcluded(dbfilter.FieldEnabled)
+	return u
+}
+
+// SetFilterImpl sets the "FilterImpl" field.
+func (u *DbFilterUpsert) SetFilterImpl(v string) *DbFilterUpsert {
+	u.Set(dbfilter.FieldFilterImpl, v)
+	return u
+}
+
+// UpdateFilterImpl sets the "FilterImpl" field to the value that was provided on create.
+func (u *DbFilterUpsert) UpdateFilterImpl() *DbFilterUpsert {
+	u.SetExcluded(dbfilter.FieldFilterImpl)
+	return u
+}
+
+// SetConfig sets the "Config" field.
+func (u *DbFilterUpsert) SetConfig(v string) *DbFilterUpsert {
+	u.Set(dbfilter.FieldConfig, v)
+	return u
+}
+
+// UpdateConfig sets the "Config" field to the value that was provided on create.
+func (u *DbFilterUpsert) UpdateConfig() *DbFilterUpsert {
+	u.SetExcluded(dbfilter.FieldConfig)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.DbFilter.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbFilterUpsertOne) UpdateNewValues() *DbFilterUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.FilterImpl(); exists {
+			s.SetIgnore(dbfilter.FieldFilterImpl)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//  client.DbFilter.Create().
+//      OnConflict(sql.ResolveWithIgnore()).
+//      Exec(ctx)
+//
+func (u *DbFilterUpsertOne) Ignore() *DbFilterUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbFilterUpsertOne) DoNothing() *DbFilterUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbFilterCreate.OnConflict
+// documentation for more info.
+func (u *DbFilterUpsertOne) Update(set func(*DbFilterUpsert)) *DbFilterUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbFilterUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbFilterUpsertOne) SetTenantID(v int) *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbFilterUpsertOne) UpdateTenantID() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbFilterUpsertOne) SetName(v string) *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbFilterUpsertOne) UpdateName() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbFilterUpsertOne) SetDescription(v string) *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbFilterUpsertOne) UpdateDescription() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbFilterUpsertOne) ClearDescription() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetType sets the "Type" field.
+func (u *DbFilterUpsertOne) SetType(v interfaces.FilterType) *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *DbFilterUpsertOne) UpdateType() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetEnabled sets the "Enabled" field.
+func (u *DbFilterUpsertOne) SetEnabled(v bool) *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetEnabled(v)
+	})
+}
+
+// UpdateEnabled sets the "Enabled" field to the value that was provided on create.
+func (u *DbFilterUpsertOne) UpdateEnabled() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateEnabled()
+	})
+}
+
+// SetFilterImpl sets the "FilterImpl" field.
+func (u *DbFilterUpsertOne) SetFilterImpl(v string) *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetFilterImpl(v)
+	})
+}
+
+// UpdateFilterImpl sets the "FilterImpl" field to the value that was provided on create.
+func (u *DbFilterUpsertOne) UpdateFilterImpl() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateFilterImpl()
+	})
+}
+
+// SetConfig sets the "Config" field.
+func (u *DbFilterUpsertOne) SetConfig(v string) *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetConfig(v)
+	})
+}
+
+// UpdateConfig sets the "Config" field to the value that was provided on create.
+func (u *DbFilterUpsertOne) UpdateConfig() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateConfig()
+	})
+}
+
+// Exec executes the query.
+func (u *DbFilterUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbFilterCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbFilterUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DbFilterUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DbFilterUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 func (dfc *DbFilterCreate) SetDbFilterFromStruct(input *DbFilter) *DbFilterCreate {
 
 	dfc.SetTenantID(input.TenantID)
@@ -458,6 +787,7 @@ func (dfc *DbFilterCreate) SetDbFilterFromStruct(input *DbFilter) *DbFilterCreat
 type DbFilterCreateBulk struct {
 	config
 	builders []*DbFilterCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the DbFilter entities in the database.
@@ -484,6 +814,7 @@ func (dfcb *DbFilterCreateBulk) Save(ctx context.Context) ([]*DbFilter, error) {
 					_, err = mutators[i+1].Mutate(root, dfcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = dfcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, dfcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -534,6 +865,223 @@ func (dfcb *DbFilterCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (dfcb *DbFilterCreateBulk) ExecX(ctx context.Context) {
 	if err := dfcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbFilter.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbFilterUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dfcb *DbFilterCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbFilterUpsertBulk {
+	dfcb.conflict = opts
+	return &DbFilterUpsertBulk{
+		create: dfcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbFilter.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dfcb *DbFilterCreateBulk) OnConflictColumns(columns ...string) *DbFilterUpsertBulk {
+	dfcb.conflict = append(dfcb.conflict, sql.ConflictColumns(columns...))
+	return &DbFilterUpsertBulk{
+		create: dfcb,
+	}
+}
+
+// DbFilterUpsertBulk is the builder for "upsert"-ing
+// a bulk of DbFilter nodes.
+type DbFilterUpsertBulk struct {
+	create *DbFilterCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.DbFilter.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbFilterUpsertBulk) UpdateNewValues() *DbFilterUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.FilterImpl(); exists {
+				s.SetIgnore(dbfilter.FieldFilterImpl)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DbFilter.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+//
+func (u *DbFilterUpsertBulk) Ignore() *DbFilterUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbFilterUpsertBulk) DoNothing() *DbFilterUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbFilterCreateBulk.OnConflict
+// documentation for more info.
+func (u *DbFilterUpsertBulk) Update(set func(*DbFilterUpsert)) *DbFilterUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbFilterUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbFilterUpsertBulk) SetTenantID(v int) *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbFilterUpsertBulk) UpdateTenantID() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbFilterUpsertBulk) SetName(v string) *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbFilterUpsertBulk) UpdateName() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbFilterUpsertBulk) SetDescription(v string) *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbFilterUpsertBulk) UpdateDescription() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbFilterUpsertBulk) ClearDescription() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetType sets the "Type" field.
+func (u *DbFilterUpsertBulk) SetType(v interfaces.FilterType) *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *DbFilterUpsertBulk) UpdateType() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetEnabled sets the "Enabled" field.
+func (u *DbFilterUpsertBulk) SetEnabled(v bool) *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetEnabled(v)
+	})
+}
+
+// UpdateEnabled sets the "Enabled" field to the value that was provided on create.
+func (u *DbFilterUpsertBulk) UpdateEnabled() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateEnabled()
+	})
+}
+
+// SetFilterImpl sets the "FilterImpl" field.
+func (u *DbFilterUpsertBulk) SetFilterImpl(v string) *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetFilterImpl(v)
+	})
+}
+
+// UpdateFilterImpl sets the "FilterImpl" field to the value that was provided on create.
+func (u *DbFilterUpsertBulk) UpdateFilterImpl() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateFilterImpl()
+	})
+}
+
+// SetConfig sets the "Config" field.
+func (u *DbFilterUpsertBulk) SetConfig(v string) *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetConfig(v)
+	})
+}
+
+// UpdateConfig sets the "Config" field to the value that was provided on create.
+func (u *DbFilterUpsertBulk) UpdateConfig() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateConfig()
+	})
+}
+
+// Exec executes the query.
+func (u *DbFilterUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DbFilterCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbFilterCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbFilterUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

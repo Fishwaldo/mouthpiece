@@ -11,7 +11,7 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/skx/evalfilter/v2 v2.1.19
 	go.uber.org/zap v1.22.0
-	gorm.io/gorm v1.23.8
+	gorm.io/gorm v1.23.8 // indirect
 )
 
 require (
@@ -19,19 +19,17 @@ require (
 	github.com/casbin/casbin/v2 v2.51.2
 	github.com/casbin/gorm-adapter/v3 v3.7.4
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
-	github.com/glebarez/sqlite v1.4.6
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-pkgz/auth v1.19.0
 	github.com/go-pkgz/rest v1.15.6
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/onsi/ginkgo/v2 v2.1.6
 	github.com/onsi/gomega v1.20.1
 	github.com/spf13/viper v1.12.0
-	github.com/vchitai/logrgorm2 v1.0.0-rc1
-	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
@@ -49,12 +47,12 @@ require (
 	github.com/danielgtaylor/casing v0.0.0-20210126043903-4e55e6373ac3 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.0 // indirect
 	github.com/dghubble/oauth1 v0.7.1 // indirect
-	github.com/dmarkham/enumer v1.5.6 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
 	github.com/glebarez/go-sqlite v1.17.3 // indirect
+	github.com/glebarez/sqlite v1.4.6 // indirect
 	github.com/go-oauth2/oauth2/v4 v4.4.3 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/go-pkgz/repeater v1.1.3 // indirect
@@ -73,7 +71,6 @@ require (
 	github.com/graphql-go/handler v0.2.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
-	github.com/hedwigz/entviz v0.0.0-20220529060928-44574cfd7a21 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.12.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -95,7 +92,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/nullrocks/identicon v0.0.0-20180626043057-7875f45b0022 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
-	github.com/pascaldekloe/name v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -121,13 +117,13 @@ require (
 	go.mongodb.org/mongo-driver v1.9.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
+	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898 // indirect
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.13-0.20220804200503-81c7dc4e4efa // indirect
 	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect

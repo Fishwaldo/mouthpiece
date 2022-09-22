@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportinstances"
@@ -43,6 +44,7 @@ type DbTransportInstancesCreate struct {
 	config
 	mutation *DbTransportInstancesMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
@@ -236,6 +238,7 @@ func (dtic *DbTransportInstancesCreate) createSpec() (*DbTransportInstances, *sq
 			},
 		}
 	)
+	_spec.OnConflict = dtic.conflict
 	if value, ok := dtic.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -310,6 +313,275 @@ func (dtic *DbTransportInstancesCreate) createSpec() (*DbTransportInstances, *sq
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbTransportInstances.Create().
+//		SetTenantID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbTransportInstancesUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dtic *DbTransportInstancesCreate) OnConflict(opts ...sql.ConflictOption) *DbTransportInstancesUpsertOne {
+	dtic.conflict = opts
+	return &DbTransportInstancesUpsertOne{
+		create: dtic,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbTransportInstances.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dtic *DbTransportInstancesCreate) OnConflictColumns(columns ...string) *DbTransportInstancesUpsertOne {
+	dtic.conflict = append(dtic.conflict, sql.ConflictColumns(columns...))
+	return &DbTransportInstancesUpsertOne{
+		create: dtic,
+	}
+}
+
+type (
+	// DbTransportInstancesUpsertOne is the builder for "upsert"-ing
+	//  one DbTransportInstances node.
+	DbTransportInstancesUpsertOne struct {
+		create *DbTransportInstancesCreate
+	}
+
+	// DbTransportInstancesUpsert is the "OnConflict" setter.
+	DbTransportInstancesUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbTransportInstancesUpsert) SetTenantID(v int) *DbTransportInstancesUpsert {
+	u.Set(dbtransportinstances.FieldTenantID, v)
+	return u
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsert) UpdateTenantID() *DbTransportInstancesUpsert {
+	u.SetExcluded(dbtransportinstances.FieldTenantID)
+	return u
+}
+
+// SetName sets the "Name" field.
+func (u *DbTransportInstancesUpsert) SetName(v string) *DbTransportInstancesUpsert {
+	u.Set(dbtransportinstances.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsert) UpdateName() *DbTransportInstancesUpsert {
+	u.SetExcluded(dbtransportinstances.FieldName)
+	return u
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbTransportInstancesUpsert) SetDescription(v string) *DbTransportInstancesUpsert {
+	u.Set(dbtransportinstances.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsert) UpdateDescription() *DbTransportInstancesUpsert {
+	u.SetExcluded(dbtransportinstances.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbTransportInstancesUpsert) ClearDescription() *DbTransportInstancesUpsert {
+	u.SetNull(dbtransportinstances.FieldDescription)
+	return u
+}
+
+// SetConfig sets the "Config" field.
+func (u *DbTransportInstancesUpsert) SetConfig(v string) *DbTransportInstancesUpsert {
+	u.Set(dbtransportinstances.FieldConfig, v)
+	return u
+}
+
+// UpdateConfig sets the "Config" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsert) UpdateConfig() *DbTransportInstancesUpsert {
+	u.SetExcluded(dbtransportinstances.FieldConfig)
+	return u
+}
+
+// SetTransportProvider sets the "TransportProvider" field.
+func (u *DbTransportInstancesUpsert) SetTransportProvider(v string) *DbTransportInstancesUpsert {
+	u.Set(dbtransportinstances.FieldTransportProvider, v)
+	return u
+}
+
+// UpdateTransportProvider sets the "TransportProvider" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsert) UpdateTransportProvider() *DbTransportInstancesUpsert {
+	u.SetExcluded(dbtransportinstances.FieldTransportProvider)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.DbTransportInstances.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbTransportInstancesUpsertOne) UpdateNewValues() *DbTransportInstancesUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//  client.DbTransportInstances.Create().
+//      OnConflict(sql.ResolveWithIgnore()).
+//      Exec(ctx)
+//
+func (u *DbTransportInstancesUpsertOne) Ignore() *DbTransportInstancesUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbTransportInstancesUpsertOne) DoNothing() *DbTransportInstancesUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbTransportInstancesCreate.OnConflict
+// documentation for more info.
+func (u *DbTransportInstancesUpsertOne) Update(set func(*DbTransportInstancesUpsert)) *DbTransportInstancesUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbTransportInstancesUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbTransportInstancesUpsertOne) SetTenantID(v int) *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertOne) UpdateTenantID() *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbTransportInstancesUpsertOne) SetName(v string) *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertOne) UpdateName() *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbTransportInstancesUpsertOne) SetDescription(v string) *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertOne) UpdateDescription() *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbTransportInstancesUpsertOne) ClearDescription() *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetConfig sets the "Config" field.
+func (u *DbTransportInstancesUpsertOne) SetConfig(v string) *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetConfig(v)
+	})
+}
+
+// UpdateConfig sets the "Config" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertOne) UpdateConfig() *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateConfig()
+	})
+}
+
+// SetTransportProvider sets the "TransportProvider" field.
+func (u *DbTransportInstancesUpsertOne) SetTransportProvider(v string) *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetTransportProvider(v)
+	})
+}
+
+// UpdateTransportProvider sets the "TransportProvider" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertOne) UpdateTransportProvider() *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateTransportProvider()
+	})
+}
+
+// Exec executes the query.
+func (u *DbTransportInstancesUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbTransportInstancesCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbTransportInstancesUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DbTransportInstancesUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DbTransportInstancesUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 func (dtic *DbTransportInstancesCreate) SetDbTransportInstancesFromStruct(input *DbTransportInstances) *DbTransportInstancesCreate {
 
 	dtic.SetTenantID(input.TenantID)
@@ -329,6 +601,7 @@ func (dtic *DbTransportInstancesCreate) SetDbTransportInstancesFromStruct(input 
 type DbTransportInstancesCreateBulk struct {
 	config
 	builders []*DbTransportInstancesCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the DbTransportInstances entities in the database.
@@ -354,6 +627,7 @@ func (dticb *DbTransportInstancesCreateBulk) Save(ctx context.Context) ([]*DbTra
 					_, err = mutators[i+1].Mutate(root, dticb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = dticb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, dticb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -404,6 +678,188 @@ func (dticb *DbTransportInstancesCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (dticb *DbTransportInstancesCreateBulk) ExecX(ctx context.Context) {
 	if err := dticb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbTransportInstances.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbTransportInstancesUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dticb *DbTransportInstancesCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbTransportInstancesUpsertBulk {
+	dticb.conflict = opts
+	return &DbTransportInstancesUpsertBulk{
+		create: dticb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbTransportInstances.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dticb *DbTransportInstancesCreateBulk) OnConflictColumns(columns ...string) *DbTransportInstancesUpsertBulk {
+	dticb.conflict = append(dticb.conflict, sql.ConflictColumns(columns...))
+	return &DbTransportInstancesUpsertBulk{
+		create: dticb,
+	}
+}
+
+// DbTransportInstancesUpsertBulk is the builder for "upsert"-ing
+// a bulk of DbTransportInstances nodes.
+type DbTransportInstancesUpsertBulk struct {
+	create *DbTransportInstancesCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.DbTransportInstances.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbTransportInstancesUpsertBulk) UpdateNewValues() *DbTransportInstancesUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DbTransportInstances.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+//
+func (u *DbTransportInstancesUpsertBulk) Ignore() *DbTransportInstancesUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbTransportInstancesUpsertBulk) DoNothing() *DbTransportInstancesUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbTransportInstancesCreateBulk.OnConflict
+// documentation for more info.
+func (u *DbTransportInstancesUpsertBulk) Update(set func(*DbTransportInstancesUpsert)) *DbTransportInstancesUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbTransportInstancesUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbTransportInstancesUpsertBulk) SetTenantID(v int) *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertBulk) UpdateTenantID() *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbTransportInstancesUpsertBulk) SetName(v string) *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertBulk) UpdateName() *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbTransportInstancesUpsertBulk) SetDescription(v string) *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertBulk) UpdateDescription() *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbTransportInstancesUpsertBulk) ClearDescription() *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetConfig sets the "Config" field.
+func (u *DbTransportInstancesUpsertBulk) SetConfig(v string) *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetConfig(v)
+	})
+}
+
+// UpdateConfig sets the "Config" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertBulk) UpdateConfig() *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateConfig()
+	})
+}
+
+// SetTransportProvider sets the "TransportProvider" field.
+func (u *DbTransportInstancesUpsertBulk) SetTransportProvider(v string) *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetTransportProvider(v)
+	})
+}
+
+// UpdateTransportProvider sets the "TransportProvider" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertBulk) UpdateTransportProvider() *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateTransportProvider()
+	})
+}
+
+// Exec executes the query.
+func (u *DbTransportInstancesUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DbTransportInstancesCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbTransportInstancesCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbTransportInstancesUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

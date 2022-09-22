@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
@@ -46,6 +47,7 @@ type DbGroupCreate struct {
 	config
 	mutation *DbGroupMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
@@ -256,6 +258,7 @@ func (dgc *DbGroupCreate) createSpec() (*DbGroup, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = dgc.conflict
 	if value, ok := dgc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -371,6 +374,223 @@ func (dgc *DbGroupCreate) createSpec() (*DbGroup, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbGroup.Create().
+//		SetTenantID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbGroupUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dgc *DbGroupCreate) OnConflict(opts ...sql.ConflictOption) *DbGroupUpsertOne {
+	dgc.conflict = opts
+	return &DbGroupUpsertOne{
+		create: dgc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbGroup.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dgc *DbGroupCreate) OnConflictColumns(columns ...string) *DbGroupUpsertOne {
+	dgc.conflict = append(dgc.conflict, sql.ConflictColumns(columns...))
+	return &DbGroupUpsertOne{
+		create: dgc,
+	}
+}
+
+type (
+	// DbGroupUpsertOne is the builder for "upsert"-ing
+	//  one DbGroup node.
+	DbGroupUpsertOne struct {
+		create *DbGroupCreate
+	}
+
+	// DbGroupUpsert is the "OnConflict" setter.
+	DbGroupUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbGroupUpsert) SetTenantID(v int) *DbGroupUpsert {
+	u.Set(dbgroup.FieldTenantID, v)
+	return u
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbGroupUpsert) UpdateTenantID() *DbGroupUpsert {
+	u.SetExcluded(dbgroup.FieldTenantID)
+	return u
+}
+
+// SetName sets the "Name" field.
+func (u *DbGroupUpsert) SetName(v string) *DbGroupUpsert {
+	u.Set(dbgroup.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbGroupUpsert) UpdateName() *DbGroupUpsert {
+	u.SetExcluded(dbgroup.FieldName)
+	return u
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbGroupUpsert) SetDescription(v string) *DbGroupUpsert {
+	u.Set(dbgroup.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbGroupUpsert) UpdateDescription() *DbGroupUpsert {
+	u.SetExcluded(dbgroup.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbGroupUpsert) ClearDescription() *DbGroupUpsert {
+	u.SetNull(dbgroup.FieldDescription)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.DbGroup.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbGroupUpsertOne) UpdateNewValues() *DbGroupUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//  client.DbGroup.Create().
+//      OnConflict(sql.ResolveWithIgnore()).
+//      Exec(ctx)
+//
+func (u *DbGroupUpsertOne) Ignore() *DbGroupUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbGroupUpsertOne) DoNothing() *DbGroupUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbGroupCreate.OnConflict
+// documentation for more info.
+func (u *DbGroupUpsertOne) Update(set func(*DbGroupUpsert)) *DbGroupUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbGroupUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbGroupUpsertOne) SetTenantID(v int) *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbGroupUpsertOne) UpdateTenantID() *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbGroupUpsertOne) SetName(v string) *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbGroupUpsertOne) UpdateName() *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbGroupUpsertOne) SetDescription(v string) *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbGroupUpsertOne) UpdateDescription() *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbGroupUpsertOne) ClearDescription() *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *DbGroupUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbGroupCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbGroupUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DbGroupUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DbGroupUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 func (dgc *DbGroupCreate) SetDbGroupFromStruct(input *DbGroup) *DbGroupCreate {
 
 	dgc.SetTenantID(input.TenantID)
@@ -386,6 +606,7 @@ func (dgc *DbGroupCreate) SetDbGroupFromStruct(input *DbGroup) *DbGroupCreate {
 type DbGroupCreateBulk struct {
 	config
 	builders []*DbGroupCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the DbGroup entities in the database.
@@ -411,6 +632,7 @@ func (dgcb *DbGroupCreateBulk) Save(ctx context.Context) ([]*DbGroup, error) {
 					_, err = mutators[i+1].Mutate(root, dgcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = dgcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, dgcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -461,6 +683,160 @@ func (dgcb *DbGroupCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (dgcb *DbGroupCreateBulk) ExecX(ctx context.Context) {
 	if err := dgcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbGroup.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbGroupUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dgcb *DbGroupCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbGroupUpsertBulk {
+	dgcb.conflict = opts
+	return &DbGroupUpsertBulk{
+		create: dgcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbGroup.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dgcb *DbGroupCreateBulk) OnConflictColumns(columns ...string) *DbGroupUpsertBulk {
+	dgcb.conflict = append(dgcb.conflict, sql.ConflictColumns(columns...))
+	return &DbGroupUpsertBulk{
+		create: dgcb,
+	}
+}
+
+// DbGroupUpsertBulk is the builder for "upsert"-ing
+// a bulk of DbGroup nodes.
+type DbGroupUpsertBulk struct {
+	create *DbGroupCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.DbGroup.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbGroupUpsertBulk) UpdateNewValues() *DbGroupUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DbGroup.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+//
+func (u *DbGroupUpsertBulk) Ignore() *DbGroupUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbGroupUpsertBulk) DoNothing() *DbGroupUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbGroupCreateBulk.OnConflict
+// documentation for more info.
+func (u *DbGroupUpsertBulk) Update(set func(*DbGroupUpsert)) *DbGroupUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbGroupUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbGroupUpsertBulk) SetTenantID(v int) *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbGroupUpsertBulk) UpdateTenantID() *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbGroupUpsertBulk) SetName(v string) *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbGroupUpsertBulk) UpdateName() *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbGroupUpsertBulk) SetDescription(v string) *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbGroupUpsertBulk) UpdateDescription() *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbGroupUpsertBulk) ClearDescription() *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *DbGroupUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DbGroupCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbGroupCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbGroupUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

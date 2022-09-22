@@ -3,7 +3,6 @@ package severity
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/filter"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
@@ -12,7 +11,6 @@ import (
 
 func init() {
 	filter.RegisterFilterImpl("SeverityFilter", SevFilterFactory{})
-	fmt.Printf("%s\n", filter.GetFilterImpls(context.Background()))
 }
 
 type SeverityFilterOp int

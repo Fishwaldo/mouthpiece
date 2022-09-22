@@ -32,6 +32,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
@@ -46,6 +48,7 @@ type DbMessageCreate struct {
 	config
 	mutation *DbMessageMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
@@ -322,6 +325,7 @@ func (dmc *DbMessageCreate) createSpec() (*DbMessage, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = dmc.conflict
 	if id, ok := dmc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -428,6 +432,353 @@ func (dmc *DbMessageCreate) createSpec() (*DbMessage, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbMessage.Create().
+//		SetTenantID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbMessageUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dmc *DbMessageCreate) OnConflict(opts ...sql.ConflictOption) *DbMessageUpsertOne {
+	dmc.conflict = opts
+	return &DbMessageUpsertOne{
+		create: dmc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbMessage.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dmc *DbMessageCreate) OnConflictColumns(columns ...string) *DbMessageUpsertOne {
+	dmc.conflict = append(dmc.conflict, sql.ConflictColumns(columns...))
+	return &DbMessageUpsertOne{
+		create: dmc,
+	}
+}
+
+type (
+	// DbMessageUpsertOne is the builder for "upsert"-ing
+	//  one DbMessage node.
+	DbMessageUpsertOne struct {
+		create *DbMessageCreate
+	}
+
+	// DbMessageUpsert is the "OnConflict" setter.
+	DbMessageUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbMessageUpsert) SetTenantID(v int) *DbMessageUpsert {
+	u.Set(dbmessage.FieldTenantID, v)
+	return u
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbMessageUpsert) UpdateTenantID() *DbMessageUpsert {
+	u.SetExcluded(dbmessage.FieldTenantID)
+	return u
+}
+
+// SetMessage sets the "Message" field.
+func (u *DbMessageUpsert) SetMessage(v string) *DbMessageUpsert {
+	u.Set(dbmessage.FieldMessage, v)
+	return u
+}
+
+// UpdateMessage sets the "Message" field to the value that was provided on create.
+func (u *DbMessageUpsert) UpdateMessage() *DbMessageUpsert {
+	u.SetExcluded(dbmessage.FieldMessage)
+	return u
+}
+
+// SetShortMsg sets the "ShortMsg" field.
+func (u *DbMessageUpsert) SetShortMsg(v string) *DbMessageUpsert {
+	u.Set(dbmessage.FieldShortMsg, v)
+	return u
+}
+
+// UpdateShortMsg sets the "ShortMsg" field to the value that was provided on create.
+func (u *DbMessageUpsert) UpdateShortMsg() *DbMessageUpsert {
+	u.SetExcluded(dbmessage.FieldShortMsg)
+	return u
+}
+
+// ClearShortMsg clears the value of the "ShortMsg" field.
+func (u *DbMessageUpsert) ClearShortMsg() *DbMessageUpsert {
+	u.SetNull(dbmessage.FieldShortMsg)
+	return u
+}
+
+// SetTopic sets the "Topic" field.
+func (u *DbMessageUpsert) SetTopic(v string) *DbMessageUpsert {
+	u.Set(dbmessage.FieldTopic, v)
+	return u
+}
+
+// UpdateTopic sets the "Topic" field to the value that was provided on create.
+func (u *DbMessageUpsert) UpdateTopic() *DbMessageUpsert {
+	u.SetExcluded(dbmessage.FieldTopic)
+	return u
+}
+
+// ClearTopic clears the value of the "Topic" field.
+func (u *DbMessageUpsert) ClearTopic() *DbMessageUpsert {
+	u.SetNull(dbmessage.FieldTopic)
+	return u
+}
+
+// SetSeverity sets the "Severity" field.
+func (u *DbMessageUpsert) SetSeverity(v int) *DbMessageUpsert {
+	u.Set(dbmessage.FieldSeverity, v)
+	return u
+}
+
+// UpdateSeverity sets the "Severity" field to the value that was provided on create.
+func (u *DbMessageUpsert) UpdateSeverity() *DbMessageUpsert {
+	u.SetExcluded(dbmessage.FieldSeverity)
+	return u
+}
+
+// AddSeverity adds v to the "Severity" field.
+func (u *DbMessageUpsert) AddSeverity(v int) *DbMessageUpsert {
+	u.Add(dbmessage.FieldSeverity, v)
+	return u
+}
+
+// ClearSeverity clears the value of the "Severity" field.
+func (u *DbMessageUpsert) ClearSeverity() *DbMessageUpsert {
+	u.SetNull(dbmessage.FieldSeverity)
+	return u
+}
+
+// SetTimestamp sets the "Timestamp" field.
+func (u *DbMessageUpsert) SetTimestamp(v time.Time) *DbMessageUpsert {
+	u.Set(dbmessage.FieldTimestamp, v)
+	return u
+}
+
+// UpdateTimestamp sets the "Timestamp" field to the value that was provided on create.
+func (u *DbMessageUpsert) UpdateTimestamp() *DbMessageUpsert {
+	u.SetExcluded(dbmessage.FieldTimestamp)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.DbMessage.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(dbmessage.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+//
+func (u *DbMessageUpsertOne) UpdateNewValues() *DbMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(dbmessage.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//  client.DbMessage.Create().
+//      OnConflict(sql.ResolveWithIgnore()).
+//      Exec(ctx)
+//
+func (u *DbMessageUpsertOne) Ignore() *DbMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbMessageUpsertOne) DoNothing() *DbMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbMessageCreate.OnConflict
+// documentation for more info.
+func (u *DbMessageUpsertOne) Update(set func(*DbMessageUpsert)) *DbMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbMessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbMessageUpsertOne) SetTenantID(v int) *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbMessageUpsertOne) UpdateTenantID() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetMessage sets the "Message" field.
+func (u *DbMessageUpsertOne) SetMessage(v string) *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetMessage(v)
+	})
+}
+
+// UpdateMessage sets the "Message" field to the value that was provided on create.
+func (u *DbMessageUpsertOne) UpdateMessage() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateMessage()
+	})
+}
+
+// SetShortMsg sets the "ShortMsg" field.
+func (u *DbMessageUpsertOne) SetShortMsg(v string) *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetShortMsg(v)
+	})
+}
+
+// UpdateShortMsg sets the "ShortMsg" field to the value that was provided on create.
+func (u *DbMessageUpsertOne) UpdateShortMsg() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateShortMsg()
+	})
+}
+
+// ClearShortMsg clears the value of the "ShortMsg" field.
+func (u *DbMessageUpsertOne) ClearShortMsg() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.ClearShortMsg()
+	})
+}
+
+// SetTopic sets the "Topic" field.
+func (u *DbMessageUpsertOne) SetTopic(v string) *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetTopic(v)
+	})
+}
+
+// UpdateTopic sets the "Topic" field to the value that was provided on create.
+func (u *DbMessageUpsertOne) UpdateTopic() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateTopic()
+	})
+}
+
+// ClearTopic clears the value of the "Topic" field.
+func (u *DbMessageUpsertOne) ClearTopic() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.ClearTopic()
+	})
+}
+
+// SetSeverity sets the "Severity" field.
+func (u *DbMessageUpsertOne) SetSeverity(v int) *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetSeverity(v)
+	})
+}
+
+// AddSeverity adds v to the "Severity" field.
+func (u *DbMessageUpsertOne) AddSeverity(v int) *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.AddSeverity(v)
+	})
+}
+
+// UpdateSeverity sets the "Severity" field to the value that was provided on create.
+func (u *DbMessageUpsertOne) UpdateSeverity() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateSeverity()
+	})
+}
+
+// ClearSeverity clears the value of the "Severity" field.
+func (u *DbMessageUpsertOne) ClearSeverity() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.ClearSeverity()
+	})
+}
+
+// SetTimestamp sets the "Timestamp" field.
+func (u *DbMessageUpsertOne) SetTimestamp(v time.Time) *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetTimestamp(v)
+	})
+}
+
+// UpdateTimestamp sets the "Timestamp" field to the value that was provided on create.
+func (u *DbMessageUpsertOne) UpdateTimestamp() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateTimestamp()
+	})
+}
+
+// Exec executes the query.
+func (u *DbMessageUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbMessageCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbMessageUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DbMessageUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: DbMessageUpsertOne.ID is not supported by MySQL driver. Use DbMessageUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DbMessageUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 func (dmc *DbMessageCreate) SetDbMessageFromStruct(input *DbMessage) *DbMessageCreate {
 
 	dmc.SetTenantID(input.TenantID)
@@ -453,6 +804,7 @@ func (dmc *DbMessageCreate) SetDbMessageFromStruct(input *DbMessage) *DbMessageC
 type DbMessageCreateBulk struct {
 	config
 	builders []*DbMessageCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the DbMessage entities in the database.
@@ -479,6 +831,7 @@ func (dmcb *DbMessageCreateBulk) Save(ctx context.Context) ([]*DbMessage, error)
 					_, err = mutators[i+1].Mutate(root, dmcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = dmcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, dmcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -525,6 +878,234 @@ func (dmcb *DbMessageCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (dmcb *DbMessageCreateBulk) ExecX(ctx context.Context) {
 	if err := dmcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbMessage.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbMessageUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dmcb *DbMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbMessageUpsertBulk {
+	dmcb.conflict = opts
+	return &DbMessageUpsertBulk{
+		create: dmcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbMessage.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dmcb *DbMessageCreateBulk) OnConflictColumns(columns ...string) *DbMessageUpsertBulk {
+	dmcb.conflict = append(dmcb.conflict, sql.ConflictColumns(columns...))
+	return &DbMessageUpsertBulk{
+		create: dmcb,
+	}
+}
+
+// DbMessageUpsertBulk is the builder for "upsert"-ing
+// a bulk of DbMessage nodes.
+type DbMessageUpsertBulk struct {
+	create *DbMessageCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.DbMessage.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(dbmessage.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+//
+func (u *DbMessageUpsertBulk) UpdateNewValues() *DbMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(dbmessage.FieldID)
+				return
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DbMessage.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+//
+func (u *DbMessageUpsertBulk) Ignore() *DbMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbMessageUpsertBulk) DoNothing() *DbMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbMessageCreateBulk.OnConflict
+// documentation for more info.
+func (u *DbMessageUpsertBulk) Update(set func(*DbMessageUpsert)) *DbMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbMessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbMessageUpsertBulk) SetTenantID(v int) *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbMessageUpsertBulk) UpdateTenantID() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetMessage sets the "Message" field.
+func (u *DbMessageUpsertBulk) SetMessage(v string) *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetMessage(v)
+	})
+}
+
+// UpdateMessage sets the "Message" field to the value that was provided on create.
+func (u *DbMessageUpsertBulk) UpdateMessage() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateMessage()
+	})
+}
+
+// SetShortMsg sets the "ShortMsg" field.
+func (u *DbMessageUpsertBulk) SetShortMsg(v string) *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetShortMsg(v)
+	})
+}
+
+// UpdateShortMsg sets the "ShortMsg" field to the value that was provided on create.
+func (u *DbMessageUpsertBulk) UpdateShortMsg() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateShortMsg()
+	})
+}
+
+// ClearShortMsg clears the value of the "ShortMsg" field.
+func (u *DbMessageUpsertBulk) ClearShortMsg() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.ClearShortMsg()
+	})
+}
+
+// SetTopic sets the "Topic" field.
+func (u *DbMessageUpsertBulk) SetTopic(v string) *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetTopic(v)
+	})
+}
+
+// UpdateTopic sets the "Topic" field to the value that was provided on create.
+func (u *DbMessageUpsertBulk) UpdateTopic() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateTopic()
+	})
+}
+
+// ClearTopic clears the value of the "Topic" field.
+func (u *DbMessageUpsertBulk) ClearTopic() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.ClearTopic()
+	})
+}
+
+// SetSeverity sets the "Severity" field.
+func (u *DbMessageUpsertBulk) SetSeverity(v int) *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetSeverity(v)
+	})
+}
+
+// AddSeverity adds v to the "Severity" field.
+func (u *DbMessageUpsertBulk) AddSeverity(v int) *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.AddSeverity(v)
+	})
+}
+
+// UpdateSeverity sets the "Severity" field to the value that was provided on create.
+func (u *DbMessageUpsertBulk) UpdateSeverity() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateSeverity()
+	})
+}
+
+// ClearSeverity clears the value of the "Severity" field.
+func (u *DbMessageUpsertBulk) ClearSeverity() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.ClearSeverity()
+	})
+}
+
+// SetTimestamp sets the "Timestamp" field.
+func (u *DbMessageUpsertBulk) SetTimestamp(v time.Time) *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetTimestamp(v)
+	})
+}
+
+// UpdateTimestamp sets the "Timestamp" field to the value that was provided on create.
+func (u *DbMessageUpsertBulk) UpdateTimestamp() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateTimestamp()
+	})
+}
+
+// Exec executes the query.
+func (u *DbMessageUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DbMessageCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbMessageCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbMessageUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

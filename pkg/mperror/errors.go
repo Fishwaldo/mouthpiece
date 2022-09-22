@@ -13,9 +13,10 @@ var (
 	ErrAppExists   = errors.New("App Already Exists")
 	ErrAppNotFound = errors.New("App Not Found")
 
-	ErrFilterNotFound = errors.New("Filter Not Found")
+	ErrFilterNotFound       = errors.New("Filter Not Found")
 	ErrFilterConfigNotFound = errors.New("Filter Config Not Found")
-	ErrFilterConfigInvalid = errors.New("Filter Config Invalid")
+	ErrFilterConfigInvalid  = errors.New("Filter Config Invalid")
+	ErrFilterImplNotFound   = errors.New("Filter Implementation Not Found")
 
 	ErrGroupExists   = errors.New("Group Already Exists")
 	ErrGroupNotFound = errors.New("Group Does Not Exist")
@@ -23,6 +24,7 @@ var (
 	ErrMsgNotInitialized   = errors.New("Message Not Initialized")
 	ErrMsgNoAppOwner       = errors.New("Message Has No App Owner")
 	ErrMsgMetadataNotFound = errors.New("Message Metadata Not Found")
+	ErrMsgLocked           = errors.New("Message Locked")
 
 	ErrMsgFieldNotFound = errors.New("Message Field Not Found")
 
@@ -32,19 +34,26 @@ var (
 
 	ErrTransportProviderNotFound = errors.New("Transport Provider Not Found")
 
-	ErrTransportReciepientNotFound = errors.New("Transport Recipient Not Found")
-	ErrTransportReciptientExists   = errors.New("Transport Recipient Already Exists")
-	ErrTransportRecipientGroupSet  = errors.New("Transport Recipient Group Already Set")
-	ErrTransportRecipientUserSet  = errors.New("Transport Recipient User Already Set")
-	ErrTransportRecipientGroupOrUserNotSet  = errors.New("Transport Recipient Group or User Not Set")
+	ErrTransportReciepientNotFound         = errors.New("Transport Recipient Not Found")
+	ErrTransportReciptientExists           = errors.New("Transport Recipient Already Exists")
+	ErrTransportRecipientSet               = errors.New("Transport Recipient Group or User Already Set")
+	ErrTransportRecipientGroupOrUserNotSet = errors.New("Transport Recipient Group or User Not Set")
 
 	ErrUserExists   = errors.New("User Already Exists")
 	ErrUserNotFound = errors.New("User Not Found")
+
+	ErrValidationError = errors.New("Validation Error")
 )
 
 func FilterErrors(err error) error {
+	if err == nil {
+		return nil
+	}
 	if ent.IsNotFound(err) {
 		return err
+	}
+	if ent.IsValidationError(err) {
+		return ErrValidationError
 	}
 	return ErrInternalError
 }

@@ -73,11 +73,14 @@ func (f *Filter) GetName() string {
 func (f *Filter) SetName(ctx context.Context, name string) (err error) {
 	f.lock.Lock()
 	defer f.lock.Unlock()
-	f.dbFilter, err = f.dbFilter.Update().SetName(name).Save(ctx)
+	dbtmp, err := f.dbFilter.Update().SetName(name).Save(ctx)
 	if err != nil {
 		f.log.Error(err, "Failed to update name")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	f.dbFilter = dbtmp
+	
+	
 	return nil
 }
 
@@ -90,11 +93,12 @@ func (f *Filter) GetDescription() string {
 func (f *Filter) SetDescription(ctx context.Context, desc string) (err error) {
 	f.lock.Lock()
 	defer f.lock.Unlock()
-	f.dbFilter, err = f.dbFilter.Update().SetDescription(desc).Save(ctx)
+	dbtmp, err := f.dbFilter.Update().SetDescription(desc).Save(ctx)
 	if err != nil {
 		f.log.Error(err, "Failed to update description")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	f.dbFilter = dbtmp
 	return nil
 }
 
@@ -118,8 +122,8 @@ func (f *Filter) ProcessMessage(ctx context.Context, msg interfaces.MessageI) (o
 		f.log.Error(err, "Error loading filter implementation")
 		return interfaces.FilterPass, mperror.ErrInternalError
 	}
-
-	return f.filterImpl.Process(ctx, msg)
+	ok, err = f.filterImpl.Process(ctx, msg)
+	return ok, mperror.FilterErrors(err)
 }
 
 func (f *Filter) GetConfig(ctx context.Context) (config interfaces.MarshableConfigI, err error) {
@@ -129,7 +133,8 @@ func (f *Filter) GetConfig(ctx context.Context) (config interfaces.MarshableConf
 		f.log.Error(err, "Error loading filter implementation")
 		return nil, mperror.ErrInternalError
 	}
-	return f.filterImpl.GetConfig(ctx)
+	cfg, err := f.filterImpl.GetConfig(ctx)
+	return cfg, mperror.FilterErrors(err)
 }
 
 func (f *Filter) SetConfig(ctx context.Context, config interfaces.MarshableConfigI) (err error) {
@@ -141,19 +146,20 @@ func (f *Filter) SetConfig(ctx context.Context, config interfaces.MarshableConfi
 		f.log.Error(err, "Error marshalling config")
 		return mperror.ErrInternalError
 	}
-	f.dbFilter, err = f.dbFilter.Update().SetConfig(cfg).Save(ctx)
+	dbtmp, err := f.dbFilter.Update().SetConfig(cfg).Save(ctx)
 	if err != nil {
 		f.log.Error(err, "Error saving filter config")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	f.dbFilter = dbtmp
 
 	if err := f.loadFilterImpl(ctx); err != nil {
 		f.log.Error(err, "Error loading filter implementation")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 	if err := f.filterImpl.SetConfig(ctx, config); err != nil {
 		f.log.Error(err, "Error updating filter implementation config")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 
 	return nil
@@ -163,7 +169,7 @@ func (f *Filter) loadFilterImpl(ctx context.Context) (err error) {
 	if f.filterImpl == nil {
 		if f.filterImpl, err = GetNewFilterImpl(ctx, f.dbFilter.FilterImpl, f.dbFilter.Config); err != nil {
 			f.log.Error(err, "Error loading filter implementation", "filter", f.dbFilter.Name)
-			return mperror.ErrInternalError
+			return mperror.FilterErrors(err)
 		}
 	}
 	return nil
@@ -171,10 +177,12 @@ func (f *Filter) loadFilterImpl(ctx context.Context) (err error) {
 
 
 func (f *Filter) Save(ctx context.Context) (err error) {
-	if f.dbFilter, err = f.dbFilter.Update().Save(ctx); err != nil {
+	dbtmp, err := f.dbFilter.Update().Save(ctx)
+	if err != nil {
 		f.log.Error(err, "Error saving filter", "filter", f.dbFilter.Name)
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	f.dbFilter = dbtmp
 	return nil
 }
 

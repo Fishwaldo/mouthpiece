@@ -6,31 +6,32 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jinzhu/copier"
+
 	"github.com/Fishwaldo/mouthpiece/pkg/db"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessage"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
-	"github.com/jinzhu/copier"
 
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
 )
 
-
-
 type Message struct {
-	dbEntry *ent.DbMessage `copier:"-"`
-	lock    sync.RWMutex `copier:"-"`
-	log     logr.Logger 
-	metaData map[string]any
+	dbEntry  *ent.DbMessage `copier:"-"`
+	lock     sync.RWMutex   `copier:"-"`
+	log      logr.Logger
+	metaData map[string]any `copier:"must"`
+	cloned   bool
 }
 
 func NewMessage(ctx context.Context, message string, app interfaces.AppI) *Message {
 	msg := &Message{
-		log: log.Log.WithName("Message"),
+		log:      log.Log.WithName("Message"),
 		metaData: make(map[string]any),
+		cloned:   false,
 	}
 	if err := msg.init(); err != nil {
 		msg.log.Error(err, "Error Initializing Message")
@@ -40,28 +41,28 @@ func NewMessage(ctx context.Context, message string, app interfaces.AppI) *Messa
 	msg.dbEntry, err = db.DbClient.DbMessage.Create().
 		SetMessage(message).
 		SetAppID(app.GetID()).
-		Save(ctx);
+		Save(ctx)
 	if err != nil {
 		msg.log.Error(err, "Error Saving Message")
 		return nil
 	}
-	msg.log = log.Log.WithName("Message").WithValues("MessageID", msg.dbEntry.ID) 
+	msg.log = log.Log.WithName("Message").WithValues("MessageID", msg.dbEntry.ID)
 	return msg
 }
 
 func LoadFromDB(ctx context.Context, id uuid.UUID) (*Message, error) {
 	msg := &Message{
-		log: log.Log.WithName("Message"),
+		log:      log.Log.WithName("Message"),
 		metaData: make(map[string]any),
 	}
 	if newmsg, err := db.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(id)).First(ctx); err != nil {
 		msg.log.Error(err, "Error Loading Message", "Message", msg)
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	} else {
 		msg.dbEntry = newmsg
 		if err := msg.init(); err != nil {
 			msg.log.Error(err, "Error Initializing Message", "Message", msg)
-			return nil, mperror.ErrInternalError
+			return nil, mperror.FilterErrors(err)
 		}
 		msg.log = log.Log.WithName("Message").WithValues("MessageID", msg.dbEntry.ID)
 	}
@@ -89,14 +90,13 @@ func (msg *Message) Load(ctx context.Context, newmsg any) error {
 func (msg *Message) Save(ctx context.Context, app interfaces.AppI) error {
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
-	var err error
-	if msg.dbEntry, err = db.DbClient.DbMessage.Create().
+	if _, err := db.DbClient.DbMessage.Create().
 		SetDbMessageFromStruct(msg.dbEntry).
 		SetAppID(app.GetID()).
 		Save(ctx); err != nil {
 		msg.log.Error(err, "Error Saving Message")
-		return mperror.ErrInternalError
-	} 
+		return mperror.FilterErrors(err)
+	}
 	msg.dbEntry = db.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(msg.dbEntry.ID)).FirstX(ctx)
 	msg.log = log.Log.WithName("Message").WithValues("MessageID", msg.dbEntry.ID)
 	return nil
@@ -119,12 +119,17 @@ func (msg *Message) GetMessage() string {
 func (msg *Message) SetMessage(ctx context.Context, newmessage string) (err error) {
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
+	if msg.cloned {
+		msg.log.Error(mperror.ErrMsgLocked, "Message is cloned")
+		return mperror.ErrMsgLocked
+	}
 
-	msg.dbEntry, err = msg.dbEntry.Update().SetMessage(newmessage).Save(ctx)
+	dbtmp, err := msg.dbEntry.Update().SetMessage(newmessage).Save(ctx)
 	if err != nil {
 		msg.log.Error(err, "Error Updating Message")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	msg.dbEntry = dbtmp
 	return nil
 }
 
@@ -139,11 +144,17 @@ func (msg *Message) SetShortMsg(ctx context.Context, shortmsg string) (err error
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
 
-	msg.dbEntry, err = msg.dbEntry.Update().SetShortMsg(shortmsg).Save(ctx)
+	if msg.cloned {
+		msg.log.Error(mperror.ErrMsgLocked, "Message is cloned")
+		return mperror.ErrMsgLocked
+	}
+
+	dbtmp, err := msg.dbEntry.Update().SetShortMsg(shortmsg).Save(ctx)
 	if err != nil {
 		msg.log.Error(err, "Error Updating Message")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	msg.dbEntry = dbtmp
 	return nil
 }
 
@@ -158,11 +169,17 @@ func (msg *Message) SetTopic(ctx context.Context, topic string) (err error) {
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
 
-	msg.dbEntry, err = msg.dbEntry.Update().SetTopic(topic).Save(ctx)
-	if err != nil {
-	 	msg.log.Error(err, "Error Updating Message")
-	 	return mperror.ErrInternalError
+	if msg.cloned {
+		msg.log.Error(mperror.ErrMsgLocked, "Message is cloned")
+		return mperror.ErrMsgLocked
 	}
+
+	dbtmp, err := msg.dbEntry.Update().SetTopic(topic).Save(ctx)
+	if err != nil {
+		msg.log.Error(err, "Error Updating Message")
+		return mperror.FilterErrors(err)
+	}
+	msg.dbEntry = dbtmp
 	return nil
 }
 
@@ -177,11 +194,17 @@ func (msg *Message) SetSeverity(ctx context.Context, sev int) (err error) {
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
 
-	msg.dbEntry, err = msg.dbEntry.Update().SetSeverity(sev).Save(ctx)
+	if msg.cloned {
+		msg.log.Error(mperror.ErrMsgLocked, "Message is cloned")
+		return mperror.ErrMsgLocked
+	}
+
+	dbtmp, err := msg.dbEntry.Update().SetSeverity(sev).Save(ctx)
 	if err != nil {
 		msg.log.Error(err, "Error Updating Message")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	msg.dbEntry = dbtmp
 	return nil
 }
 
@@ -196,11 +219,17 @@ func (msg *Message) SetTimestamp(ctx context.Context, ts time.Time) (err error) 
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
 
-	msg.dbEntry, err = msg.dbEntry.Update().SetTimestamp(ts).Save(ctx)
+	if msg.cloned {
+		msg.log.Error(mperror.ErrMsgLocked, "Message is cloned")
+		return mperror.ErrMsgLocked
+	}
+
+	dbtmp, err := msg.dbEntry.Update().SetTimestamp(ts).Save(ctx)
 	if err != nil {
 		msg.log.Error(err, "Error Updating Message")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	msg.dbEntry = dbtmp
 	return nil
 }
 
@@ -208,21 +237,28 @@ func (msg *Message) SetFields(ctx context.Context, fields map[string]string) err
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
 
+	if msg.cloned {
+		msg.log.Error(mperror.ErrMsgLocked, "Message is cloned")
+		return mperror.ErrMsgLocked
+	}
+
 	tx, err := db.DbClient.Tx(ctx)
 	if err != nil {
 		msg.log.Error(err, "Error Starting Transaction", "Message", msg)
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 
 	for k, v := range fields {
-		if _, err := tx.DbMessageFields.Create().
+		if err := tx.DbMessageFields.Create().
 			SetOwner(msg.dbEntry).
 			SetName(k).
 			SetValue(v).
-			Save(ctx); err != nil {
+			OnConflict().
+			UpdateNewValues().
+			Exec(ctx); err != nil {
 			msg.log.Error(err, "Error Saving Message Field", "Message", msg, "Field", k, "Value", v)
 			tx.Rollback()
-			return mperror.ErrInternalError
+			return mperror.FilterErrors(err)
 		}
 	}
 	tx.Commit()
@@ -272,13 +308,21 @@ func (msg *Message) GetField(ctx context.Context, key string) (value string, err
 func (msg *Message) SetField(ctx context.Context, key string, value string) (err error) {
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
-	if _, err := db.DbClient.DbMessageFields.Create().
+
+	if msg.cloned {
+		msg.log.Error(mperror.ErrMsgLocked, "Message is cloned")
+		return mperror.ErrMsgLocked
+	}
+
+	if err := db.DbClient.DbMessageFields.Create().
 		SetOwner(msg.dbEntry).
 		SetName(key).
 		SetValue(value).
-		Save(ctx); err != nil {
+		OnConflict().
+		UpdateNewValues().
+		Exec(ctx); err != nil {
 		msg.log.Error(err, "Error Saving Message Field", "Message", msg, "Field", key, "Value", value)
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 	msg.dbEntry = db.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(msg.dbEntry.ID)).FirstX(ctx)
 	return nil
@@ -290,7 +334,7 @@ func (msg *Message) GetApp(ctx context.Context) (interfaces.AppI, error) {
 	dbapp, err := msg.dbEntry.QueryApp().Only(ctx)
 	if err != nil {
 		msg.log.Error(err, "Error Getting Message App", "Message", msg)
-		return nil, mperror.ErrAppNotFound
+		return nil, mperror.FilterErrors(err)
 	}
 	return interfaces.GetAppService(ctx).Load(ctx, dbapp)
 }
@@ -298,6 +342,8 @@ func (msg *Message) GetApp(ctx context.Context) (interfaces.AppI, error) {
 func (msg *Message) ProcessMessage(ctx context.Context) (err error) {
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
+
+	msg.cloned = true
 
 	if msg.dbEntry == nil {
 		return mperror.ErrMsgNotInitialized
@@ -326,21 +372,21 @@ func (msg *Message) ProcessMessage(ctx context.Context) (err error) {
 }
 
 func (msg *Message) String() string {
-//	msg.lock.RLock()
-//	defer msg.lock.RUnlock()
+	//	msg.lock.RLock()
+	//	defer msg.lock.RUnlock()
 	return msg.dbEntry.String()
 }
 
-func (msg *Message) SetMetadata(ctx context.Context, key string, value any) (error){
-	//msg.lock.Lock()
-	//defer msg.lock.Unlock()
+func (msg *Message) SetMetadata(ctx context.Context, key string, value any) error {
+	msg.lock.Lock()
+	defer msg.lock.Unlock()
 	msg.metaData[key] = value
 	return nil
 }
 
 func (msg *Message) GetMetadata(ctx context.Context, key string) (any, error) {
-	//msg.lock.RLock()
-	//defer msg.lock.RUnlock()
+	msg.lock.RLock()
+	defer msg.lock.RUnlock()
 	if val, ok := msg.metaData[key]; ok {
 		return val, nil
 	}
@@ -348,8 +394,8 @@ func (msg *Message) GetMetadata(ctx context.Context, key string) (any, error) {
 }
 
 func (msg *Message) GetMetadataFields(ctx context.Context) (map[string]any, error) {
-	//msg.lock.RLock()
-	//defer msg.lock.RUnlock()
+	msg.lock.RLock()
+	defer msg.lock.RUnlock()
 	metadata := make(map[string]any)
 	for k, v := range msg.metaData {
 		metadata[k] = v
@@ -358,16 +404,26 @@ func (msg *Message) GetMetadataFields(ctx context.Context) (map[string]any, erro
 	return metadata, nil
 }
 
-func (msg *Message) Clone() (interfaces.MessageI) {
+func (msg *Message) Clone() interfaces.MessageI {
 	msg.lock.RLock()
 	defer msg.lock.RUnlock()
-	newmsg := &Message{}
-	if err := copier.Copy(newmsg, msg); err != nil {
+
+	msg.cloned = true
+
+	newmsg := Message{}
+	if err := copier.CopyWithOption(&newmsg, msg, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 		msg.log.Error(err, "Error Cloning Message", "Message", msg)
 		return nil
 	}
 	newmsg.dbEntry = msg.dbEntry
-	return newmsg
+	newmsg.metaData = make(map[string]any)
+	for k, v := range msg.metaData {
+		newmsg.metaData[k] = v
+	}
+
+	/* the Copied message will be locked, so unlock it */
+	newmsg.lock.RUnlock()
+	return &newmsg
 }
 
 var _ interfaces.MessageI = (*Message)(nil)

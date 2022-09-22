@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbfilter"
@@ -46,6 +47,7 @@ type DbUserCreate struct {
 	config
 	mutation *DbUserMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
@@ -270,6 +272,7 @@ func (duc *DbUserCreate) createSpec() (*DbUser, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = duc.conflict
 	if value, ok := duc.mutation.Email(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -393,6 +396,249 @@ func (duc *DbUserCreate) createSpec() (*DbUser, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbUser.Create().
+//		SetTenantID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbUserUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (duc *DbUserCreate) OnConflict(opts ...sql.ConflictOption) *DbUserUpsertOne {
+	duc.conflict = opts
+	return &DbUserUpsertOne{
+		create: duc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbUser.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (duc *DbUserCreate) OnConflictColumns(columns ...string) *DbUserUpsertOne {
+	duc.conflict = append(duc.conflict, sql.ConflictColumns(columns...))
+	return &DbUserUpsertOne{
+		create: duc,
+	}
+}
+
+type (
+	// DbUserUpsertOne is the builder for "upsert"-ing
+	//  one DbUser node.
+	DbUserUpsertOne struct {
+		create *DbUserCreate
+	}
+
+	// DbUserUpsert is the "OnConflict" setter.
+	DbUserUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbUserUpsert) SetTenantID(v int) *DbUserUpsert {
+	u.Set(dbuser.FieldTenantID, v)
+	return u
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbUserUpsert) UpdateTenantID() *DbUserUpsert {
+	u.SetExcluded(dbuser.FieldTenantID)
+	return u
+}
+
+// SetEmail sets the "Email" field.
+func (u *DbUserUpsert) SetEmail(v string) *DbUserUpsert {
+	u.Set(dbuser.FieldEmail, v)
+	return u
+}
+
+// UpdateEmail sets the "Email" field to the value that was provided on create.
+func (u *DbUserUpsert) UpdateEmail() *DbUserUpsert {
+	u.SetExcluded(dbuser.FieldEmail)
+	return u
+}
+
+// SetName sets the "Name" field.
+func (u *DbUserUpsert) SetName(v string) *DbUserUpsert {
+	u.Set(dbuser.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbUserUpsert) UpdateName() *DbUserUpsert {
+	u.SetExcluded(dbuser.FieldName)
+	return u
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbUserUpsert) SetDescription(v string) *DbUserUpsert {
+	u.Set(dbuser.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbUserUpsert) UpdateDescription() *DbUserUpsert {
+	u.SetExcluded(dbuser.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbUserUpsert) ClearDescription() *DbUserUpsert {
+	u.SetNull(dbuser.FieldDescription)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.DbUser.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbUserUpsertOne) UpdateNewValues() *DbUserUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//  client.DbUser.Create().
+//      OnConflict(sql.ResolveWithIgnore()).
+//      Exec(ctx)
+//
+func (u *DbUserUpsertOne) Ignore() *DbUserUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbUserUpsertOne) DoNothing() *DbUserUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbUserCreate.OnConflict
+// documentation for more info.
+func (u *DbUserUpsertOne) Update(set func(*DbUserUpsert)) *DbUserUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbUserUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbUserUpsertOne) SetTenantID(v int) *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbUserUpsertOne) UpdateTenantID() *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetEmail sets the "Email" field.
+func (u *DbUserUpsertOne) SetEmail(v string) *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetEmail(v)
+	})
+}
+
+// UpdateEmail sets the "Email" field to the value that was provided on create.
+func (u *DbUserUpsertOne) UpdateEmail() *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateEmail()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbUserUpsertOne) SetName(v string) *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbUserUpsertOne) UpdateName() *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbUserUpsertOne) SetDescription(v string) *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbUserUpsertOne) UpdateDescription() *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbUserUpsertOne) ClearDescription() *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *DbUserUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbUserCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbUserUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DbUserUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DbUserUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 func (duc *DbUserCreate) SetDbUserFromStruct(input *DbUser) *DbUserCreate {
 
 	duc.SetTenantID(input.TenantID)
@@ -410,6 +656,7 @@ func (duc *DbUserCreate) SetDbUserFromStruct(input *DbUser) *DbUserCreate {
 type DbUserCreateBulk struct {
 	config
 	builders []*DbUserCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the DbUser entities in the database.
@@ -435,6 +682,7 @@ func (ducb *DbUserCreateBulk) Save(ctx context.Context) ([]*DbUser, error) {
 					_, err = mutators[i+1].Mutate(root, ducb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ducb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ducb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -485,6 +733,174 @@ func (ducb *DbUserCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ducb *DbUserCreateBulk) ExecX(ctx context.Context) {
 	if err := ducb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbUser.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbUserUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (ducb *DbUserCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbUserUpsertBulk {
+	ducb.conflict = opts
+	return &DbUserUpsertBulk{
+		create: ducb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbUser.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (ducb *DbUserCreateBulk) OnConflictColumns(columns ...string) *DbUserUpsertBulk {
+	ducb.conflict = append(ducb.conflict, sql.ConflictColumns(columns...))
+	return &DbUserUpsertBulk{
+		create: ducb,
+	}
+}
+
+// DbUserUpsertBulk is the builder for "upsert"-ing
+// a bulk of DbUser nodes.
+type DbUserUpsertBulk struct {
+	create *DbUserCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.DbUser.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbUserUpsertBulk) UpdateNewValues() *DbUserUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DbUser.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+//
+func (u *DbUserUpsertBulk) Ignore() *DbUserUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbUserUpsertBulk) DoNothing() *DbUserUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbUserCreateBulk.OnConflict
+// documentation for more info.
+func (u *DbUserUpsertBulk) Update(set func(*DbUserUpsert)) *DbUserUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbUserUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbUserUpsertBulk) SetTenantID(v int) *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbUserUpsertBulk) UpdateTenantID() *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetEmail sets the "Email" field.
+func (u *DbUserUpsertBulk) SetEmail(v string) *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetEmail(v)
+	})
+}
+
+// UpdateEmail sets the "Email" field to the value that was provided on create.
+func (u *DbUserUpsertBulk) UpdateEmail() *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateEmail()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbUserUpsertBulk) SetName(v string) *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbUserUpsertBulk) UpdateName() *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetDescription sets the "Description" field.
+func (u *DbUserUpsertBulk) SetDescription(v string) *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "Description" field to the value that was provided on create.
+func (u *DbUserUpsertBulk) UpdateDescription() *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "Description" field.
+func (u *DbUserUpsertBulk) ClearDescription() *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// Exec executes the query.
+func (u *DbUserUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DbUserCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbUserCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbUserUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

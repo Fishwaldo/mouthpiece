@@ -68,10 +68,6 @@ type AppI interface {
 	GetStatus() AppStatus
 	// SetStatus sets the Status of the App
 	SetStatus(context.Context, AppStatus) error
-	// GetDetails returns the details of the App
-	GetDetails() AppDetails
-	// SetDetails sets the details of the App
-	SetDetails(context.Context, AppDetails) error
 	// ProcessMessage processes a message
 	ProcessMessage(context.Context, MessageI) error
 	// AddFilter adds a filter to the App
@@ -167,11 +163,11 @@ type GroupI interface {
 	//SetDescription Set the Description of the Group
 	SetDescription(context.Context, string) error
 
-	//GetUsers Get the Users in the Group
+	//GetApps Get the Apps in the Group
 	GetApps(context.Context) []AppI
-	//AddUser Add a User to the Group
+	//AddApp Add a App to the Group
 	AddApp(context.Context, AppI) error
-	//DelUser Remove a User from the Group
+	//DelApp Remove a App from the Group
 	DelApp(context.Context, AppI) error
 
 	//GetUsers Get the Users in the Group
@@ -284,7 +280,6 @@ type TransportInstanceImpl interface {
 	SetConfig(context.Context, MarshableConfigI) error
 	ValidateTransportRecipientConfig(context.Context, MarshableConfigI) error
 	LoadTransportReciepientConfig(context.Context, string) (MarshableConfigI, error)
-
 }
 
 type TransportRecipientType int
@@ -314,6 +309,7 @@ type TransportRecipient interface {
 
 type TransportServiceI interface {
 	Start(context.Context) error
+	Stop(context.Context) error
 	Create(context.Context, TransportInstance, string, MarshableConfigI) (TransportRecipient, error)
 	Delete(context.Context, TransportRecipient) error
 	GetByID(context.Context, int) (TransportRecipient, error)

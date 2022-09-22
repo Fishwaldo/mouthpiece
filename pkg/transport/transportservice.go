@@ -40,7 +40,7 @@ func (ts *TransportService) Start(ctx context.Context) error {
 	var err error
 	if db_tis, err = db.DbClient.DbTransportInstances.Query().All(ctx); err != nil {
 		ts.log.Error(err, "Error Bootstrapping all TransportInstances")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 	for _, db_ti := range db_tis {
 		if ti, err := ts.LoadTransportInstance(ctx, db_ti); err != nil {
@@ -59,6 +59,18 @@ func (ts *TransportService) Start(ctx context.Context) error {
 	return nil
 }
 
+func (ts *TransportService) Stop(ctx context.Context) error {
+	ts.tilock.Lock()
+	defer ts.tilock.Unlock()
+	for _, ti := range ts.transportInstances {
+		if err := ti.Stop(ctx); err != nil {
+			ts.log.Error(err, "Error stopping TransportInstance", "name", ti.GetName())
+			continue
+		}
+	}
+	return nil
+}
+
 func (ts *TransportService) Create(ctx context.Context, transport interfaces.TransportInstance, name string, config interfaces.MarshableConfigI) (interfaces.TransportRecipient, error) {
 	if ok := ts.Exists(ctx, name); ok {
 		return nil, mperror.ErrTransportReciptientExists
@@ -66,7 +78,7 @@ func (ts *TransportService) Create(ctx context.Context, transport interfaces.Tra
 	app, err := newTransportRecipient(ctx, ts.log, transport, name, config)
 	if err != nil {
 		ts.log.Error(err, "Error creating TransportRecipient", "name", name)
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	} else {
 		return app, nil
 	}
@@ -78,7 +90,7 @@ func (ts *TransportService) Delete(ctx context.Context, tr interfaces.TransportR
 	}
 	if err := db.DbClient.DbTransportRecipients.DeleteOneID(tr.GetID()).Exec(ctx); err != nil {
 		ts.log.Error(err, "Error deleting TransportRecipient", "name", tr.GetName())
-		return err
+		return mperror.FilterErrors(err)
 	}
 	return nil
 }
@@ -87,7 +99,7 @@ func (ts *TransportService) Get(ctx context.Context, name string) (interfaces.Tr
 	db_tr, err := db.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.Name(name)).Only(ctx)
 	if err != nil {
 		ts.log.Error(err, "Error getting TransportRecipient", "name", name)
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	}
 	return ts.Load(ctx, db_tr)
 }
@@ -96,7 +108,7 @@ func (ts *TransportService) GetByID(ctx context.Context, id int) (interfaces.Tra
 	db_tr, err := db.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.ID(id)).Only(ctx)
 	if err != nil {
 		ts.log.Error(err, "Error getting TransportRecipient", "ID", id)
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	}
 	return ts.Load(ctx, db_tr)
 }
@@ -105,13 +117,13 @@ func (ts *TransportService) GetAll(ctx context.Context) (tprs []interfaces.Trans
 	var dbtrs []*ent.DbTransportRecipients
 	if dbtrs, err = db.DbClient.DbTransportRecipients.Query().All(ctx); err != nil {
 		ts.log.Error(err, "Error getting all TransportRecipient")
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 
 	for _, dbtr := range dbtrs {
 		if tr, err := ts.Load(ctx, dbtr); err != nil {
 			ts.log.Error(err, "Error loading TransportRecipient", "name", dbtr.Name)
-			return nil, mperror.ErrInternalError
+			return nil, mperror.FilterErrors(err)
 		} else {
 			tprs = append(tprs, tr)
 		}
@@ -132,7 +144,7 @@ func (ts *TransportService) Load(ctx context.Context, dbtr any) (interfaces.Tran
 	tr := &TransportRecipient{}
 
 	if err := tr.Load(ctx, ts.log, entTr); err != nil {
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	}
 	return tr, nil
 }
@@ -164,7 +176,7 @@ func (ts *TransportService) CreateTransportInstance(ctx context.Context, trp int
 	tri, err := newTransportInstance(ctx, ts.log, trp, name, config)
 	if err != nil {
 		ts.log.Error(err, "Error creating TransportInstance", "name", name)
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	} else {
 		ts.tilock.Lock()
 		ts.transportInstances[name] = tri
@@ -209,7 +221,7 @@ func (ts *TransportService) DeleteTransportInstance(ctx context.Context, ti inte
 	defer ts.tilock.Unlock()
 	if err := db.DbClient.DbTransportInstances.DeleteOneID(ti.GetID()).Exec(ctx); err != nil {
 		ts.log.Error(err, "Error deleting TransportInstance", "name", ti.GetName())
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 	delete(ts.transportInstances, ti.GetName())
 	return nil
@@ -239,15 +251,26 @@ func (ts *TransportService) LoadTransportInstance(ctx context.Context, dbti any)
 	if !ok {
 		return nil, mperror.ErrInvalidType
 	}
-	var ti interfaces.TransportInstance
+	// tpr, err := ts.GetTransportProvider(ctx, entTi.TransportProvider)
+	// if err != nil {
+	// 	ts.log.Error(err, "Error getting TransportProvider", "name", entTi.TransportProvider)
+	// 	return nil, mperror.FilterErrors(err)
+	// }
+	// cfg, err := tpr.LoadConfigFromJSON(ctx, entTi.Config)
+	// if err != nil {
+	// 	ts.log.Error(err, "Error loading config", "name", entTi.TransportProvider)
+	// 	return nil, mperror.FilterErrors(err)
+	// }
+
+	ti := &TransportInstance{}
 
 	if err := ti.Load(ctx, ts.log, entTi); err != nil {
 		ts.log.Error(err, "Error loading TransportInstance", "name", entTi.Name)
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	}
 	if err := ti.Start(ctx); err != nil {
 		ts.log.Error(err, "Error starting TransportInstance", "name", entTi.Name)
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 	ts.tilock.Lock()
 	ts.transportInstances[ti.GetName()] = ti

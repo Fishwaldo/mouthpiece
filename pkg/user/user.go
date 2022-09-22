@@ -35,11 +35,11 @@ func newUser(ctx context.Context, logger logr.Logger, email string, name string)
 		Save(ctx)
 	if err != nil {
 		user.log.Error(err, "Error creating User")
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 	if err := user.init(ctx); err != nil {
 		user.log.Error(err, "Error initializing User")
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 	return user, nil
 }
@@ -58,7 +58,7 @@ func (u *User) Load(ctx context.Context, logger logr.Logger, dbuser any) error {
 		return mperror.ErrInvalidType
 	}
 	u.log = logger.WithName("User").WithValues("Email", u.dbUser.Email)
-	return u.init(ctx)
+	return mperror.FilterErrors(u.init(ctx))
 }
 func (u *User) Save(ctx context.Context) (err error) {
 	u.lock.Lock()
@@ -66,7 +66,7 @@ func (u *User) Save(ctx context.Context) (err error) {
 	u.dbUser, err = u.dbUser.Update().Save(ctx)
 	if err != nil {
 		u.log.Error(err, "Error Saving User")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 	return nil
 }
@@ -80,10 +80,12 @@ func (u *User) GetEmail() string {
 func (u *User) SetEmail(ctx context.Context, email string) (err error) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	if u.dbUser, err = u.dbUser.Update().SetEmail(email).Save(ctx); err != nil {
+	dbtmp, err := u.dbUser.Update().SetEmail(email).Save(ctx)
+	if err != nil {
 		u.log.Error(err, "Error Saving User")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	u.dbUser = dbtmp
 	return nil
 }
 
@@ -102,10 +104,12 @@ func (u *User) GetName() string {
 func (u *User) SetName(ctx context.Context, name string) (err error) {
 	u.lock.Lock()
 	defer u.lock.RUnlock()
-	if u.dbUser, err = u.dbUser.Update().SetName(name).Save(ctx); err != nil {
+	dbtmp, err := u.dbUser.Update().SetName(name).Save(ctx)
+	if err != nil {
 		u.log.Error(err, "Error Saving User")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	u.dbUser = dbtmp
 	return nil
 }
 
@@ -118,11 +122,12 @@ func (u *User) GetDescription() string {
 func (u *User) SetDescription(ctx context.Context, description string) error {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	var err error
-	if u.dbUser, err = u.dbUser.Update().SetDescription(description).Save(ctx); err != nil {
+	dbtmp, err := u.dbUser.Update().SetDescription(description).Save(ctx)
+	if err != nil {
 		u.log.Error(err, "Error Saving User")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	u.dbUser = dbtmp
 	return nil
 }
 
@@ -139,7 +144,7 @@ func (u *User) SetMetaData(ctx context.Context, fields map[string]string) (err e
 			Save(ctx); err != nil {
 			u.log.Error(err, "Error Saving User MetaData", "User", u.dbUser.Email, "Field", k, "Value", v)
 			tx.Rollback()
-			return mperror.ErrInternalError
+			return mperror.FilterErrors(err)
 		}
 	}
 	tx.Commit()
@@ -156,7 +161,7 @@ func (u *User) GetFields(ctx context.Context) (flds map[string]string, err error
 		metadata, err = u.dbUser.QueryMetadata().All(ctx)
 		if err != nil {
 			u.log.Error(err, "Error Loading User MetaData")
-			return nil, mperror.ErrInternalError
+			return nil, mperror.FilterErrors(err)
 		}
 	}
 	flds = make(map[string]string)
@@ -175,7 +180,7 @@ func (u *User) GetField(ctx context.Context, key string) (value string, err erro
 		metadata, err = u.dbUser.QueryMetadata().All(ctx)
 		if err != nil {
 			u.log.Error(err, "Error Loading User MetaData")
-			return "", mperror.ErrInternalError
+			return "", mperror.FilterErrors(err)
 		}
 	}
 	for _, f := range metadata {
@@ -196,7 +201,7 @@ func (u *User) SetField(ctx context.Context, key string, value string) (err erro
 		SetValue(value).
 		Save(ctx); err != nil {
 		u.log.Error(err, "Error Saving MetaData", "Field", key, "Value", value)
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 	u.dbUser = db.DbClient.DbUser.Query().WithMetadata().Where(dbuser.ID(u.dbUser.ID)).FirstX(ctx)
 	return nil
@@ -206,11 +211,12 @@ func (u *User) AddFilter(ctx context.Context, filter interfaces.FilterI) (err er
 	u.lock.Lock()
 	defer u.lock.Unlock()
 
-	u.dbUser, err = u.dbUser.Update().AddFilterIDs(filter.GetID()).Save(ctx)
+	dbtmp, err := u.dbUser.Update().AddFilterIDs(filter.GetID()).Save(ctx)
 	if err != nil {
 		u.log.Error(err, "Error adding filter to User", "Filter", filter.GetName())
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	u.dbUser = dbtmp
 	return nil
 }
 
@@ -218,11 +224,12 @@ func (u *User) DelFilter(ctx context.Context, filter interfaces.FilterI) (err er
 	u.lock.Lock()
 	defer u.lock.Unlock()
 
-	u.dbUser, err = u.dbUser.Update().RemoveFilterIDs(filter.GetID()).Save(ctx)
+	dbtmp, err := u.dbUser.Update().RemoveFilterIDs(filter.GetID()).Save(ctx)
 	if err != nil {
 		u.log.Error(err, "Error removing filter from User", "Filter", filter.GetName())
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	u.dbUser = dbtmp
 	return nil
 
 }
@@ -235,7 +242,7 @@ func (u *User) GetFilters(ctx context.Context) (flts []interfaces.FilterI, err e
 	if dbflts, err = u.dbUser.Edges.FiltersOrErr(); err != nil {
 		if dbflts, err = u.dbUser.QueryFilters().All(ctx); err != nil {
 			u.log.Error(err, "Error loading Filters for User")
-			return nil, mperror.ErrInternalError
+			return nil, mperror.FilterErrors(err)
 		}
 	}
 
@@ -276,11 +283,12 @@ func (u *User) AddTransportRecipient(ctx context.Context, tid interfaces.Transpo
 	defer u.lock.Unlock()
 
 	u.log.Info("Adding Transport to User", "tid", tid)
-	u.dbUser, err = u.dbUser.Update().AddTransportRecipientIDs(tid.GetID()).Save(ctx)
+	dbtmp, err := u.dbUser.Update().AddTransportRecipientIDs(tid.GetID()).Save(ctx)
 	if err != nil {
 		u.log.Error(err, "Error adding TransportRecipient to User", "tid", tid)
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	u.dbUser = dbtmp
 	return nil
 }
 
@@ -289,11 +297,12 @@ func (u *User) DelTransportRecipient(ctx context.Context, tid interfaces.Transpo
 	defer u.lock.Unlock()
 
 	u.log.Info("Deleting Transport from User", "tid", tid)
-	u.dbUser, err = u.dbUser.Update().RemoveTransportRecipientIDs(tid.GetID()).Save(ctx)
+	dbtmp, err := u.dbUser.Update().RemoveTransportRecipientIDs(tid.GetID()).Save(ctx)
 	if err != nil {
 		u.log.Error(err, "Error removing TransportRecipient from User", "tid", tid)
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	u.dbUser = dbtmp
 	return nil
 }
 

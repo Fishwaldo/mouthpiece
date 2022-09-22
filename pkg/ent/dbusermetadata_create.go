@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
@@ -43,6 +44,7 @@ type DbUserMetaDataCreate struct {
 	config
 	mutation *DbUserMetaDataMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
@@ -207,6 +209,7 @@ func (dumdc *DbUserMetaDataCreate) createSpec() (*DbUserMetaData, *sqlgraph.Crea
 			},
 		}
 	)
+	_spec.OnConflict = dumdc.conflict
 	if value, ok := dumdc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -266,6 +269,210 @@ func (dumdc *DbUserMetaDataCreate) createSpec() (*DbUserMetaData, *sqlgraph.Crea
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbUserMetaData.Create().
+//		SetTenantID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbUserMetaDataUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dumdc *DbUserMetaDataCreate) OnConflict(opts ...sql.ConflictOption) *DbUserMetaDataUpsertOne {
+	dumdc.conflict = opts
+	return &DbUserMetaDataUpsertOne{
+		create: dumdc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbUserMetaData.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dumdc *DbUserMetaDataCreate) OnConflictColumns(columns ...string) *DbUserMetaDataUpsertOne {
+	dumdc.conflict = append(dumdc.conflict, sql.ConflictColumns(columns...))
+	return &DbUserMetaDataUpsertOne{
+		create: dumdc,
+	}
+}
+
+type (
+	// DbUserMetaDataUpsertOne is the builder for "upsert"-ing
+	//  one DbUserMetaData node.
+	DbUserMetaDataUpsertOne struct {
+		create *DbUserMetaDataCreate
+	}
+
+	// DbUserMetaDataUpsert is the "OnConflict" setter.
+	DbUserMetaDataUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbUserMetaDataUpsert) SetTenantID(v int) *DbUserMetaDataUpsert {
+	u.Set(dbusermetadata.FieldTenantID, v)
+	return u
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsert) UpdateTenantID() *DbUserMetaDataUpsert {
+	u.SetExcluded(dbusermetadata.FieldTenantID)
+	return u
+}
+
+// SetName sets the "Name" field.
+func (u *DbUserMetaDataUpsert) SetName(v string) *DbUserMetaDataUpsert {
+	u.Set(dbusermetadata.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsert) UpdateName() *DbUserMetaDataUpsert {
+	u.SetExcluded(dbusermetadata.FieldName)
+	return u
+}
+
+// SetValue sets the "Value" field.
+func (u *DbUserMetaDataUpsert) SetValue(v string) *DbUserMetaDataUpsert {
+	u.Set(dbusermetadata.FieldValue, v)
+	return u
+}
+
+// UpdateValue sets the "Value" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsert) UpdateValue() *DbUserMetaDataUpsert {
+	u.SetExcluded(dbusermetadata.FieldValue)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.DbUserMetaData.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbUserMetaDataUpsertOne) UpdateNewValues() *DbUserMetaDataUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//  client.DbUserMetaData.Create().
+//      OnConflict(sql.ResolveWithIgnore()).
+//      Exec(ctx)
+//
+func (u *DbUserMetaDataUpsertOne) Ignore() *DbUserMetaDataUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbUserMetaDataUpsertOne) DoNothing() *DbUserMetaDataUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbUserMetaDataCreate.OnConflict
+// documentation for more info.
+func (u *DbUserMetaDataUpsertOne) Update(set func(*DbUserMetaDataUpsert)) *DbUserMetaDataUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbUserMetaDataUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbUserMetaDataUpsertOne) SetTenantID(v int) *DbUserMetaDataUpsertOne {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsertOne) UpdateTenantID() *DbUserMetaDataUpsertOne {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbUserMetaDataUpsertOne) SetName(v string) *DbUserMetaDataUpsertOne {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsertOne) UpdateName() *DbUserMetaDataUpsertOne {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetValue sets the "Value" field.
+func (u *DbUserMetaDataUpsertOne) SetValue(v string) *DbUserMetaDataUpsertOne {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.SetValue(v)
+	})
+}
+
+// UpdateValue sets the "Value" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsertOne) UpdateValue() *DbUserMetaDataUpsertOne {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.UpdateValue()
+	})
+}
+
+// Exec executes the query.
+func (u *DbUserMetaDataUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbUserMetaDataCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbUserMetaDataUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DbUserMetaDataUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DbUserMetaDataUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 func (dumdc *DbUserMetaDataCreate) SetDbUserMetaDataFromStruct(input *DbUserMetaData) *DbUserMetaDataCreate {
 
 	dumdc.SetTenantID(input.TenantID)
@@ -281,6 +488,7 @@ func (dumdc *DbUserMetaDataCreate) SetDbUserMetaDataFromStruct(input *DbUserMeta
 type DbUserMetaDataCreateBulk struct {
 	config
 	builders []*DbUserMetaDataCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the DbUserMetaData entities in the database.
@@ -306,6 +514,7 @@ func (dumdcb *DbUserMetaDataCreateBulk) Save(ctx context.Context) ([]*DbUserMeta
 					_, err = mutators[i+1].Mutate(root, dumdcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = dumdcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, dumdcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -356,6 +565,153 @@ func (dumdcb *DbUserMetaDataCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (dumdcb *DbUserMetaDataCreateBulk) ExecX(ctx context.Context) {
 	if err := dumdcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.DbUserMetaData.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DbUserMetaDataUpsert) {
+//			SetTenantID(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dumdcb *DbUserMetaDataCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbUserMetaDataUpsertBulk {
+	dumdcb.conflict = opts
+	return &DbUserMetaDataUpsertBulk{
+		create: dumdcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.DbUserMetaData.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dumdcb *DbUserMetaDataCreateBulk) OnConflictColumns(columns ...string) *DbUserMetaDataUpsertBulk {
+	dumdcb.conflict = append(dumdcb.conflict, sql.ConflictColumns(columns...))
+	return &DbUserMetaDataUpsertBulk{
+		create: dumdcb,
+	}
+}
+
+// DbUserMetaDataUpsertBulk is the builder for "upsert"-ing
+// a bulk of DbUserMetaData nodes.
+type DbUserMetaDataUpsertBulk struct {
+	create *DbUserMetaDataCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.DbUserMetaData.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DbUserMetaDataUpsertBulk) UpdateNewValues() *DbUserMetaDataUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.DbUserMetaData.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+//
+func (u *DbUserMetaDataUpsertBulk) Ignore() *DbUserMetaDataUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DbUserMetaDataUpsertBulk) DoNothing() *DbUserMetaDataUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DbUserMetaDataCreateBulk.OnConflict
+// documentation for more info.
+func (u *DbUserMetaDataUpsertBulk) Update(set func(*DbUserMetaDataUpsert)) *DbUserMetaDataUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DbUserMetaDataUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (u *DbUserMetaDataUpsertBulk) SetTenantID(v int) *DbUserMetaDataUpsertBulk {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.SetTenantID(v)
+	})
+}
+
+// UpdateTenantID sets the "tenant_id" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsertBulk) UpdateTenantID() *DbUserMetaDataUpsertBulk {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.UpdateTenantID()
+	})
+}
+
+// SetName sets the "Name" field.
+func (u *DbUserMetaDataUpsertBulk) SetName(v string) *DbUserMetaDataUpsertBulk {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "Name" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsertBulk) UpdateName() *DbUserMetaDataUpsertBulk {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetValue sets the "Value" field.
+func (u *DbUserMetaDataUpsertBulk) SetValue(v string) *DbUserMetaDataUpsertBulk {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.SetValue(v)
+	})
+}
+
+// UpdateValue sets the "Value" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsertBulk) UpdateValue() *DbUserMetaDataUpsertBulk {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.UpdateValue()
+	})
+}
+
+// Exec executes the query.
+func (u *DbUserMetaDataUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DbUserMetaDataCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DbUserMetaDataCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DbUserMetaDataUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

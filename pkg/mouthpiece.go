@@ -16,7 +16,6 @@ import (
 
 	//	_ "github.com/Fishwaldo/mouthpiece/pkg/filter/evalfilter"
 	"github.com/Fishwaldo/mouthpiece/pkg/filter/severity"
-	_ "github.com/Fishwaldo/mouthpiece/pkg/filter/severity"
 	"github.com/Fishwaldo/mouthpiece/pkg/transport/console"
 
 	"github.com/go-logr/logr"
@@ -193,6 +192,10 @@ func (mp MouthPiece) SeedMouthPieceApp(ctx context.Context) error {
 	}
 	mp.log.Info("Seeding Database Complete")
 	return nil
+}
+
+func (mp MouthPiece) Close() {
+
 }
 
 func (mp MouthPiece) SetAdminTenant(ctx context.Context) context.Context {

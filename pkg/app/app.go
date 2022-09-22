@@ -8,7 +8,6 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/db"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
-	"github.com/jinzhu/copier"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/go-logr/logr"
@@ -29,7 +28,7 @@ func newApp(ctx context.Context, log logr.Logger, appname string, desc string) (
 		Save(ctx)
 	if err != nil {
 		newlogger.Error(err, "Error creating app")
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	}
 	app := &App{
 		dbApp: dbApp,
@@ -37,14 +36,14 @@ func newApp(ctx context.Context, log logr.Logger, appname string, desc string) (
 	}
 	if err := app.init(); err != nil {
 		app.log.Error(err, "Error initializing app")
-		return nil, err
+		return nil, mperror.FilterErrors(err)
 	}
 	app.log.Info("Created New App")
 	return app, nil
 }
 
 func (a *App) init() error {
-	return nil
+	return mperror.FilterErrors(nil)
 }
 
 func (app *App) Load(ctx context.Context, logger logr.Logger, a any) error {
@@ -65,8 +64,11 @@ func (app *App) Load(ctx context.Context, logger logr.Logger, a any) error {
 func (app *App) Save(ctx context.Context) (err error) {
 	app.lock.Lock()
 	defer app.lock.Unlock()
-	app.dbApp, err = app.dbApp.Update().Save(ctx)
-	return err
+	mydb, err := app.dbApp.Update().Save(ctx)
+	if err == nil {
+		app.dbApp = mydb
+	}
+	return mperror.FilterErrors(err)
 }
 
 func (app *App) GetID() int {
@@ -87,8 +89,11 @@ func (app *App) SetName(ctx context.Context, name string) (err error) {
 	app.lock.Lock()
 	defer app.lock.Unlock()
 
-	app.dbApp, err = app.dbApp.Update().SetName(name).Save(ctx)
-	return err
+	dbtmp, err := app.dbApp.Update().SetName(name).Save(ctx)
+	if err == nil {
+		app.dbApp = dbtmp
+	}
+	return mperror.FilterErrors(err)
 }
 
 func (app *App) GetDescription() string {
@@ -102,8 +107,11 @@ func (app *App) SetDescription(ctx context.Context, description string) (err err
 	app.lock.Lock()
 	defer app.lock.Unlock()
 
-	app.dbApp, err = app.dbApp.Update().SetDescription(description).Save(ctx)
-	return err
+	dbtmp, err := app.dbApp.Update().SetDescription(description).Save(ctx)
+	if err == nil {
+		app.dbApp = dbtmp
+	}
+	return mperror.FilterErrors(err)
 }
 
 func (app *App) GetIcon() string {
@@ -117,8 +125,11 @@ func (app *App) SetIcon(ctx context.Context, icon string) (err error) {
 	app.lock.Lock()
 	defer app.lock.Unlock()
 
-	app.dbApp, err = app.dbApp.Update().SetIcon(icon).Save(ctx)
-	return err
+	dbtmp, err := app.dbApp.Update().SetIcon(icon).Save(ctx)
+	if err == nil {
+		app.dbApp = dbtmp
+	}
+	return mperror.FilterErrors(err)
 }
 
 func (app *App) GetURL() string {
@@ -132,8 +143,11 @@ func (app *App) SetURL(ctx context.Context, url string) (err error) {
 	app.lock.Lock()
 	defer app.lock.Unlock()
 
-	app.dbApp, err = app.dbApp.Update().SetURL(url).Save(ctx)
-	return err
+	dbtmp, err := app.dbApp.Update().SetURL(url).Save(ctx)
+	if err == nil {
+		app.dbApp = dbtmp
+	}
+	return mperror.FilterErrors(err)
 }
 
 func (app *App) GetStatus() interfaces.AppStatus {
@@ -147,31 +161,11 @@ func (app *App) SetStatus(ctx context.Context, status interfaces.AppStatus) (err
 	app.lock.Lock()
 	defer app.lock.Unlock()
 
-	app.dbApp, err = app.dbApp.Update().SetStatus(status).Save(ctx)
-	return err
-}
-
-func (app *App) GetDetails() interfaces.AppDetails {
-	app.lock.RLock()
-	defer app.lock.RUnlock()
-
-	var details interfaces.AppDetails
-	if err := copier.Copy(&details, &app.dbApp); err != nil {
-		app.log.Error(err, "Error copying app details")
-		return interfaces.AppDetails{}
+	dbtmp, err := app.dbApp.Update().SetStatus(status).Save(ctx)
+	if err == nil {
+		app.dbApp = dbtmp
 	}
-	return details
-}
-
-func (app *App) SetDetails(ctx context.Context, details interfaces.AppDetails) error {
-	app.lock.Lock()
-	defer app.lock.Unlock()
-
-	if err := copier.Copy(&app.dbApp, &details); err != nil {
-		app.log.Error(err, "Error copying app details")
-		return err
-	}
-	return app.Save(ctx)
+	return mperror.FilterErrors(err)
 }
 
 func (app *App) ProcessMessage(ctx context.Context, msg interfaces.MessageI) (err error) {
@@ -197,7 +191,7 @@ func (app *App) ProcessMessage(ctx context.Context, msg interfaces.MessageI) (er
 	if flts, err = app.dbApp.Edges.FiltersOrErr(); err != nil {
 		if flts, err = app.dbApp.QueryFilters().All(ctx); err != nil {
 			app.log.Error(err, "Error loading Filters for App")
-			return err
+			return mperror.FilterErrors(err)
 		}
 	}
 
@@ -228,7 +222,7 @@ func (app *App) ProcessMessage(ctx context.Context, msg interfaces.MessageI) (er
 	if grps, err = app.dbApp.Edges.GroupsOrErr(); err != nil {
 		if grps, err = app.dbApp.QueryGroups().All(ctx); err != nil {
 			app.log.Error(err, "Error loading Groups for App")
-			return err
+			return mperror.FilterErrors(err)
 		}
 	}
 	for _, grp := range grps {
@@ -251,11 +245,12 @@ func (app *App) AddFilter(ctx context.Context, filter interfaces.FilterI) error 
 	defer app.lock.Unlock()
 
 	var err error
-	app.dbApp, err = app.dbApp.Update().AddFilterIDs(filter.GetID()).Save(ctx)
+	dbtmp, err := app.dbApp.Update().AddFilterIDs(filter.GetID()).Save(ctx)
 	if err != nil {
 		app.log.Error(err, "Error adding filter to app", "Filter", filter.GetName())
-		return mperror.ErrInternalError
-	}
+		return mperror.FilterErrors(err)
+	} 
+	app.dbApp = dbtmp
 	return nil
 }
 
@@ -264,11 +259,12 @@ func (app *App) DelFilter(ctx context.Context, filter interfaces.FilterI) error 
 	defer app.lock.Unlock()
 
 	var err error
-	app.dbApp, err = app.dbApp.Update().RemoveFilterIDs(filter.GetID()).Save(ctx)
+	dbtmp, err := app.dbApp.Update().RemoveFilterIDs(filter.GetID()).Save(ctx)
 	if err != nil {
 		app.log.Error(err, "Error removing filter from app", "Filter", filter.GetName())
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	app.dbApp = dbtmp
 	return nil
 }
 
@@ -281,7 +277,7 @@ func (app *App) GetFilters(ctx context.Context) (flts []interfaces.FilterI, err 
 	if dbflts, err = app.dbApp.Edges.FiltersOrErr(); err != nil {
 		if dbflts, err = app.dbApp.QueryFilters().All(ctx); err != nil {
 			app.log.Error(err, "Error loading Filters for App")
-			return nil, err
+			return nil, mperror.FilterErrors(err)
 		}
 	}
 

@@ -35,11 +35,11 @@ func newTransportRecipient(ctx context.Context, logger logr.Logger, tpi interfac
 	}
 	if tpr.dbTr, err = db.DbClient.DbTransportRecipients.Create().SetName(name).SetConfig(jsoncfg).SetTransportInstanceID(tpi.GetID()).Save(ctx); err != nil {
 		tpr.log.Error(err, "Failed to Create Transport Recipient")
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 	if err = tpr.init(); err != nil {
 		tpr.log.Error(err, "Failed to Initialize Transport Recipient")
-		return nil, mperror.ErrInternalError
+		return nil, mperror.FilterErrors(err)
 	}
 	return tpr, nil
 }
@@ -64,19 +64,19 @@ func (tr *TransportRecipient) Load(ctx context.Context, logger logr.Logger, dbtr
 	if tr.dbTr.Edges.TransportInstance, err = tr.dbTr.Edges.TransportInstanceOrErr(); err != nil {
 		if tr.dbTr.Edges.TransportInstance, err = tr.dbTr.QueryTransportInstance().Only(ctx); err != nil {
 			tr.log.Error(err, "Failed to load Transport Instance")
-			return mperror.ErrInternalError
+			return mperror.FilterErrors(err)
 		}
 	}
 	tr.tpi, err = interfaces.GetTransportService(ctx).GetTransportInstanceByID(ctx, tr.dbTr.Edges.TransportInstance.ID)
 	if err != nil {
 		tr.log.Error(err, "Failed to load Transport Instance")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
 
 	tr.config, err = tr.tpi.LoadTransportReciepientConfig(ctx, tr.dbTr.Config)
 	if err != nil {
 		tr.log.Error(err, "Failed to load Transport Recipient Config")
-		return mperror.ErrTransportConfigInvalid
+		return mperror.FilterErrors(err)
 	}
 
 	return tr.init()
@@ -97,11 +97,13 @@ func (tr *TransportRecipient) GetName() string {
 func (tr *TransportRecipient) SetName(ctx context.Context, name string) error {
 	tr.lock.Lock()
 	defer tr.lock.Unlock()
-	var err error
-	if tr.dbTr, err = tr.dbTr.Update().SetName(name).Save(ctx); err != nil {
+
+	dbtmp, err := tr.dbTr.Update().SetName(name).Save(ctx)
+	if err != nil {
 		tr.log.Error(err, "Failed to Update Transport Recipient Name")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	tr.dbTr = dbtmp
 	return nil
 }
 func (tr *TransportRecipient) GetDescription() string {
@@ -113,11 +115,12 @@ func (tr *TransportRecipient) GetDescription() string {
 func (tr *TransportRecipient) SetDescription(ctx context.Context, description string) error {
 	tr.lock.Lock()
 	defer tr.lock.Unlock()
-	var err error
-	if tr.dbTr, err = tr.dbTr.Update().SetDescription(description).Save(ctx); err != nil {
+	dbtmp, err := tr.dbTr.Update().SetDescription(description).Save(ctx)
+	if err != nil {
 		tr.log.Error(err, "Failed to Update Transport Recipient Description")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	tr.dbTr = dbtmp
 	return nil
 }
 
@@ -126,16 +129,16 @@ func (tr *TransportRecipient) SetConfig(ctx context.Context, config interfaces.M
 	defer tr.lock.Unlock()
 	if err := tr.tpi.ValidateTransportRecipientConfig(ctx, config); err != nil {
 		tr.log.Error(err, "Failed to Validate Config")
-		return err
+		return mperror.FilterErrors(err)
 	}
 
 	if configstr, err := config.AsJSON(); err != nil {
 		tr.log.Error(err, "Error marshalling config")
-		return mperror.ErrInternalError
+		return mperror.ErrFilterConfigInvalid
 	} else {
 		if err := tr.dbTr.Update().SetConfig(string(configstr)).Exec(ctx); err != nil {
 			tr.log.Error(err, "Error updating config")
-			return mperror.ErrInternalError
+			return mperror.FilterErrors(err)
 		}
 		tr.config = config
 	}
@@ -151,14 +154,14 @@ func (tr *TransportRecipient) GetConfig() (interfaces.MarshableConfigI, error) {
 func (tr *TransportRecipient) loadEdges(ctx context.Context) error {
 	var err error
 	if tr.dbTr.Edges.UserRecipient, err = tr.dbTr.Edges.UserRecipientOrErr(); err != nil {
-		if tr.dbTr, err = db.DbClient.DbTransportRecipients.Query().WithGroupRecipient().WithUserRecipient().Where(dbtransportrecipients.IDEQ(tr.dbTr.ID)).First(ctx) ; err != nil {
+		if tr.dbTr, err = db.DbClient.DbTransportRecipients.Query().WithGroupRecipient().WithUserRecipient().Where(dbtransportrecipients.IDEQ(tr.dbTr.ID)).First(ctx); err != nil {
 			tr.log.Error(err, "Failed to load Transport Instance")
 			return mperror.ErrInternalError
 		}
 		return nil
 	}
 	if tr.dbTr.Edges.GroupRecipient, err = tr.dbTr.Edges.GroupRecipientOrErr(); err != nil {
-		if tr.dbTr, err = db.DbClient.DbTransportRecipients.Query().WithGroupRecipient().WithUserRecipient().Where(dbtransportrecipients.IDEQ(tr.dbTr.ID)).First(ctx) ; err != nil {
+		if tr.dbTr, err = db.DbClient.DbTransportRecipients.Query().WithGroupRecipient().WithUserRecipient().Where(dbtransportrecipients.IDEQ(tr.dbTr.ID)).First(ctx); err != nil {
 			tr.log.Error(err, "Failed to load Transport Instance")
 			return mperror.ErrInternalError
 		}
@@ -166,74 +169,78 @@ func (tr *TransportRecipient) loadEdges(ctx context.Context) error {
 	return nil
 }
 
-func (tr *TransportRecipient) SetUser(ctx context.Context, user interfaces.UserI) (error) {
+func (tr *TransportRecipient) SetUser(ctx context.Context, user interfaces.UserI) error {
+	if tr.GetRecipientType(ctx) != interfaces.TransportRecipientTypeNotSet {
+		tr.log.Error(mperror.ErrInvalidType, "Transport Recipient already has a recipient type set")
+		return mperror.ErrTransportRecipientSet
+	}
 	tr.lock.Lock()
 	defer tr.lock.Unlock()
-	tr.loadEdges(ctx)
-	if tr.dbTr.Edges.GroupRecipient.ID > 0 {
-		return mperror.ErrTransportRecipientGroupSet
-	}
-	var err error
-	if tr.dbTr, err = tr.dbTr.Update().SetUserRecipientID(user.GetID()).Save(ctx); err != nil {
+
+	dbtmp, err := tr.dbTr.Update().SetUserRecipientID(user.GetID()).Save(ctx)
+	if err != nil {
 		tr.log.Error(err, "Failed to Update Transport Recipient User")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	tr.dbTr = dbtmp
 	return nil
 }
 func (tr *TransportRecipient) GetUser(ctx context.Context) (interfaces.UserI, error) {
+
+	if tr.GetRecipientType(ctx) != interfaces.TransportRecipientTypeUser {
+		tr.log.Error(mperror.ErrInvalidType, "Transport Recipient is not a user")
+		return nil, mperror.ErrTransportRecipientSet
+	}
 	tr.lock.RLock()
 	defer tr.lock.RUnlock()
-	tr.loadEdges(ctx)
 	if tr.dbTr.Edges.UserRecipient.ID > 0 {
 		return interfaces.GetUserService(ctx).GetByID(ctx, tr.dbTr.Edges.UserRecipient.ID)
-	}
-	if tr.dbTr.Edges.GroupRecipient.ID > 0 {
-		return nil, mperror.ErrTransportRecipientGroupSet
 	}
 	return nil, mperror.ErrTransportRecipientGroupOrUserNotSet
 }
 func (tr *TransportRecipient) SetGroup(ctx context.Context, group interfaces.GroupI) error {
+
+	if tr.GetRecipientType(ctx) != interfaces.TransportRecipientTypeNotSet {
+		tr.log.Error(mperror.ErrInvalidType, "Transport Recipient already has a recipient type set")
+		return mperror.ErrTransportRecipientSet
+	}
 	tr.lock.Lock()
 	defer tr.lock.Unlock()
-	tr.loadEdges(ctx)
-	if tr.dbTr.Edges.UserRecipient.ID > 0 {
-		return mperror.ErrTransportRecipientUserSet
-	}
-	var err error
-	if tr.dbTr, err = tr.dbTr.Update().SetGroupRecipientID(group.GetID()).Save(ctx); err != nil {
+	dbtmp, err := tr.dbTr.Update().SetGroupRecipientID(group.GetID()).Save(ctx)
+	if err != nil {
 		tr.log.Error(err, "Failed to Update Transport Recipient Group")
-		return mperror.ErrInternalError
+		return mperror.FilterErrors(err)
 	}
+	tr.dbTr = dbtmp
 	return nil
 }
 func (tr *TransportRecipient) GetGroup(ctx context.Context) (interfaces.GroupI, error) {
+
+	if tr.GetRecipientType(ctx) != interfaces.TransportRecipientTypeGroup {
+		tr.log.Error(mperror.ErrInvalidType, "Transport Recipient is not a Group")
+		return nil, mperror.ErrTransportRecipientSet
+	}
 	tr.lock.RLock()
 	defer tr.lock.RUnlock()
-	tr.loadEdges(ctx)
+
 	if tr.dbTr.Edges.GroupRecipient.ID > 0 {
 		return interfaces.GetGroupService(ctx).GetByID(ctx, tr.dbTr.Edges.GroupRecipient.ID)
 	}
-	if tr.dbTr.Edges.UserRecipient.ID > 0 {
-		return nil, mperror.ErrTransportRecipientUserSet
-	}
 	return nil, mperror.ErrTransportRecipientGroupOrUserNotSet
 }
-func (tr *TransportRecipient) GetRecipientType(ctx context.Context) (interfaces.TransportRecipientType) {
+func (tr *TransportRecipient) GetRecipientType(ctx context.Context) interfaces.TransportRecipientType {
 	tr.lock.RLock()
 	defer tr.lock.RUnlock()
 	tr.loadEdges(ctx)
-	if tr.dbTr.Edges.UserRecipient.ID > 0 {
+	if (tr.dbTr.Edges.UserRecipient != nil) && (tr.dbTr.Edges.UserRecipient.ID > 0) {
 		return interfaces.TransportRecipientTypeUser
 	}
-	if tr.dbTr.Edges.GroupRecipient.ID > 0 {
+	if (tr.dbTr.Edges.GroupRecipient != nil) && (tr.dbTr.Edges.GroupRecipient.ID > 0) {
 		return interfaces.TransportRecipientTypeGroup
 	}
 	return interfaces.TransportRecipientTypeNotSet
 }
 
-
-
-
 func (tr *TransportRecipient) ProcessMessage(ctx context.Context, msg interfaces.MessageI) error {
-	return tr.tpi.Send(ctx, tr, msg)
+	return mperror.FilterErrors(tr.tpi.Send(ctx, tr, msg))
 }
