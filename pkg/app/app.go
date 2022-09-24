@@ -24,7 +24,7 @@ func newApp(ctx context.Context, log logr.Logger, appname string, desc string) (
 	dbApp, err := db.DbClient.DbApp.Create().
 		SetName(appname).
 		SetDescription(desc).
-		SetStatus(interfaces.Enabled).
+		SetStatus(interfaces.AppEnabled).
 		Save(ctx)
 	if err != nil {
 		newlogger.Error(err, "Error creating app")
@@ -249,7 +249,7 @@ func (app *App) AddFilter(ctx context.Context, filter interfaces.FilterI) error 
 	if err != nil {
 		app.log.Error(err, "Error adding filter to app", "Filter", filter.GetName())
 		return mperror.FilterErrors(err)
-	} 
+	}
 	app.dbApp = dbtmp
 	return nil
 }

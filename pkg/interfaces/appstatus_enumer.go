@@ -9,11 +9,11 @@ import (
 	"strings"
 )
 
-const _AppStatusName = "EnabledDisabled"
+const _AppStatusName = "AppEnabledAppDisabled"
 
-var _AppStatusIndex = [...]uint8{0, 7, 15}
+var _AppStatusIndex = [...]uint8{0, 10, 21}
 
-const _AppStatusLowerName = "enableddisabled"
+const _AppStatusLowerName = "appenabledappdisabled"
 
 func (i AppStatus) String() string {
 	if i < 0 || i >= AppStatus(len(_AppStatusIndex)-1) {
@@ -26,22 +26,22 @@ func (i AppStatus) String() string {
 // Re-run the stringer command to generate them again.
 func _AppStatusNoOp() {
 	var x [1]struct{}
-	_ = x[Enabled-(0)]
-	_ = x[Disabled-(1)]
+	_ = x[AppEnabled-(0)]
+	_ = x[AppDisabled-(1)]
 }
 
-var _AppStatusValues = []AppStatus{Enabled, Disabled}
+var _AppStatusValues = []AppStatus{AppEnabled, AppDisabled}
 
 var _AppStatusNameToValueMap = map[string]AppStatus{
-	_AppStatusName[0:7]:       Enabled,
-	_AppStatusLowerName[0:7]:  Enabled,
-	_AppStatusName[7:15]:      Disabled,
-	_AppStatusLowerName[7:15]: Disabled,
+	_AppStatusName[0:10]:       AppEnabled,
+	_AppStatusLowerName[0:10]:  AppEnabled,
+	_AppStatusName[10:21]:      AppDisabled,
+	_AppStatusLowerName[10:21]: AppDisabled,
 }
 
 var _AppStatusNames = []string{
-	_AppStatusName[0:7],
-	_AppStatusName[7:15],
+	_AppStatusName[0:10],
+	_AppStatusName[10:21],
 }
 
 // AppStatusString retrieves an enum value from the enum constants string name.

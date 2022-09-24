@@ -36,7 +36,7 @@ var (
 	DbAppsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"Enabled", "Disabled"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"AppEnabled", "AppDisabled"}},
 		{Name: "description", Type: field.TypeString},
 		{Name: "icon", Type: field.TypeString, Nullable: true},
 		{Name: "url", Type: field.TypeString, Nullable: true},

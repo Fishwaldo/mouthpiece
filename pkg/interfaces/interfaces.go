@@ -126,6 +126,11 @@ type UserI interface {
 	//DelTransport Remove a Transport from the Group
 	DelTransportRecipient(context.Context, TransportRecipient) error
 
+	SetFields(ctx context.Context, fields map[string]string) (err error)
+	GetFields(ctx context.Context) (flds map[string]string, err error)
+	GetField(ctx context.Context, key string) (value string, err error)
+	SetField(ctx context.Context, key string, value string) (err error)
+	
 	ProcessMessage(context.Context, MessageI) error
 }
 

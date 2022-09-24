@@ -138,7 +138,7 @@ var (
 // StatusValidator is a validator for the "Status" field enum values. It is called by the builders before save.
 func StatusValidator(_status interfaces.AppStatus) error {
 	switch _status.String() {
-	case "Enabled", "Disabled":
+	case "AppEnabled", "AppDisabled":
 		return nil
 	default:
 		return fmt.Errorf("dbapp: invalid enum value for Status field: %q", _status)

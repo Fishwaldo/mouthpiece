@@ -2,7 +2,6 @@ package filter
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"sync"
 
@@ -16,8 +15,6 @@ import (
 	"github.com/go-logr/logr"
 )
 
-//go:embed scripts
-var ScriptFiles embed.FS
 
 type Filter struct {
 	interfaces.CacheAble
@@ -27,6 +24,8 @@ type Filter struct {
 	log        logr.Logger
 }
 
+
+//XXX TODO: SHould return a error 
 func newFilter(ctx context.Context, log logr.Logger, fltimpl string, name string, flttype interfaces.FilterType) interfaces.FilterI {
 	newlog := log.WithName("Filter")
 	newlog.Info("Creating new filter")

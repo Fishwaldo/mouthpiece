@@ -25,3 +25,4 @@ test.db-journal
 logs/
 pkg/ent/schema-viz.html
 .vscode/launch.json
+.vscode/settings.json

@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	//	"github.com/Fishwaldo/mouthpiece/pkg/db"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
-
-	//	"github.com/Fishwaldo/mouthpiece/pkg/msg"
 	"github.com/Fishwaldo/mouthpiece/pkg/transport"
+
 	"github.com/go-logr/logr"
 )
 
@@ -96,7 +94,7 @@ func (t *ConsoleTransportInstance) Init(context.Context) error {
 
 func (t *ConsoleTransportInstance) SetConfig(ctx context.Context, config interfaces.MarshableConfigI) error {
 	cfg, ok := config.(*ConsoleConfig)
-	if ok == false {
+	if !ok {
 		t.log.Error(mperror.ErrTransportConfigInvalid, "Invalid Config", "Type", fmt.Sprintf("%T", config))
 		return mperror.ErrTransportConfigInvalid
 	}
@@ -119,7 +117,7 @@ func (tpi *ConsoleTransportInstance) Stop(context.Context) error {
 }
 
 func (tpi *ConsoleTransportInstance) ValidateTransportRecipientConfig(ctx context.Context, config interfaces.MarshableConfigI) error {
-	if _, ok := config.(*ConsoleRecipientConfig); ok == false {
+	if _, ok := config.(*ConsoleRecipientConfig); !ok {
 		tpi.log.Error(mperror.ErrTransportConfigInvalid, "Invalid Config", "Type", fmt.Sprintf("%T", config))
 		return mperror.ErrTransportConfigInvalid
 	}

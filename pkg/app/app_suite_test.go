@@ -118,9 +118,9 @@ var _ = Describe("App", func() {
 			Expect(err).ToNot(BeNil())
 		})
 		It("Should Be able to Set Status", func() {
-			err := globalApp.SetStatus(mptest.Ctx, interfaces.Disabled)
+			err := globalApp.SetStatus(mptest.Ctx, interfaces.AppDisabled)
 			Expect(err).To(BeNil())
-			Expect(globalApp.GetStatus()).To(Equal(interfaces.Disabled))
+			Expect(globalApp.GetStatus()).To(Equal(interfaces.AppDisabled))
 		})
 	})
 	Context("Process Messages", func() {
@@ -156,14 +156,12 @@ var _ = Describe("App", func() {
 			err = globalGroup.AddApp(mptest.Ctx, globalApp)
 			Expect(err).To(BeNil())
 
-
 			globalflt, err = mptest.Mp.GetFilterService().Create(mptest.Ctx, "NoOpFilter", "NoOp Filter", interfaces.AppFilter)
 			Expect(err).To(BeNil())
 			Expect(globalflt).ToNot(BeNil())
 
 			err = globalApp.AddFilter(mptest.Ctx, globalflt)
 			Expect(err).To(BeNil())
-
 
 			mymsg := msg.NewMessage(mptest.Ctx, "Message", mptest.App)
 			Expect(mymsg).ToNot(BeNil())

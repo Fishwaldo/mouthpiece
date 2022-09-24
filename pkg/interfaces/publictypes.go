@@ -1,7 +1,5 @@
 package interfaces
 
-
-
 import (
 	"context"
 	"time"
@@ -10,11 +8,12 @@ import (
 //CtxUserValue Context Key to get token.User value from Context
 type CtxUserValue struct{}
 
-//go:generate go run github.com/dmarkham/enumer -type=AppStatus -json -text -sql 
+//go:generate go run github.com/dmarkham/enumer -type=AppStatus -json -text -sql
 type AppStatus int
+
 const (
-	Enabled AppStatus = iota
-	Disabled
+	AppEnabled AppStatus = iota
+	AppDisabled
 )
 
 func (AppStatus) Values() []string {
@@ -31,8 +30,6 @@ func (c *CacheAble) GetLastUsed() time.Time {
 func (c *CacheAble) SetLastUsed() {
 	c.lastUsed = time.Now()
 }
-
-
 
 type AppDetails struct {
 	ID          uint   `doc:"App ID" gorm:"primary_key"`
@@ -51,8 +48,9 @@ type UserDetails struct {
 	Password  string `doc:"Password" json:"-" writeOnly:"true" validate:"required"`
 }
 
-//go:generate go run github.com/dmarkham/enumer -type=FilterType -json -text -sql 
+//go:generate go run github.com/dmarkham/enumer -type=FilterType -json -text -sql
 type FilterType int
+
 const (
 	InvalidFilter FilterType = iota
 	AppFilter
@@ -64,13 +62,12 @@ func (FilterType) Values() []string {
 	return FilterTypeStrings()
 }
 
-
 type ctxKey struct {
 	key string
 }
 
 var (
-	MpctxKey      = ctxKey{key: "mp"}
+	MpctxKey = ctxKey{key: "mp"}
 )
 
 type MpService interface {
@@ -80,7 +77,6 @@ type MpService interface {
 	GetFilterService() FilterServiceI
 	GetTransportService() TransportServiceI
 }
-
 
 func GetUserService(ctx context.Context) UserServiceI {
 	return ctx.Value(MpctxKey).(MpService).GetUserService()
@@ -103,10 +99,10 @@ func GetTransportService(ctx context.Context) TransportServiceI {
 }
 
 const (
-	MD_AppName = "X-AppName"
+	MD_AppName        = "X-AppName"
 	MD_AppDescription = "X-AppDescription"
-	MD_AppURL = "X-AppURL"
-	MD_AppIcon = "X-AppIcon"
-	MD_UserEmail = "X-UserEmail"
-	MD_UserName = "X-UserName"
+	MD_AppURL         = "X-AppURL"
+	MD_AppIcon        = "X-AppIcon"
+	MD_UserEmail      = "X-UserEmail"
+	MD_UserName       = "X-UserName"
 )

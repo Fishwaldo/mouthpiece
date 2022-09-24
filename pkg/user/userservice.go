@@ -32,7 +32,7 @@ func (us *UserService) Start(ctx context.Context) error {
 }
 
 func (us *UserService) Create(ctx context.Context, email string, name string) (interfaces.UserI, error) {
-	if ok, err := us.Exists(ctx, name); err != nil {
+	if ok, err := us.Exists(ctx, email); err != nil {
 		return nil, mperror.FilterErrors(err)
 	} else if ok {
 		return nil, mperror.ErrUserExists
@@ -47,7 +47,7 @@ func (us *UserService) Create(ctx context.Context, email string, name string) (i
 }
 
 func (us *UserService) Delete(ctx context.Context, user interfaces.UserI) error {
-	if ok, err := us.Exists(ctx, user.GetName()); err != nil {
+	if ok, err := us.ExistsByID(ctx, user.GetID()); err != nil {
 		return mperror.FilterErrors(err)
 	} else if !ok {
 		return mperror.ErrUserNotFound
@@ -113,9 +113,9 @@ func (us *UserService) Load(ctx context.Context, dbuser any) (interfaces.UserI, 
 }
 
 
-func (us *UserService) Exists(ctx context.Context, name string) (bool, error) {
-	if ok, err := db.DbClient.DbUser.Query().Where(dbuser.Name(name)).Exist(ctx); err != nil {
-		us.log.Error(err, "Error checking if user exists", "name", name)
+func (us *UserService) Exists(ctx context.Context, email string) (bool, error) {
+	if ok, err := db.DbClient.DbUser.Query().Where(dbuser.Email(email)).Exist(ctx); err != nil {
+		us.log.Error(err, "Error checking if user exists", "email", email)
 		return false, mperror.FilterErrors(err)
 	} else {
 		return ok, nil

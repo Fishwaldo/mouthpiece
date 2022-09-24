@@ -1,6 +1,9 @@
 package schema
 
 import (
+
+	"github.com/Fishwaldo/mouthpiece/pkg/validate"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -26,6 +29,7 @@ func (DbUser) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("Email").
 			NotEmpty().
+			Validate(validate.EntStringValidator("required,email")).
 			StructTag(`doc:"Email Address of the User`),
 		field.String("Name").
 			NotEmpty().

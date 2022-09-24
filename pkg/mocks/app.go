@@ -78,20 +78,6 @@ func (mr *MockAppIMockRecorder) GetDescription() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDescription", reflect.TypeOf((*MockAppI)(nil).GetDescription))
 }
 
-// GetDetails mocks base method.
-func (m *MockAppI) GetDetails() interfaces.AppDetails {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDetails")
-	ret0, _ := ret[0].(interfaces.AppDetails)
-	return ret0
-}
-
-// GetDetails indicates an expected call of GetDetails.
-func (mr *MockAppIMockRecorder) GetDetails() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDetails", reflect.TypeOf((*MockAppI)(nil).GetDetails))
-}
-
 // GetFilters mocks base method.
 func (m *MockAppI) GetFilters(arg0 context.Context) ([]interfaces.FilterI, error) {
 	m.ctrl.T.Helper()
@@ -231,20 +217,6 @@ func (m *MockAppI) SetDescription(arg0 context.Context, arg1 string) error {
 func (mr *MockAppIMockRecorder) SetDescription(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDescription", reflect.TypeOf((*MockAppI)(nil).SetDescription), arg0, arg1)
-}
-
-// SetDetails mocks base method.
-func (m *MockAppI) SetDetails(arg0 context.Context, arg1 interfaces.AppDetails) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetDetails", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetDetails indicates an expected call of SetDetails.
-func (mr *MockAppIMockRecorder) SetDetails(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDetails", reflect.TypeOf((*MockAppI)(nil).SetDetails), arg0, arg1)
 }
 
 // SetIcon mocks base method.

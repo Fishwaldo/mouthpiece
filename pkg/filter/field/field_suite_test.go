@@ -7,7 +7,7 @@ import (
 
 	"github.com/Fishwaldo/mouthpiece/pkg/filter/field"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
-	"github.com/Fishwaldo/mouthpiece/pkg/mocks"
+	mptest "github.com/Fishwaldo/mouthpiece/pkg/mocks"
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
@@ -15,19 +15,20 @@ import (
 )
 
 func TestField(t *testing.T) {
+	mptest.Tst = t
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Field Suite")
 }
 
 var _ = Describe("Severity", func() {
 	var (
-		mockMessage *mock_interfaces.MockMessageI
+		mockMessage *mptest.MockMessageI
 		flt         interfaces.FilterImplI
 		ctrl 	  *gomock.Controller
 	)
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		mockMessage = mock_interfaces.NewMockMessageI(ctrl)
+		mockMessage = mptest.NewMockMessageI(ctrl)
 
 		fltfactory := &field.FieldFilterFactory{}
 		var err error

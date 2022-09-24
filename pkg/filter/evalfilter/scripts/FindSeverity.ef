@@ -2,15 +2,15 @@
 // If the content of the Messages contains Warning, Error etc
 
 // If the Severity is already set, skip this
-if (len(Severity) > 0) { 
-    return true;
-}
-severity = "Info";
+//if (len(Severity) > 0) { 
+//    return true;
+//}
+severity = 3;
 if (Message  ~= /warning/i ) {
-    severity = "Warning";    
+    severity = 4;    
 }
 if (Message ~= /error/i ) {
-    severity = "Error";
+    severity = 5;
 }
 setseverity(severity);
 return true;

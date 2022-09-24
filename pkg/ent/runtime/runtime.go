@@ -324,7 +324,21 @@ func init() {
 	// dbuserDescEmail is the schema descriptor for Email field.
 	dbuserDescEmail := dbuserFields[0].Descriptor()
 	// dbuser.EmailValidator is a validator for the "Email" field. It is called by the builders before save.
-	dbuser.EmailValidator = dbuserDescEmail.Validators[0].(func(string) error)
+	dbuser.EmailValidator = func() func(string) error {
+		validators := dbuserDescEmail.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(_Email string) error {
+			for _, fn := range fns {
+				if err := fn(_Email); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// dbuserDescName is the schema descriptor for Name field.
 	dbuserDescName := dbuserFields[1].Descriptor()
 	// dbuser.NameValidator is a validator for the "Name" field. It is called by the builders before save.

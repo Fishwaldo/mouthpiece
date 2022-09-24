@@ -103,7 +103,7 @@ func (u *User) GetName() string {
 
 func (u *User) SetName(ctx context.Context, name string) (err error) {
 	u.lock.Lock()
-	defer u.lock.RUnlock()
+	defer u.lock.Unlock()
 	dbtmp, err := u.dbUser.Update().SetName(name).Save(ctx)
 	if err != nil {
 		u.log.Error(err, "Error Saving User")
@@ -131,7 +131,7 @@ func (u *User) SetDescription(ctx context.Context, description string) error {
 	return nil
 }
 
-func (u *User) SetMetaData(ctx context.Context, fields map[string]string) (err error) {
+func (u *User) SetFields(ctx context.Context, fields map[string]string) (err error) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
 	tx, err := db.DbClient.Tx(ctx)
