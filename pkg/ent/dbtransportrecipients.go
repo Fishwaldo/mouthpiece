@@ -27,6 +27,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -36,6 +37,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportrecipients"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/validate"
 )
 
@@ -46,6 +48,8 @@ type DbTransportRecipients struct {
 	ID int `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// AppData holds the value of the "AppData" field.
+	AppData interfaces.AppData `doc:"-" json:"-"`
 	// Name holds the value of the "Name" field.
 	Name string `json:"Name,omitempty" doc:"Name of the Transport Recipient"`
 	// Description holds the value of the "Description" field.
@@ -132,6 +136,8 @@ func (*DbTransportRecipients) scanValues(columns []string) ([]interface{}, error
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case dbtransportrecipients.FieldAppData:
+			values[i] = new([]byte)
 		case dbtransportrecipients.FieldID, dbtransportrecipients.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case dbtransportrecipients.FieldName, dbtransportrecipients.FieldDescription, dbtransportrecipients.FieldConfig:
@@ -168,6 +174,14 @@ func (dtr *DbTransportRecipients) assignValues(columns []string, values []interf
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				dtr.TenantID = int(value.Int64)
+			}
+		case dbtransportrecipients.FieldAppData:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field AppData", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &dtr.AppData); err != nil {
+					return fmt.Errorf("unmarshal field AppData: %w", err)
+				}
 			}
 		case dbtransportrecipients.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -258,6 +272,8 @@ func (dtr *DbTransportRecipients) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", dtr.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", dtr.TenantID))
+	builder.WriteString(", ")
+	builder.WriteString("AppData=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("Name=")
 	builder.WriteString(dtr.Name)

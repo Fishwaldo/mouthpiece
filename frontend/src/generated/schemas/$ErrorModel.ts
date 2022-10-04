@@ -3,11 +3,6 @@
 /* eslint-disable */
 export const $ErrorModel = {
     properties: {
-        $schema: {
-            type: 'string',
-            description: `An optional URL to a JSON Schema document describing this resource`,
-            format: 'uri',
-        },
         detail: {
             type: 'string',
             description: `A human-readable explanation specific to this occurrence of the problem.`,

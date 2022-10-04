@@ -9,7 +9,7 @@
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint",
-    "generate": "openapi --input http://localhost:8888/openapi.json --output ./src/generated --client axios --useOptions --exportSchemas true"
+    "generate": "openapi --input http://localhost:8080/api/openapi.json --output ./src/generated --client axios --useOptions --exportSchemas true"
   },
   "dependencies": {
     "@coreui/chartjs": "^3.0.0",
@@ -21,8 +21,11 @@
     "@coreui/vue-chartjs": "2.0.1",
     "@vuelidate/core": "^2.0.0-alpha.44",
     "@vuelidate/validators": "^2.0.0-alpha.31",
+    "@websanova/vue-auth": "^4.1.13",
     "axios": "^0.27.2",
     "core-js": "^3.19.0",
+    "luxon": "^3.0.4",
+    "tabulator-tables": "^5.3.4",
     "vue": "^3.2.37",
     "vue-class-component": "^8.0.0-0",
     "vue-router": "^4.0.12",

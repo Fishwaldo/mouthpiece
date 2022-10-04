@@ -27,6 +27,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -35,6 +36,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessage"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/validate"
 	"github.com/google/uuid"
 )
@@ -46,6 +48,8 @@ type DbMessage struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// AppData holds the value of the "AppData" field.
+	AppData interfaces.AppData `default:"-" doc:"-" json:"-" maximum:"-" minimum:"-" validate:"-"`
 	// Message holds the value of the "Message" field.
 	Message string `json:"Message,omitempty" doc:"Message to be Sent"`
 	// ShortMsg holds the value of the "ShortMsg" field.
@@ -115,6 +119,8 @@ func (*DbMessage) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case dbmessage.FieldAppData:
+			values[i] = new([]byte)
 		case dbmessage.FieldTenantID, dbmessage.FieldSeverity:
 			values[i] = new(sql.NullInt64)
 		case dbmessage.FieldMessage, dbmessage.FieldShortMsg, dbmessage.FieldTopic:
@@ -151,6 +157,14 @@ func (dm *DbMessage) assignValues(columns []string, values []interface{}) error 
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				dm.TenantID = int(value.Int64)
+			}
+		case dbmessage.FieldAppData:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field AppData", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &dm.AppData); err != nil {
+					return fmt.Errorf("unmarshal field AppData: %w", err)
+				}
 			}
 		case dbmessage.FieldMessage:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -236,6 +250,8 @@ func (dm *DbMessage) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", dm.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", dm.TenantID))
+	builder.WriteString(", ")
+	builder.WriteString("AppData=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("Message=")
 	builder.WriteString(dm.Message)

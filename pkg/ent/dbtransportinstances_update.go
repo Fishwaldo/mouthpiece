@@ -38,6 +38,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportrecipients"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/predicate"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbTransportInstancesUpdate is the builder for updating DbTransportInstances entities.
@@ -56,6 +57,26 @@ func (dtiu *DbTransportInstancesUpdate) Where(ps ...predicate.DbTransportInstanc
 // SetTenantID sets the "tenant_id" field.
 func (dtiu *DbTransportInstancesUpdate) SetTenantID(i int) *DbTransportInstancesUpdate {
 	dtiu.mutation.SetTenantID(i)
+	return dtiu
+}
+
+// SetAppData sets the "AppData" field.
+func (dtiu *DbTransportInstancesUpdate) SetAppData(id interfaces.AppData) *DbTransportInstancesUpdate {
+	dtiu.mutation.SetAppData(id)
+	return dtiu
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dtiu *DbTransportInstancesUpdate) SetNillableAppData(id *interfaces.AppData) *DbTransportInstancesUpdate {
+	if id != nil {
+		dtiu.SetAppData(*id)
+	}
+	return dtiu
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dtiu *DbTransportInstancesUpdate) ClearAppData() *DbTransportInstancesUpdate {
+	dtiu.mutation.ClearAppData()
 	return dtiu
 }
 
@@ -250,6 +271,19 @@ func (dtiu *DbTransportInstancesUpdate) sqlSave(ctx context.Context) (n int, err
 			}
 		}
 	}
+	if value, ok := dtiu.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbtransportinstances.FieldAppData,
+		})
+	}
+	if dtiu.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbtransportinstances.FieldAppData,
+		})
+	}
 	if value, ok := dtiu.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -395,6 +429,26 @@ type DbTransportInstancesUpdateOne struct {
 // SetTenantID sets the "tenant_id" field.
 func (dtiuo *DbTransportInstancesUpdateOne) SetTenantID(i int) *DbTransportInstancesUpdateOne {
 	dtiuo.mutation.SetTenantID(i)
+	return dtiuo
+}
+
+// SetAppData sets the "AppData" field.
+func (dtiuo *DbTransportInstancesUpdateOne) SetAppData(id interfaces.AppData) *DbTransportInstancesUpdateOne {
+	dtiuo.mutation.SetAppData(id)
+	return dtiuo
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dtiuo *DbTransportInstancesUpdateOne) SetNillableAppData(id *interfaces.AppData) *DbTransportInstancesUpdateOne {
+	if id != nil {
+		dtiuo.SetAppData(*id)
+	}
+	return dtiuo
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dtiuo *DbTransportInstancesUpdateOne) ClearAppData() *DbTransportInstancesUpdateOne {
+	dtiuo.mutation.ClearAppData()
 	return dtiuo
 }
 
@@ -618,6 +672,19 @@ func (dtiuo *DbTransportInstancesUpdateOne) sqlSave(ctx context.Context) (_node 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dtiuo.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbtransportinstances.FieldAppData,
+		})
+	}
+	if dtiuo.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbtransportinstances.FieldAppData,
+		})
 	}
 	if value, ok := dtiuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

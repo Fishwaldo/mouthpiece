@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
@@ -52,7 +52,7 @@ func (us *UserService) Delete(ctx context.Context, user interfaces.UserI) error 
 	} else if !ok {
 		return mperror.ErrUserNotFound
 	}
-	if err := db.DbClient.DbUser.DeleteOneID(user.GetID()).Exec(ctx); err != nil {
+	if err := dbdriver.DbClient.DbUser.DeleteOneID(user.GetID()).Exec(ctx); err != nil {
 		us.log.Error(err, "Error deleting User", "Email", user.GetEmail())
 		return mperror.FilterErrors(err)
 	}
@@ -60,7 +60,7 @@ func (us *UserService) Delete(ctx context.Context, user interfaces.UserI) error 
 }
 
 func (us *UserService) Get(ctx context.Context, email string) (interfaces.UserI, error) {
-	db_app, err := db.DbClient.DbUser.Query().Where(dbuser.Email(email)).Only(ctx)
+	db_app, err := dbdriver.DbClient.DbUser.Query().Where(dbuser.Email(email)).Only(ctx)
 	if err != nil {
 		us.log.Error(err, "Error getting User", "Email", email)
 		return nil, mperror.FilterErrors(err)
@@ -70,7 +70,7 @@ func (us *UserService) Get(ctx context.Context, email string) (interfaces.UserI,
 }
 
 func (us *UserService) GetByID(ctx context.Context, id int) (interfaces.UserI, error) {
-	db_app, err := db.DbClient.DbUser.Query().Where(dbuser.ID(id)).Only(ctx)
+	db_app, err := dbdriver.DbClient.DbUser.Query().Where(dbuser.ID(id)).Only(ctx)
 	if err != nil {
 		us.log.Error(err, "Error getting User", "ID", id)
 		return nil, mperror.FilterErrors(err)
@@ -82,7 +82,7 @@ func (us *UserService) GetByID(ctx context.Context, id int) (interfaces.UserI, e
 
 func (us *UserService) GetAll(ctx context.Context) (users []interfaces.UserI, err error) {
 	var dbusers []*ent.DbUser
-	if dbusers, err = db.DbClient.DbUser.Query().All(ctx); err != nil {
+	if dbusers, err = dbdriver.DbClient.DbUser.Query().All(ctx); err != nil {
 		us.log.Error(err, "Error getting all users")
 		return nil, mperror.FilterErrors(err)
 	}
@@ -114,7 +114,7 @@ func (us *UserService) Load(ctx context.Context, dbuser any) (interfaces.UserI, 
 
 
 func (us *UserService) Exists(ctx context.Context, email string) (bool, error) {
-	if ok, err := db.DbClient.DbUser.Query().Where(dbuser.Email(email)).Exist(ctx); err != nil {
+	if ok, err := dbdriver.DbClient.DbUser.Query().Where(dbuser.Email(email)).Exist(ctx); err != nil {
 		us.log.Error(err, "Error checking if user exists", "email", email)
 		return false, mperror.FilterErrors(err)
 	} else {
@@ -123,7 +123,7 @@ func (us *UserService) Exists(ctx context.Context, email string) (bool, error) {
 }
 
 func (us *UserService) ExistsByID(ctx context.Context, id int) (bool, error) {
-	if ok, err :=  db.DbClient.DbUser.Query().Where(dbuser.ID(id)).Exist(ctx); err != nil {
+	if ok, err :=  dbdriver.DbClient.DbUser.Query().Where(dbuser.ID(id)).Exist(ctx); err != nil {
 		us.log.Error(err, "Error checking if user exists", "id", id)
 		return false, mperror.FilterErrors(err)
 	} else {

@@ -7,11 +7,12 @@ import (
 
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/go-logr/logr"
 )
 
@@ -34,7 +35,7 @@ func newFilter(ctx context.Context, log logr.Logger, fltimpl string, name string
 		newlog.Error(err, "Error creating new filter")
 		return nil
 	}
-	dbFilter, err := db.DbClient.DbFilter.Create().SetName(name).SetFilterImpl(fltimpl).SetType(flttype).SetConfig("{}").Save(ctx)
+	dbFilter, err := dbdriver.DbClient.DbFilter.Create().SetName(name).SetFilterImpl(fltimpl).SetType(flttype).SetConfig("{}").Save(ctx)
 	if err != nil {
 		newlog.Error(err, "Error creating new filter")
 		return nil
@@ -184,5 +185,34 @@ func (f *Filter) Save(ctx context.Context) (err error) {
 	f.dbFilter = dbtmp
 	return nil
 }
+
+func (f *Filter) GetAppData(ctx context.Context, name string, data any) (err error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+	newdata, ok := f.dbFilter.AppData.Data[name]
+	if !ok {
+		return mperror.ErrAppDataNotFound
+	}
+	err = mapstructure.Decode(newdata, &data)
+	if err != nil {
+		f.log.Error(err, "Error decoding AppData", "name", name)
+	}
+	return nil
+}
+
+func (f *Filter) SetAppData(ctx context.Context, name string, data any) (err error) {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	appdata := f.dbFilter.AppData
+	appdata.Data[name] = data
+	dbtmp, err := f.dbFilter.Update().SetAppData(appdata).Save(ctx)
+	if err != nil {
+		f.log.Error(err, "Error setting app data on Filter", "name", name)
+		return mperror.FilterErrors(err)
+	}
+	f.dbFilter = dbtmp
+	return nil
+}
+
 
 var _ interfaces.FilterI = (*Filter)(nil)

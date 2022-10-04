@@ -66,7 +66,7 @@
                     Login with your SSO Accounts to access the full
                     functionality
                   </p>
-                  <CContainer>
+                  <!-- <CContainer>
                     <CRow class="align-items-center">
                       <CCol :xs="3" class="align-self-center" v-if="show.github">
                         <div>
@@ -97,7 +97,7 @@
                         </div>
                       </CCol>
                     </CRow>
-                  </CContainer>
+                  </CContainer> -->
                 </div>
               </CCardBody>
             </CCard>
@@ -110,18 +110,22 @@
 
 <script>
 //import { Form, Field, ErrorMessage } from 'vee-validate'
-import User from '@/models/user'
-import SSOProviders from '@/models/ssoproviders'
+//import User from '@/generated/models'
+//import { useAuth as auth } from '@websanova/vue-auth'
 import useVuelidate from '@vuelidate/core'
 import { required, email } from '@vuelidate/validators'
+
+
 
 export default {
   name: 'Login',
   setup: () => ({ v$: useVuelidate() }),
   data() {
     return {
-      user: new User('', ''),
-      show: new SSOProviders(Array(0)),
+      user: {
+        username: '',
+        password: '',
+      },
       formresult: ""
     }
   },
@@ -138,48 +142,22 @@ export default {
       }
     }
   },
-  mounted() {
-    console.log('mounting login') 
-    this.$store.dispatch('auth/providers').then(() => {
-    //console.log("providers" + this.$store.state.auth.providers)
-    //console.log(this.$store.state.auth.providers.github)
-    this.show = this.$store.state.auth.providers
-    //console.log(this.show.github)
-    })
-    this.$store.dispatch('auth/feconfig').then(() => {
-    this.config = this.$store.state.auth.config
-    console.log(this.config)
-    })
-  },
-  computed: {
-    loggedIn() {
-      return this.$store.state.auth.status.loggedIn
-    },
-  },
-  created() {
-    if (this.loggedIn) {
-      console.log('Logged In')
-    }
-  },
   methods: {
-    async  handleLogin() {
-      const isValid = await this.v$.$validate()
-      if (!isValid) { 
-        return
-      }
-      this.loading = true
-      this.$store.dispatch('auth/login', this.user).then(
-        () => {
-          this.$router.push('/dashboard')
-        },
-        (error) => {
-          this.formresult = error.response.data.error
-        },
-      )
+    handleLogin() {
+      this.$auth.login({
+        data: this.user,
+        rememberMe: false,
+        fetchUser: true,
+      }).then((res) => {
+        console.log("Auth Success")
+        this.$auth.user(res.data)
+      }).catch((res) => {
+        console.log("Auth Error")
+        console.log(res)
+        this.formresult = res.response.data.title
+      })
     },
-    handleProviderAuth(provider) {
-        this.$auth.authenticate(provider)
-    },
+
   },
 }
 </script>

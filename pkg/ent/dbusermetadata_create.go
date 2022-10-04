@@ -37,6 +37,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbusermetadata"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbUserMetaDataCreate is the builder for creating a DbUserMetaData entity.
@@ -50,6 +51,20 @@ type DbUserMetaDataCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (dumdc *DbUserMetaDataCreate) SetTenantID(i int) *DbUserMetaDataCreate {
 	dumdc.mutation.SetTenantID(i)
+	return dumdc
+}
+
+// SetAppData sets the "AppData" field.
+func (dumdc *DbUserMetaDataCreate) SetAppData(id interfaces.AppData) *DbUserMetaDataCreate {
+	dumdc.mutation.SetAppData(id)
+	return dumdc
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dumdc *DbUserMetaDataCreate) SetNillableAppData(id *interfaces.AppData) *DbUserMetaDataCreate {
+	if id != nil {
+		dumdc.SetAppData(*id)
+	}
 	return dumdc
 }
 
@@ -210,6 +225,14 @@ func (dumdc *DbUserMetaDataCreate) createSpec() (*DbUserMetaData, *sqlgraph.Crea
 		}
 	)
 	_spec.OnConflict = dumdc.conflict
+	if value, ok := dumdc.mutation.AppData(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbusermetadata.FieldAppData,
+		})
+		_node.AppData = value
+	}
 	if value, ok := dumdc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -332,6 +355,24 @@ func (u *DbUserMetaDataUpsert) UpdateTenantID() *DbUserMetaDataUpsert {
 	return u
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbUserMetaDataUpsert) SetAppData(v interfaces.AppData) *DbUserMetaDataUpsert {
+	u.Set(dbusermetadata.FieldAppData, v)
+	return u
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsert) UpdateAppData() *DbUserMetaDataUpsert {
+	u.SetExcluded(dbusermetadata.FieldAppData)
+	return u
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbUserMetaDataUpsert) ClearAppData() *DbUserMetaDataUpsert {
+	u.SetNull(dbusermetadata.FieldAppData)
+	return u
+}
+
 // SetName sets the "Name" field.
 func (u *DbUserMetaDataUpsert) SetName(v string) *DbUserMetaDataUpsert {
 	u.Set(dbusermetadata.FieldName, v)
@@ -412,6 +453,27 @@ func (u *DbUserMetaDataUpsertOne) UpdateTenantID() *DbUserMetaDataUpsertOne {
 	})
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbUserMetaDataUpsertOne) SetAppData(v interfaces.AppData) *DbUserMetaDataUpsertOne {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsertOne) UpdateAppData() *DbUserMetaDataUpsertOne {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbUserMetaDataUpsertOne) ClearAppData() *DbUserMetaDataUpsertOne {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.ClearAppData()
+	})
+}
+
 // SetName sets the "Name" field.
 func (u *DbUserMetaDataUpsertOne) SetName(v string) *DbUserMetaDataUpsertOne {
 	return u.Update(func(s *DbUserMetaDataUpsert) {
@@ -476,6 +538,8 @@ func (u *DbUserMetaDataUpsertOne) IDX(ctx context.Context) int {
 func (dumdc *DbUserMetaDataCreate) SetDbUserMetaDataFromStruct(input *DbUserMetaData) *DbUserMetaDataCreate {
 
 	dumdc.SetTenantID(input.TenantID)
+
+	dumdc.SetAppData(input.AppData)
 
 	dumdc.SetName(input.Name)
 
@@ -665,6 +729,27 @@ func (u *DbUserMetaDataUpsertBulk) SetTenantID(v int) *DbUserMetaDataUpsertBulk 
 func (u *DbUserMetaDataUpsertBulk) UpdateTenantID() *DbUserMetaDataUpsertBulk {
 	return u.Update(func(s *DbUserMetaDataUpsert) {
 		s.UpdateTenantID()
+	})
+}
+
+// SetAppData sets the "AppData" field.
+func (u *DbUserMetaDataUpsertBulk) SetAppData(v interfaces.AppData) *DbUserMetaDataUpsertBulk {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbUserMetaDataUpsertBulk) UpdateAppData() *DbUserMetaDataUpsertBulk {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbUserMetaDataUpsertBulk) ClearAppData() *DbUserMetaDataUpsertBulk {
+	return u.Update(func(s *DbUserMetaDataUpsert) {
+		s.ClearAppData()
 	})
 }
 

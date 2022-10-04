@@ -1,8 +1,8 @@
 package schema
 
 import (
-//	"github.com/Fishwaldo/mouthpiece/pkg/ent/privacy"
-//	"github.com/Fishwaldo/mouthpiece/pkg/ent/rules"
+	//	"github.com/Fishwaldo/mouthpiece/pkg/ent/privacy"
+	//	"github.com/Fishwaldo/mouthpiece/pkg/ent/rules"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -23,7 +23,7 @@ func (DbGroup) Fields() []ent.Field {
 		field.String("Description").
 			Optional().
 			StructTag(`doc:"Description of the Group`),
-	} 
+	}
 }
 
 // Edges of the Group.
@@ -36,7 +36,6 @@ func (DbGroup) Edges() []ent.Edge {
 			Ref("groups"),
 		edge.From("apps", DbApp.Type).
 			Ref("groups"),
-
 	}
 }
 

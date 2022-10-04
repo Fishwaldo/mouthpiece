@@ -36,6 +36,7 @@ func InitLogger() logr.Logger {
 		cfg.OutputPaths = []string{"stdout"}
 		cfg.EncoderConfig.EncodeTime = iso8601UTCTimeEncoder
 		cfg.Level = zap.NewAtomicLevelAt(lvl)
+		cfg.DisableStacktrace = false
 		var err error
 		if zapLog, err = cfg.Build(); err != nil {
 			panic(err)

@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbfilter"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
@@ -47,9 +47,9 @@ func (fs *FilterService) expireFilters() {
 //			return
 		case <-time.After(1 * time.Second):
 			fs.fltMutex.Lock()
-			for name, flt := range fs.FilterCache {
+			for _, flt := range fs.FilterCache {
 				if flt.GetLastUsed().Add(interfaces.Config.ExpireFilters).Before(time.Now()) {
-					fs.log.Info("Expiring Filter From Cache", "name", name, "lastUsed", flt.GetLastUsed())
+					fs.log.Info("Expiring Filter From Cache", "name", flt.GetName(), "lastUsed", flt.GetLastUsed())
 					delete(fs.FilterCache, flt.GetID())
 				}
 			}
@@ -85,7 +85,7 @@ func (fs *FilterService) Get(ctx context.Context, name string, scripttype interf
 	}
 
 	fs.log.V(1).Info("Filter not found in cache", "name", name)
-	dbflt, err := db.DbClient.DbFilter.Query().Where(dbfilter.Name(name), dbfilter.TypeEQ(scripttype)).Only(ctx)
+	dbflt, err := dbdriver.DbClient.DbFilter.Query().Where(dbfilter.Name(name), dbfilter.TypeEQ(scripttype)).Only(ctx)
 	if err != nil {
 		fs.log.Error(err, "Error getting filter", "name", name)
 		return nil, mperror.ErrFilterNotFound
@@ -112,7 +112,7 @@ func (fs *FilterService) GetByID(ctx context.Context, id int, scripttype interfa
 	}
 
 	fs.log.V(1).Info("Filter not found in cache", "id", id)
-	dbflt, err := db.DbClient.DbFilter.Query().Where(dbfilter.ID(id), dbfilter.TypeEQ(scripttype)).Only(ctx)
+	dbflt, err := dbdriver.DbClient.DbFilter.Query().Where(dbfilter.ID(id), dbfilter.TypeEQ(scripttype)).Only(ctx)
 	if err != nil {
 		fs.log.Error(err, "Error getting filter", "id", id)
 		return nil, mperror.ErrFilterNotFound

@@ -57,7 +57,8 @@ export default {
   },
   methods: {
     logout() {
-      this.$store.dispatch('auth/logout')
+      console.log('logout')
+      this.$auth.logout({redirect: {name: 'Login'}})
     },
   },
 }

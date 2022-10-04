@@ -1,7 +1,6 @@
 package schema
 
 import (
-
 	"github.com/Fishwaldo/mouthpiece/pkg/validate"
 
 	"entgo.io/ent"

@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	ErrUnsupportedDBType = errors.New("Unsupported Database Type")
 	ErrInternalError = errors.New("Internal Error")
 	ErrInvalidType   = errors.New("Invalid Type")
 
@@ -43,6 +44,7 @@ var (
 	ErrUserNotFound = errors.New("User Not Found")
 
 	ErrValidationError = errors.New("Validation Error")
+	ErrAppDataNotFound = errors.New("App Data Not Found")
 )
 
 func FilterErrors(err error) error {

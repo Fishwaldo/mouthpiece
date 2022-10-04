@@ -27,6 +27,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -44,6 +45,8 @@ type DbApp struct {
 	ID int `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// AppData holds the value of the "AppData" field.
+	AppData interfaces.AppData `doc:"-" json:"-"`
 	// Name holds the value of the "Name" field.
 	Name string `json:"Name,omitempty" doc:"Application Name"`
 	// Status holds the value of the "Status" field.
@@ -119,6 +122,8 @@ func (*DbApp) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case dbapp.FieldAppData:
+			values[i] = new([]byte)
 		case dbapp.FieldStatus:
 			values[i] = new(interfaces.AppStatus)
 		case dbapp.FieldID, dbapp.FieldTenantID:
@@ -151,6 +156,14 @@ func (da *DbApp) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				da.TenantID = int(value.Int64)
+			}
+		case dbapp.FieldAppData:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field AppData", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &da.AppData); err != nil {
+					return fmt.Errorf("unmarshal field AppData: %w", err)
+				}
 			}
 		case dbapp.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -232,6 +245,8 @@ func (da *DbApp) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", da.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", da.TenantID))
+	builder.WriteString(", ")
+	builder.WriteString("AppData=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("Name=")
 	builder.WriteString(da.Name)

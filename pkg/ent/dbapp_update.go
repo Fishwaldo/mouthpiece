@@ -63,6 +63,26 @@ func (dau *DbAppUpdate) SetTenantID(i int) *DbAppUpdate {
 	return dau
 }
 
+// SetAppData sets the "AppData" field.
+func (dau *DbAppUpdate) SetAppData(id interfaces.AppData) *DbAppUpdate {
+	dau.mutation.SetAppData(id)
+	return dau
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dau *DbAppUpdate) SetNillableAppData(id *interfaces.AppData) *DbAppUpdate {
+	if id != nil {
+		dau.SetAppData(*id)
+	}
+	return dau
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dau *DbAppUpdate) ClearAppData() *DbAppUpdate {
+	dau.mutation.ClearAppData()
+	return dau
+}
+
 // SetName sets the "Name" field.
 func (dau *DbAppUpdate) SetName(s string) *DbAppUpdate {
 	dau.mutation.SetName(s)
@@ -356,6 +376,19 @@ func (dau *DbAppUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := dau.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbapp.FieldAppData,
+		})
+	}
+	if dau.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbapp.FieldAppData,
+		})
+	}
 	if value, ok := dau.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -622,6 +655,26 @@ type DbAppUpdateOne struct {
 // SetTenantID sets the "tenant_id" field.
 func (dauo *DbAppUpdateOne) SetTenantID(i int) *DbAppUpdateOne {
 	dauo.mutation.SetTenantID(i)
+	return dauo
+}
+
+// SetAppData sets the "AppData" field.
+func (dauo *DbAppUpdateOne) SetAppData(id interfaces.AppData) *DbAppUpdateOne {
+	dauo.mutation.SetAppData(id)
+	return dauo
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dauo *DbAppUpdateOne) SetNillableAppData(id *interfaces.AppData) *DbAppUpdateOne {
+	if id != nil {
+		dauo.SetAppData(*id)
+	}
+	return dauo
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dauo *DbAppUpdateOne) ClearAppData() *DbAppUpdateOne {
+	dauo.mutation.ClearAppData()
 	return dauo
 }
 
@@ -947,6 +1000,19 @@ func (dauo *DbAppUpdateOne) sqlSave(ctx context.Context) (_node *DbApp, err erro
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dauo.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbapp.FieldAppData,
+		})
+	}
+	if dauo.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbapp.FieldAppData,
+		})
 	}
 	if value, ok := dauo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

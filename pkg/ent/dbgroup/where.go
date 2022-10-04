@@ -160,6 +160,20 @@ func TenantIDNotIn(vs ...int) predicate.DbGroup {
 	})
 }
 
+// AppDataIsNil applies the IsNil predicate on the "AppData" field.
+func AppDataIsNil() predicate.DbGroup {
+	return predicate.DbGroup(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldAppData)))
+	})
+}
+
+// AppDataNotNil applies the NotNil predicate on the "AppData" field.
+func AppDataNotNil() predicate.DbGroup {
+	return predicate.DbGroup(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldAppData)))
+	})
+}
+
 // NameEQ applies the EQ predicate on the "Name" field.
 func NameEQ(v string) predicate.DbGroup {
 	return predicate.DbGroup(func(s *sql.Selector) {

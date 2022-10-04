@@ -7,7 +7,7 @@ import (
 
 	//	"golang.org/x/crypto/bcrypt"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
@@ -16,6 +16,8 @@ import (
 
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 
+
+	"github.com/mitchellh/mapstructure"
 	"github.com/go-logr/logr"
 )
 
@@ -29,7 +31,7 @@ func newUser(ctx context.Context, logger logr.Logger, email string, name string)
 	user = &User{
 		log: logger.WithName("User").WithValues("Email", email),
 	}
-	user.dbUser, err = db.DbClient.DbUser.Create().
+	user.dbUser, err = dbdriver.DbClient.DbUser.Create().
 		SetEmail(email).
 		SetName(name).
 		Save(ctx)
@@ -134,7 +136,7 @@ func (u *User) SetDescription(ctx context.Context, description string) error {
 func (u *User) SetFields(ctx context.Context, fields map[string]string) (err error) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	tx, err := db.DbClient.Tx(ctx)
+	tx, err := dbdriver.DbClient.Tx(ctx)
 
 	for k, v := range fields {
 		if _, err := tx.DbUserMetaData.Create().
@@ -148,7 +150,7 @@ func (u *User) SetFields(ctx context.Context, fields map[string]string) (err err
 		}
 	}
 	tx.Commit()
-	u.dbUser = db.DbClient.DbUser.Query().WithMetadata().Where(dbuser.ID(u.dbUser.ID)).FirstX(ctx)
+	u.dbUser = dbdriver.DbClient.DbUser.Query().WithMetadata().Where(dbuser.ID(u.dbUser.ID)).FirstX(ctx)
 	return nil
 }
 
@@ -195,7 +197,7 @@ func (u *User) SetField(ctx context.Context, key string, value string) (err erro
 	u.lock.Lock()
 	defer u.lock.Unlock()
 
-	if _, err := db.DbClient.DbUserMetaData.Create().
+	if _, err := dbdriver.DbClient.DbUserMetaData.Create().
 		SetUser(u.dbUser).
 		SetName(key).
 		SetValue(value).
@@ -203,7 +205,7 @@ func (u *User) SetField(ctx context.Context, key string, value string) (err erro
 		u.log.Error(err, "Error Saving MetaData", "Field", key, "Value", value)
 		return mperror.FilterErrors(err)
 	}
-	u.dbUser = db.DbClient.DbUser.Query().WithMetadata().Where(dbuser.ID(u.dbUser.ID)).FirstX(ctx)
+	u.dbUser = dbdriver.DbClient.DbUser.Query().WithMetadata().Where(dbuser.ID(u.dbUser.ID)).FirstX(ctx)
 	return nil
 }
 
@@ -370,6 +372,41 @@ func (u *User) ProcessMessage(ctx context.Context, msg interfaces.MessageI) (err
 	}
 	return nil
 }
+
+func (u *User) GetAppData(ctx context.Context, name string, data any) (err error) {
+	u.lock.RLock()
+	defer u.lock.RUnlock()
+	var ok bool
+	newdata, ok := u.dbUser.AppData.Data[name]
+	if !ok {
+		return mperror.ErrAppDataNotFound
+	}
+	err = mapstructure.Decode(newdata, &data)
+	if err != nil {
+		u.log.Error(err, "Error decoding AppData", "name", name)
+	}
+
+	return nil
+}
+
+func (u *User) SetAppData(ctx context.Context, name string, data any) (err error) {
+	u.lock.Lock()
+	defer u.lock.Unlock()
+	appdata := u.dbUser.AppData
+	if appdata.Data == nil {
+		appdata.Data = make(map[string]any)
+	}
+	appdata.Data[name] = data
+	dbtmp, err := u.dbUser.Update().SetAppData(appdata).Save(ctx)
+	if err != nil {
+		u.log.Error(err, "Error setting app data on User", "name", name)
+		return mperror.FilterErrors(err)
+	}
+	u.dbUser = dbtmp
+	return nil
+}
+
+
 
 var _ interfaces.UserI = (*User)(nil)
 

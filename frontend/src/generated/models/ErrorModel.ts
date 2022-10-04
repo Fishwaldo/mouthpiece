@@ -4,10 +4,6 @@
 
 export type ErrorModel = {
     /**
-     * An optional URL to a JSON Schema document describing this resource
-     */
-    $schema?: string;
-    /**
      * A human-readable explanation specific to this occurrence of the problem.
      */
     detail?: string;

@@ -3,11 +3,6 @@
 /* eslint-disable */
 export const $CheckerResult = {
     properties: {
-        $schema: {
-            type: 'string',
-            description: `An optional URL to a JSON Schema document describing this resource`,
-            format: 'uri',
-        },
         details: {
             type: 'dictionary',
             contains: {

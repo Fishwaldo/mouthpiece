@@ -1,15 +1,14 @@
 package schema
 
-import 
-(
-
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/privacy"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/rules"
-	"github.com/Fishwaldo/mouthpiece/pkg/ent/hook"
+import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/hook"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/privacy"
+	"github.com/Fishwaldo/mouthpiece/pkg/ent/rules"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // BaseMixin holds the schema definition for the BaseMixin entity.
@@ -36,11 +35,13 @@ type TenantMixin struct {
 	mixin.Schema
 }
 
-
 // Fields of the TenantMixin.
 func (TenantMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("tenant_id"),
+		field.JSON("AppData", interfaces.AppData{}).
+			Optional().
+			Sensitive(),
 	}
 }
 
@@ -63,11 +64,11 @@ func (TenantMixin) Hooks() []ent.Hook {
 	return []ent.Hook{
 		hook.On(
 			rules.TenantCreateHook,
-			ent.OpCreate,			
+			ent.OpCreate,
 		),
 		hook.On(
 			rules.TenantMutateHook,
-			ent.OpUpdateOne | ent.OpUpdate,
+			ent.OpUpdateOne|ent.OpUpdate,
 		),
 	}
 }

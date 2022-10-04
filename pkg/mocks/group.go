@@ -120,6 +120,20 @@ func (mr *MockGroupIMockRecorder) DelUser(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelUser", reflect.TypeOf((*MockGroupI)(nil).DelUser), arg0, arg1)
 }
 
+// GetAppData mocks base method.
+func (m *MockGroupI) GetAppData(arg0 context.Context, arg1 string, arg2 interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAppData", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetAppData indicates an expected call of GetAppData.
+func (mr *MockGroupIMockRecorder) GetAppData(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppData", reflect.TypeOf((*MockGroupI)(nil).GetAppData), arg0, arg1, arg2)
+}
+
 // GetApps mocks base method.
 func (m *MockGroupI) GetApps(arg0 context.Context) []interfaces.AppI {
 	m.ctrl.T.Helper()
@@ -244,6 +258,20 @@ func (m *MockGroupI) Save(arg0 context.Context) error {
 func (mr *MockGroupIMockRecorder) Save(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockGroupI)(nil).Save), arg0)
+}
+
+// SetAppData mocks base method.
+func (m *MockGroupI) SetAppData(arg0 context.Context, arg1 string, arg2 interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetAppData", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetAppData indicates an expected call of SetAppData.
+func (mr *MockGroupIMockRecorder) SetAppData(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAppData", reflect.TypeOf((*MockGroupI)(nil).SetAppData), arg0, arg1, arg2)
 }
 
 // SetDescription mocks base method.

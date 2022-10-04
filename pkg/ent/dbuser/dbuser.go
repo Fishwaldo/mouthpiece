@@ -37,6 +37,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldAppData holds the string denoting the appdata field in the database.
+	FieldAppData = "app_data"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// FieldName holds the string denoting the name field in the database.
@@ -92,6 +94,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldAppData,
 	FieldEmail,
 	FieldName,
 	FieldDescription,

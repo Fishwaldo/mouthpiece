@@ -9,20 +9,27 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"fmt"
 
 	"github.com/Fishwaldo/mouthpiece/frontend"
+	"github.com/Fishwaldo/mouthpiece/internal/restapi/health"
+	"github.com/Fishwaldo/mouthpiece/internal/restapi/auth"
+	"github.com/Fishwaldo/mouthpiece/internal/restapi/app"
+	"github.com/Fishwaldo/mouthpiece/internal/restapi/messages"
+
 	mpserver "github.com/Fishwaldo/mouthpiece/internal"
 	mouthpiece "github.com/Fishwaldo/mouthpiece/pkg"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 
 	"github.com/danielgtaylor/huma"
-	//"github.com/danielgtaylor/huma/middleware"
 	hmw "github.com/danielgtaylor/huma/middleware"
 
-	//	"github.com/danielgtaylor/huma/responses"
+
+//	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/go-chi/chi"
-	//"github.com/go-chi/chi/middleware"
 
 	"github.com/go-pkgz/rest"
 
@@ -32,6 +39,8 @@ import (
 func init() {
 	viper.SetDefault("frontend.path", "frontend/dist")
 	viper.SetDefault("frontend.external", false)
+	viper.SetDefault("listenaddress", "0.0.0.0")
+	viper.SetDefault("http.port", 8080)
 }
 
 type RestAPI struct {
@@ -39,31 +48,35 @@ type RestAPI struct {
 	mux  *chi.Mux
 }
 
-func NewRestAPI(mps *mouthpiece.MouthPiece) *RestAPI {
+func NewRestAPI() *RestAPI {
 	bi := mouthpiece.GetVersionInfo()
 
 	restapi := &RestAPI{}
 	restapi.huma = huma.New(bi.Name, bi.GitVersion)
-	huma.AddAllowedHeaders("App-Name", "Author", "App-Version", "X-Request-Id", "Set-Cookie")
+	huma.AddAllowedHeaders("App-Name", "Author", "App-Version", "X-Request-Id", "Set-Cookie", "Authorization")
 	restapi.huma.DisableSchemaProperty()
+	restapi.huma.GatewayBearerFormat("Authorization", "JWT Token", "Bearer {token}")
+	//restapi.huma.DocsHandler(huma.SwaggerUIHandler(restapi.huma))
+
 	restapi.mux = chi.NewRouter()
 
 	hmw.NewLogger = mpserver.GetHumaLogger
 
 	restapi.mux.Use(hmw.DefaultChain)
-	restapi.mux.Use(rest.AppInfo(bi.Name, "Fishwaldo", bi.GitVersion))
+	restapi.mux.Use(auth.ParseJWTAuth)
+//	restapi.mux.Use(rest.AppInfo(bi.Name, "Fishwaldo", bi.GitVersion))
 	restapi.mux.Use(rest.Ping)
 	restapi.mux.Use(rest.RealIP)
 	restapi.mux.Use(rest.Trace)
-	restapi.mux.Use(CleanPath)
+//	restapi.mux.Use(CleanPath)
 
 	if viper.GetBool("debug") {
 		log.Log.Info("Enabling Debug Endpoints")
 		bench := rest.NewBenchmarks()
 		bench.WithTimeRange(time.Hour)
 		restapi.mux.Use(bench.Handler)
-		restapi.mux.Use(rest.Metrics("10.0.0.0/8"))
-		restapi.mux.Mount("/debug", rest.Profiler("10.0.0.0/8"))
+		//restapi.mux.Use(rest.Metrics("10.0.0.0/8"))
+		restapi.mux.Mount("/", rest.Profiler("10.0.0.0/8"))
 		restapi.mux.Get("/bench", func(w http.ResponseWriter, r *http.Request) {
 			resp := struct {
 				OneMin     rest.BenchmarkStats `json:"1min"`
@@ -80,22 +93,50 @@ func NewRestAPI(mps *mouthpiece.MouthPiece) *RestAPI {
 		})
 	}
 
+
+
 	restapi.fileServer("/static", getFrontendFiles())
 	restapi.mux.Handle("/", http.RedirectHandler("/static/", http.StatusMovedPermanently))
 
-	restapi.mux.Handle("/*", restapi.huma)
-	setupHealth(restapi.huma)
-	v1api := restapi.huma.Resource("/v1")
+	restapi.mux.Handle("/api/*", restapi.huma)
+	restapi.huma.URLPrefix("/api")
+	restapi.huma.DocsPrefix("/api")
+	fmt.Printf("Docs Path %s\n", restapi.huma.DocsPath())
+	fmt.Printf("Schema Path %s\n", restapi.huma.SchemasPath())
+	fmt.Printf("OpenAPI Path %s\n", restapi.huma.OpenAPIPath())
+	v1api := restapi.huma.Resource("/api")
+	health.Setup(v1api)
+	
 	//mw := NewMiddleware()
 	//v1api.Middleware(mw.Update(mps.GetUserService().GetUser))
 
-	setupApps(v1api, mps)
+	app.Setup(v1api)
+	auth.Setup(v1api)
+	messages.Setup(v1api)
+	restapi.huma.SecurityRequirement("Authorization", "Auth")
+
+
+	// Prometheus Metrics
+	restapi.mux.Handle("/metrics", promhttp.Handler())
+
+	// walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+	// 	route = strings.Replace(route, "/*/", "/", -1)
+	// 	fmt.Printf("%s %s\n", method, route)
+	// 	return nil
+	// }
+
+	// if err := chi.Walk(restapi.mux, walkFunc); err != nil {
+	// 	fmt.Printf("Logging err: %s\n", err.Error())
+	// }
+
+
 	return restapi
 }
 
 func (restapi *RestAPI) Start() {
 	// The HTTP Server
-	server := &http.Server{Addr: "0.0.0.0:8080", Handler: restapi.mux}
+	listenaddr := fmt.Sprintf("%s:%d", viper.GetString("listenaddress"), viper.GetInt("http.port"))
+	server := &http.Server{Addr: listenaddr, Handler: restapi.mux}
 
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())

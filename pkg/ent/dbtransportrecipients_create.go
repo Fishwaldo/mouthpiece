@@ -39,6 +39,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportrecipients"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbTransportRecipientsCreate is the builder for creating a DbTransportRecipients entity.
@@ -52,6 +53,20 @@ type DbTransportRecipientsCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (dtrc *DbTransportRecipientsCreate) SetTenantID(i int) *DbTransportRecipientsCreate {
 	dtrc.mutation.SetTenantID(i)
+	return dtrc
+}
+
+// SetAppData sets the "AppData" field.
+func (dtrc *DbTransportRecipientsCreate) SetAppData(id interfaces.AppData) *DbTransportRecipientsCreate {
+	dtrc.mutation.SetAppData(id)
+	return dtrc
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dtrc *DbTransportRecipientsCreate) SetNillableAppData(id *interfaces.AppData) *DbTransportRecipientsCreate {
+	if id != nil {
+		dtrc.SetAppData(*id)
+	}
 	return dtrc
 }
 
@@ -259,6 +274,14 @@ func (dtrc *DbTransportRecipientsCreate) createSpec() (*DbTransportRecipients, *
 		}
 	)
 	_spec.OnConflict = dtrc.conflict
+	if value, ok := dtrc.mutation.AppData(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbtransportrecipients.FieldAppData,
+		})
+		_node.AppData = value
+	}
 	if value, ok := dtrc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -429,6 +452,24 @@ func (u *DbTransportRecipientsUpsert) UpdateTenantID() *DbTransportRecipientsUps
 	return u
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbTransportRecipientsUpsert) SetAppData(v interfaces.AppData) *DbTransportRecipientsUpsert {
+	u.Set(dbtransportrecipients.FieldAppData, v)
+	return u
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbTransportRecipientsUpsert) UpdateAppData() *DbTransportRecipientsUpsert {
+	u.SetExcluded(dbtransportrecipients.FieldAppData)
+	return u
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbTransportRecipientsUpsert) ClearAppData() *DbTransportRecipientsUpsert {
+	u.SetNull(dbtransportrecipients.FieldAppData)
+	return u
+}
+
 // SetName sets the "Name" field.
 func (u *DbTransportRecipientsUpsert) SetName(v string) *DbTransportRecipientsUpsert {
 	u.Set(dbtransportrecipients.FieldName, v)
@@ -527,6 +568,27 @@ func (u *DbTransportRecipientsUpsertOne) UpdateTenantID() *DbTransportRecipients
 	})
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbTransportRecipientsUpsertOne) SetAppData(v interfaces.AppData) *DbTransportRecipientsUpsertOne {
+	return u.Update(func(s *DbTransportRecipientsUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbTransportRecipientsUpsertOne) UpdateAppData() *DbTransportRecipientsUpsertOne {
+	return u.Update(func(s *DbTransportRecipientsUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbTransportRecipientsUpsertOne) ClearAppData() *DbTransportRecipientsUpsertOne {
+	return u.Update(func(s *DbTransportRecipientsUpsert) {
+		s.ClearAppData()
+	})
+}
+
 // SetName sets the "Name" field.
 func (u *DbTransportRecipientsUpsertOne) SetName(v string) *DbTransportRecipientsUpsertOne {
 	return u.Update(func(s *DbTransportRecipientsUpsert) {
@@ -612,6 +674,8 @@ func (u *DbTransportRecipientsUpsertOne) IDX(ctx context.Context) int {
 func (dtrc *DbTransportRecipientsCreate) SetDbTransportRecipientsFromStruct(input *DbTransportRecipients) *DbTransportRecipientsCreate {
 
 	dtrc.SetTenantID(input.TenantID)
+
+	dtrc.SetAppData(input.AppData)
 
 	dtrc.SetName(input.Name)
 
@@ -803,6 +867,27 @@ func (u *DbTransportRecipientsUpsertBulk) SetTenantID(v int) *DbTransportRecipie
 func (u *DbTransportRecipientsUpsertBulk) UpdateTenantID() *DbTransportRecipientsUpsertBulk {
 	return u.Update(func(s *DbTransportRecipientsUpsert) {
 		s.UpdateTenantID()
+	})
+}
+
+// SetAppData sets the "AppData" field.
+func (u *DbTransportRecipientsUpsertBulk) SetAppData(v interfaces.AppData) *DbTransportRecipientsUpsertBulk {
+	return u.Update(func(s *DbTransportRecipientsUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbTransportRecipientsUpsertBulk) UpdateAppData() *DbTransportRecipientsUpsertBulk {
+	return u.Update(func(s *DbTransportRecipientsUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbTransportRecipientsUpsertBulk) ClearAppData() *DbTransportRecipientsUpsertBulk {
+	return u.Update(func(s *DbTransportRecipientsUpsert) {
+		s.ClearAppData()
 	})
 }
 

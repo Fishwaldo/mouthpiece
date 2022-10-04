@@ -4,7 +4,7 @@
     <div class="wrapper d-flex flex-column min-vh-100 bg-light">
       <AppHeader />
       <div class="body flex-grow-1 px-3">
-        <CContainer lg>
+        <CContainer fluid>
           <router-view />
         </CContainer>
       </div>
@@ -26,9 +26,5 @@ export default {
     AppSidebar,
     CContainer,
   },
-  mounted() {
-    if (!this.$store.state.auth.status.loggedIn)
-      this.$router.push('/pages/login')
-  }
 }
 </script>

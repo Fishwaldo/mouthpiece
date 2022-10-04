@@ -41,6 +41,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbusermetadata"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/predicate"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbUserUpdate is the builder for updating DbUser entities.
@@ -59,6 +60,26 @@ func (duu *DbUserUpdate) Where(ps ...predicate.DbUser) *DbUserUpdate {
 // SetTenantID sets the "tenant_id" field.
 func (duu *DbUserUpdate) SetTenantID(i int) *DbUserUpdate {
 	duu.mutation.SetTenantID(i)
+	return duu
+}
+
+// SetAppData sets the "AppData" field.
+func (duu *DbUserUpdate) SetAppData(id interfaces.AppData) *DbUserUpdate {
+	duu.mutation.SetAppData(id)
+	return duu
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (duu *DbUserUpdate) SetNillableAppData(id *interfaces.AppData) *DbUserUpdate {
+	if id != nil {
+		duu.SetAppData(*id)
+	}
+	return duu
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (duu *DbUserUpdate) ClearAppData() *DbUserUpdate {
+	duu.mutation.ClearAppData()
 	return duu
 }
 
@@ -349,6 +370,19 @@ func (duu *DbUserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := duu.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbuser.FieldAppData,
+		})
+	}
+	if duu.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbuser.FieldAppData,
+		})
 	}
 	if value, ok := duu.mutation.Email(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -650,6 +684,26 @@ type DbUserUpdateOne struct {
 // SetTenantID sets the "tenant_id" field.
 func (duuo *DbUserUpdateOne) SetTenantID(i int) *DbUserUpdateOne {
 	duuo.mutation.SetTenantID(i)
+	return duuo
+}
+
+// SetAppData sets the "AppData" field.
+func (duuo *DbUserUpdateOne) SetAppData(id interfaces.AppData) *DbUserUpdateOne {
+	duuo.mutation.SetAppData(id)
+	return duuo
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (duuo *DbUserUpdateOne) SetNillableAppData(id *interfaces.AppData) *DbUserUpdateOne {
+	if id != nil {
+		duuo.SetAppData(*id)
+	}
+	return duuo
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (duuo *DbUserUpdateOne) ClearAppData() *DbUserUpdateOne {
+	duuo.mutation.ClearAppData()
 	return duuo
 }
 
@@ -970,6 +1024,19 @@ func (duuo *DbUserUpdateOne) sqlSave(ctx context.Context) (_node *DbUser, err er
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := duuo.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbuser.FieldAppData,
+		})
+	}
+	if duuo.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbuser.FieldAppData,
+		})
 	}
 	if value, ok := duuo.mutation.Email(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

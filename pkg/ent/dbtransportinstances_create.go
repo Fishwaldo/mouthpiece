@@ -37,6 +37,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportinstances"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportrecipients"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbTransportInstancesCreate is the builder for creating a DbTransportInstances entity.
@@ -50,6 +51,20 @@ type DbTransportInstancesCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (dtic *DbTransportInstancesCreate) SetTenantID(i int) *DbTransportInstancesCreate {
 	dtic.mutation.SetTenantID(i)
+	return dtic
+}
+
+// SetAppData sets the "AppData" field.
+func (dtic *DbTransportInstancesCreate) SetAppData(id interfaces.AppData) *DbTransportInstancesCreate {
+	dtic.mutation.SetAppData(id)
+	return dtic
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dtic *DbTransportInstancesCreate) SetNillableAppData(id *interfaces.AppData) *DbTransportInstancesCreate {
+	if id != nil {
+		dtic.SetAppData(*id)
+	}
 	return dtic
 }
 
@@ -239,6 +254,14 @@ func (dtic *DbTransportInstancesCreate) createSpec() (*DbTransportInstances, *sq
 		}
 	)
 	_spec.OnConflict = dtic.conflict
+	if value, ok := dtic.mutation.AppData(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbtransportinstances.FieldAppData,
+		})
+		_node.AppData = value
+	}
 	if value, ok := dtic.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -376,6 +399,24 @@ func (u *DbTransportInstancesUpsert) UpdateTenantID() *DbTransportInstancesUpser
 	return u
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbTransportInstancesUpsert) SetAppData(v interfaces.AppData) *DbTransportInstancesUpsert {
+	u.Set(dbtransportinstances.FieldAppData, v)
+	return u
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsert) UpdateAppData() *DbTransportInstancesUpsert {
+	u.SetExcluded(dbtransportinstances.FieldAppData)
+	return u
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbTransportInstancesUpsert) ClearAppData() *DbTransportInstancesUpsert {
+	u.SetNull(dbtransportinstances.FieldAppData)
+	return u
+}
+
 // SetName sets the "Name" field.
 func (u *DbTransportInstancesUpsert) SetName(v string) *DbTransportInstancesUpsert {
 	u.Set(dbtransportinstances.FieldName, v)
@@ -486,6 +527,27 @@ func (u *DbTransportInstancesUpsertOne) UpdateTenantID() *DbTransportInstancesUp
 	})
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbTransportInstancesUpsertOne) SetAppData(v interfaces.AppData) *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertOne) UpdateAppData() *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbTransportInstancesUpsertOne) ClearAppData() *DbTransportInstancesUpsertOne {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.ClearAppData()
+	})
+}
+
 // SetName sets the "Name" field.
 func (u *DbTransportInstancesUpsertOne) SetName(v string) *DbTransportInstancesUpsertOne {
 	return u.Update(func(s *DbTransportInstancesUpsert) {
@@ -585,6 +647,8 @@ func (u *DbTransportInstancesUpsertOne) IDX(ctx context.Context) int {
 func (dtic *DbTransportInstancesCreate) SetDbTransportInstancesFromStruct(input *DbTransportInstances) *DbTransportInstancesCreate {
 
 	dtic.SetTenantID(input.TenantID)
+
+	dtic.SetAppData(input.AppData)
 
 	dtic.SetName(input.Name)
 
@@ -778,6 +842,27 @@ func (u *DbTransportInstancesUpsertBulk) SetTenantID(v int) *DbTransportInstance
 func (u *DbTransportInstancesUpsertBulk) UpdateTenantID() *DbTransportInstancesUpsertBulk {
 	return u.Update(func(s *DbTransportInstancesUpsert) {
 		s.UpdateTenantID()
+	})
+}
+
+// SetAppData sets the "AppData" field.
+func (u *DbTransportInstancesUpsertBulk) SetAppData(v interfaces.AppData) *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbTransportInstancesUpsertBulk) UpdateAppData() *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbTransportInstancesUpsertBulk) ClearAppData() *DbTransportInstancesUpsertBulk {
+	return u.Update(func(s *DbTransportInstancesUpsert) {
+		s.ClearAppData()
 	})
 }
 

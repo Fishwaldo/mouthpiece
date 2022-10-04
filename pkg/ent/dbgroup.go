@@ -27,12 +27,14 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbgroup"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/validate"
 )
 
@@ -43,6 +45,8 @@ type DbGroup struct {
 	ID int `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// AppData holds the value of the "AppData" field.
+	AppData interfaces.AppData `json:"-"`
 	// Name holds the value of the "Name" field.
 	Name string `json:"Name,omitempty" doc:"Name of the Group`
 	// Description holds the value of the "Description" field.
@@ -123,6 +127,8 @@ func (*DbGroup) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case dbgroup.FieldAppData:
+			values[i] = new([]byte)
 		case dbgroup.FieldID, dbgroup.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case dbgroup.FieldName, dbgroup.FieldDescription:
@@ -153,6 +159,14 @@ func (dg *DbGroup) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				dg.TenantID = int(value.Int64)
+			}
+		case dbgroup.FieldAppData:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field AppData", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &dg.AppData); err != nil {
+					return fmt.Errorf("unmarshal field AppData: %w", err)
+				}
 			}
 		case dbgroup.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -221,6 +235,8 @@ func (dg *DbGroup) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", dg.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", dg.TenantID))
+	builder.WriteString(", ")
+	builder.WriteString("AppData=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("Name=")
 	builder.WriteString(dg.Name)

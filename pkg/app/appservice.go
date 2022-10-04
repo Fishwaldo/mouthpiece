@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbapp"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
@@ -49,7 +49,7 @@ func (a *AppService) Delete(ctx context.Context, app interfaces.AppI) error {
 	} else if !ok {
 		return mperror.ErrAppNotFound
 	}
-	if err := db.DbClient.DbApp.DeleteOneID(app.GetID()).Exec(ctx); err != nil {
+	if err := dbdriver.DbClient.DbApp.DeleteOneID(app.GetID()).Exec(ctx); err != nil {
 		a.log.Error(err, "Error deleting app", "name", app.GetName())
 		return mperror.ErrInternalError
 	}
@@ -57,7 +57,7 @@ func (a *AppService) Delete(ctx context.Context, app interfaces.AppI) error {
 }
 
 func (a *AppService) GetByID(ctx context.Context, id int) (app interfaces.AppI, err error) {
-	db_app, err := db.DbClient.DbApp.Query().Where(dbapp.ID(id)).Only(ctx)
+	db_app, err := dbdriver.DbClient.DbApp.Query().Where(dbapp.ID(id)).Only(ctx)
 	if err != nil {
 		a.log.V(1).Error(err, "Error getting app", "id", id)
 		return nil, mperror.FilterErrors(err)
@@ -66,7 +66,7 @@ func (a *AppService) GetByID(ctx context.Context, id int) (app interfaces.AppI, 
 }
 
 func (a *AppService) Get(ctx context.Context, name string) (app interfaces.AppI, err error) {
-	db_app, err := db.DbClient.DbApp.Query().Where(dbapp.Name(name)).Only(ctx)
+	db_app, err := dbdriver.DbClient.DbApp.Query().Where(dbapp.Name(name)).Only(ctx)
 	if err != nil {
 		a.log.V(1).Error(err, "Error getting app", "name", name)
 		return nil, mperror.FilterErrors(err)
@@ -75,7 +75,7 @@ func (a *AppService) Get(ctx context.Context, name string) (app interfaces.AppI,
 }
 
 func (a *AppService) GetAll(ctx context.Context) ([]interfaces.AppI, error) {
-	apps, err := db.DbClient.DbApp.Query().All(ctx)
+	apps, err := dbdriver.DbClient.DbApp.Query().All(ctx)
 	if err != nil {
 		return nil, mperror.ErrInternalError
 	}
@@ -92,7 +92,7 @@ func (a *AppService) GetAll(ctx context.Context) ([]interfaces.AppI, error) {
 }
 
 func (a *AppService) Exists(ctx context.Context, name string) (bool, error) {
-	if ok, err := db.DbClient.DbApp.Query().Where(dbapp.Name(name)).Exist(ctx); err != nil {
+	if ok, err := dbdriver.DbClient.DbApp.Query().Where(dbapp.Name(name)).Exist(ctx); err != nil {
 		a.log.Error(err, "Error checking if app exists", "name", name)
 		return false, mperror.ErrInternalError
 	} else {
@@ -101,7 +101,7 @@ func (a *AppService) Exists(ctx context.Context, name string) (bool, error) {
 }
 
 func (a *AppService) ExistsByID(ctx context.Context, id int) (bool, error) {
-	if ok, err :=  db.DbClient.DbApp.Query().Where(dbapp.ID(id)).Exist(ctx); err != nil {
+	if ok, err :=  dbdriver.DbClient.DbApp.Query().Where(dbapp.ID(id)).Exist(ctx); err != nil {
 		a.log.Error(err, "Error checking if app exists", "id", id)
 		return false, mperror.ErrInternalError
 	} else {

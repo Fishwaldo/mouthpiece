@@ -17,12 +17,12 @@ config.yaml
 .gitignore
 .gitignore
 mouthpiece
-test.db
 frontend/node_modules/
 frontend/dist/
 dist/
-test.db-journal
 logs/
 pkg/ent/schema-viz.html
 .vscode/launch.json
 .vscode/settings.json
+*.db
+*~

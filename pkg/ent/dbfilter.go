@@ -27,6 +27,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -44,6 +45,8 @@ type DbFilter struct {
 	ID int `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// AppData holds the value of the "AppData" field.
+	AppData interfaces.AppData `doc:"-" json:"-"`
 	// Name holds the value of the "Name" field.
 	Name string `json:"Name,omitempty" doc:"Name of the User"`
 	// Description holds the value of the "Description" field.
@@ -121,6 +124,8 @@ func (*DbFilter) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case dbfilter.FieldAppData:
+			values[i] = new([]byte)
 		case dbfilter.FieldType:
 			values[i] = new(interfaces.FilterType)
 		case dbfilter.FieldEnabled:
@@ -155,6 +160,14 @@ func (df *DbFilter) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				df.TenantID = int(value.Int64)
+			}
+		case dbfilter.FieldAppData:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field AppData", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &df.AppData); err != nil {
+					return fmt.Errorf("unmarshal field AppData: %w", err)
+				}
 			}
 		case dbfilter.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -242,6 +255,8 @@ func (df *DbFilter) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", df.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", df.TenantID))
+	builder.WriteString(", ")
+	builder.WriteString("AppData=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("Name=")
 	builder.WriteString(df.Name)

@@ -4,9 +4,10 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/validate"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
+
 )
 
 // DbApp holds the schema definition for the DbApp entity.

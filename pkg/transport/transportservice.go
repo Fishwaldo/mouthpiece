@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 
 	//	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportinstances"
@@ -38,7 +38,7 @@ func NewTransportService(ctx context.Context, log logr.Logger) *TransportService
 func (ts *TransportService) Start(ctx context.Context) error {
 	var db_tis []*ent.DbTransportInstances
 	var err error
-	if db_tis, err = db.DbClient.DbTransportInstances.Query().All(ctx); err != nil {
+	if db_tis, err = dbdriver.DbClient.DbTransportInstances.Query().All(ctx); err != nil {
 		ts.log.Error(err, "Error Bootstrapping all TransportInstances")
 		return mperror.FilterErrors(err)
 	}
@@ -88,7 +88,7 @@ func (ts *TransportService) Delete(ctx context.Context, tr interfaces.TransportR
 	if ok := ts.Exists(ctx, tr.GetName()); !ok {
 		return mperror.ErrTransportReciepientNotFound
 	}
-	if err := db.DbClient.DbTransportRecipients.DeleteOneID(tr.GetID()).Exec(ctx); err != nil {
+	if err := dbdriver.DbClient.DbTransportRecipients.DeleteOneID(tr.GetID()).Exec(ctx); err != nil {
 		ts.log.Error(err, "Error deleting TransportRecipient", "name", tr.GetName())
 		return mperror.FilterErrors(err)
 	}
@@ -96,7 +96,7 @@ func (ts *TransportService) Delete(ctx context.Context, tr interfaces.TransportR
 }
 
 func (ts *TransportService) Get(ctx context.Context, name string) (interfaces.TransportRecipient, error) {
-	db_tr, err := db.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.Name(name)).Only(ctx)
+	db_tr, err := dbdriver.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.Name(name)).Only(ctx)
 	if err != nil {
 		ts.log.Error(err, "Error getting TransportRecipient", "name", name)
 		return nil, mperror.FilterErrors(err)
@@ -105,7 +105,7 @@ func (ts *TransportService) Get(ctx context.Context, name string) (interfaces.Tr
 }
 
 func (ts *TransportService) GetByID(ctx context.Context, id int) (interfaces.TransportRecipient, error) {
-	db_tr, err := db.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.ID(id)).Only(ctx)
+	db_tr, err := dbdriver.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.ID(id)).Only(ctx)
 	if err != nil {
 		ts.log.Error(err, "Error getting TransportRecipient", "ID", id)
 		return nil, mperror.FilterErrors(err)
@@ -115,7 +115,7 @@ func (ts *TransportService) GetByID(ctx context.Context, id int) (interfaces.Tra
 
 func (ts *TransportService) GetAll(ctx context.Context) (tprs []interfaces.TransportRecipient, err error) {
 	var dbtrs []*ent.DbTransportRecipients
-	if dbtrs, err = db.DbClient.DbTransportRecipients.Query().All(ctx); err != nil {
+	if dbtrs, err = dbdriver.DbClient.DbTransportRecipients.Query().All(ctx); err != nil {
 		ts.log.Error(err, "Error getting all TransportRecipient")
 		return nil, mperror.FilterErrors(err)
 	}
@@ -150,7 +150,7 @@ func (ts *TransportService) Load(ctx context.Context, dbtr any) (interfaces.Tran
 }
 
 func (ts *TransportService) Exists(ctx context.Context, name string) bool {
-	if ok, err := db.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.Name(name)).Exist(ctx); err != nil {
+	if ok, err := dbdriver.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.Name(name)).Exist(ctx); err != nil {
 		ts.log.Error(err, "Error checking if TransportRecipient exists", "name", name)
 		return false
 	} else {
@@ -159,7 +159,7 @@ func (ts *TransportService) Exists(ctx context.Context, name string) bool {
 }
 
 func (ts *TransportService) ExistsByID(ctx context.Context, id int) bool {
-	if ok, err := db.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.ID(id)).Exist(ctx); err != nil {
+	if ok, err := dbdriver.DbClient.DbTransportRecipients.Query().Where(dbtransportrecipients.ID(id)).Exist(ctx); err != nil {
 		ts.log.Error(err, "Error checking if TransportRecipient exists", "ID", id)
 		return false
 	} else {
@@ -219,7 +219,7 @@ func (ts *TransportService) DeleteTransportInstance(ctx context.Context, ti inte
 	}
 	ts.tilock.Lock()
 	defer ts.tilock.Unlock()
-	if err := db.DbClient.DbTransportInstances.DeleteOneID(ti.GetID()).Exec(ctx); err != nil {
+	if err := dbdriver.DbClient.DbTransportInstances.DeleteOneID(ti.GetID()).Exec(ctx); err != nil {
 		ts.log.Error(err, "Error deleting TransportInstance", "name", ti.GetName())
 		return mperror.FilterErrors(err)
 	}

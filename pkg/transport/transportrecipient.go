@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportrecipients"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/go-logr/logr"
 )
 
@@ -33,7 +34,7 @@ func newTransportRecipient(ctx context.Context, logger logr.Logger, tpi interfac
 		tpr.log.Error(err, "Error marshalling config")
 		return nil, mperror.ErrTransportConfigInvalid
 	}
-	if tpr.dbTr, err = db.DbClient.DbTransportRecipients.Create().SetName(name).SetConfig(jsoncfg).SetTransportInstanceID(tpi.GetID()).Save(ctx); err != nil {
+	if tpr.dbTr, err = dbdriver.DbClient.DbTransportRecipients.Create().SetName(name).SetConfig(jsoncfg).SetTransportInstanceID(tpi.GetID()).Save(ctx); err != nil {
 		tpr.log.Error(err, "Failed to Create Transport Recipient")
 		return nil, mperror.FilterErrors(err)
 	}
@@ -154,14 +155,14 @@ func (tr *TransportRecipient) GetConfig() (interfaces.MarshableConfigI, error) {
 func (tr *TransportRecipient) loadEdges(ctx context.Context) error {
 	var err error
 	if tr.dbTr.Edges.UserRecipient, err = tr.dbTr.Edges.UserRecipientOrErr(); err != nil {
-		if tr.dbTr, err = db.DbClient.DbTransportRecipients.Query().WithGroupRecipient().WithUserRecipient().Where(dbtransportrecipients.IDEQ(tr.dbTr.ID)).First(ctx); err != nil {
+		if tr.dbTr, err = dbdriver.DbClient.DbTransportRecipients.Query().WithGroupRecipient().WithUserRecipient().Where(dbtransportrecipients.IDEQ(tr.dbTr.ID)).First(ctx); err != nil {
 			tr.log.Error(err, "Failed to load Transport Instance")
 			return mperror.ErrInternalError
 		}
 		return nil
 	}
 	if tr.dbTr.Edges.GroupRecipient, err = tr.dbTr.Edges.GroupRecipientOrErr(); err != nil {
-		if tr.dbTr, err = db.DbClient.DbTransportRecipients.Query().WithGroupRecipient().WithUserRecipient().Where(dbtransportrecipients.IDEQ(tr.dbTr.ID)).First(ctx); err != nil {
+		if tr.dbTr, err = dbdriver.DbClient.DbTransportRecipients.Query().WithGroupRecipient().WithUserRecipient().Where(dbtransportrecipients.IDEQ(tr.dbTr.ID)).First(ctx); err != nil {
 			tr.log.Error(err, "Failed to load Transport Instance")
 			return mperror.ErrInternalError
 		}
@@ -244,3 +245,33 @@ func (tr *TransportRecipient) GetRecipientType(ctx context.Context) interfaces.T
 func (tr *TransportRecipient) ProcessMessage(ctx context.Context, msg interfaces.MessageI) error {
 	return mperror.FilterErrors(tr.tpi.Send(ctx, tr, msg))
 }
+
+func (tr *TransportRecipient) GetAppData(ctx context.Context, name string, data any) (err error) {
+	tr.lock.RLock()
+	defer tr.lock.RUnlock()
+	newdata, ok := tr.dbTr.AppData.Data[name]
+	if !ok {
+		return  mperror.ErrAppDataNotFound
+	}
+	err = mapstructure.Decode(newdata, &data)
+	if err != nil {
+		tr.log.Error(err, "Error decoding AppData", "name", name)
+	}
+	return nil
+}
+
+func (tr *TransportRecipient) SetAppData(ctx context.Context, name string, data any) (err error) {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
+	appdata := tr.dbTr.AppData
+	appdata.Data[name] = data
+	dbtmp, err := tr.dbTr.Update().SetAppData(appdata).Save(ctx)
+	if err != nil {
+		tr.log.Error(err, "Error setting app data on TransportRecipient", "name", name)
+		return mperror.FilterErrors(err)
+	}
+	tr.dbTr = dbtmp
+	return nil
+}
+
+var _ interfaces.TransportRecipient = (*TransportRecipient)(nil)

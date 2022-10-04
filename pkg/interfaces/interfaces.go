@@ -40,6 +40,16 @@ type MessageI interface {
 	Clone() MessageI
 }
 
+
+type MessageServiceI interface {
+	// Start starts the MessageService
+	Start(context.Context) error
+	Get(ctx context.Context, id uuid.UUID) (MessageI, error)
+	GetMessages(ctx context.Context, option ...func(query any) any) ([]MessageI, error)
+	GetMessageCount(ctx context.Context) (int, error)
+	Load(ctx context.Context, db_msg any) (msg MessageI, err error)
+}
+
 // AppI represents an application
 type AppI interface {
 	// Load loads the App from a DB record
@@ -76,6 +86,8 @@ type AppI interface {
 	DelFilter(context.Context, FilterI) error
 	// GetFilters returns the filters of the App
 	GetFilters(context.Context) ([]FilterI, error)
+	GetAppData(ctx context.Context, name string, data any) (err error)
+	SetAppData(ctx context.Context, name string, data any) (err error)
 }
 
 // AppServiceI represents the AppService
@@ -130,8 +142,10 @@ type UserI interface {
 	GetFields(ctx context.Context) (flds map[string]string, err error)
 	GetField(ctx context.Context, key string) (value string, err error)
 	SetField(ctx context.Context, key string, value string) (err error)
-	
+
 	ProcessMessage(context.Context, MessageI) error
+	GetAppData(ctx context.Context, name string, data any) (err error)
+	SetAppData(ctx context.Context, name string, data any) (err error)
 }
 
 type UserServiceI interface {
@@ -191,6 +205,8 @@ type GroupI interface {
 
 	//ProcessMessage Process a Message for the Group
 	ProcessMessage(context.Context, MessageI) error
+	GetAppData(ctx context.Context, name string, data any) (err error)
+	SetAppData(ctx context.Context, name string, data any) (err error)
 }
 
 //GroupServiceI is the Factory/Manager for all Groups
@@ -214,7 +230,6 @@ const (
 	FilterNoMatch
 )
 
-
 type FilterI interface {
 	CacheAbleI
 	Load(context.Context, logr.Logger, any) error
@@ -229,6 +244,8 @@ type FilterI interface {
 	ProcessMessage(context.Context, MessageI) (FilterAction, error)
 	GetConfig(context.Context) (MarshableConfigI, error)
 	SetConfig(context.Context, MarshableConfigI) error
+	GetAppData(ctx context.Context, name string, data any) (err error)
+	SetAppData(ctx context.Context, name string, data any) (err error)
 }
 
 type FilterServiceI interface {
@@ -249,7 +266,7 @@ type FilterImplI interface {
 
 type MarshableConfigI interface {
 	AsJSON() (string, error)
-	FromJSON(string) (error)
+	FromJSON(string) error
 }
 
 type TransportProvider interface {
@@ -272,9 +289,9 @@ type TransportInstance interface {
 	Send(context.Context, TransportRecipient, MessageI) error
 	ValidateTransportRecipientConfig(context.Context, MarshableConfigI) error
 	LoadTransportReciepientConfig(context.Context, string) (MarshableConfigI, error)
+	GetAppData(ctx context.Context, name string, data any) (err error)
+	SetAppData(ctx context.Context, name string, data any) (err error)
 }
-
-
 
 type TransportInstanceImpl interface {
 	Init(context.Context) error
@@ -310,6 +327,8 @@ type TransportRecipient interface {
 	GetGroup(context.Context) (GroupI, error)
 	GetRecipientType(context.Context) TransportRecipientType
 	ProcessMessage(context.Context, MessageI) error
+	GetAppData(ctx context.Context, name string, data any) (err error)
+	SetAppData(ctx context.Context, name string, data any) (err error)
 }
 
 type TransportServiceI interface {

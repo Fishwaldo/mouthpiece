@@ -1,14 +1,10 @@
 package schema
 
 import (
-	
-	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-
-
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbFilter holds the schema definition for the DbFilter entity.
@@ -26,7 +22,7 @@ func (DbFilter) Fields() []ent.Field {
 			Optional().
 			StructTag(`doc:"Description of the Filter"`),
 		field.Enum("Type").
-			GoType(interfaces.FilterType(interfaces.InvalidFilter)).	
+			GoType(interfaces.FilterType(interfaces.InvalidFilter)).
 			StructTag(`doc:"Type of Filter"`),
 		field.Bool("Enabled").
 			Default(true).
@@ -37,7 +33,7 @@ func (DbFilter) Fields() []ent.Field {
 			StructTag(`doc:"Filter Implementation"`),
 		field.String("Config").
 			StructTag(`doc:"Filter Configuration"`),
-	} 
+	}
 }
 
 // Edges of the Filter.

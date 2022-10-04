@@ -36,6 +36,20 @@ func (m *MockTransportRecipient) EXPECT() *MockTransportRecipientMockRecorder {
 	return m.recorder
 }
 
+// GetAppData mocks base method.
+func (m *MockTransportRecipient) GetAppData(arg0 context.Context, arg1 string, arg2 interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAppData", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetAppData indicates an expected call of GetAppData.
+func (mr *MockTransportRecipientMockRecorder) GetAppData(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppData", reflect.TypeOf((*MockTransportRecipient)(nil).GetAppData), arg0, arg1, arg2)
+}
+
 // GetConfig mocks base method.
 func (m *MockTransportRecipient) GetConfig() (interfaces.MarshableConfigI, error) {
 	m.ctrl.T.Helper()
@@ -163,6 +177,20 @@ func (m *MockTransportRecipient) ProcessMessage(arg0 context.Context, arg1 inter
 func (mr *MockTransportRecipientMockRecorder) ProcessMessage(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessMessage", reflect.TypeOf((*MockTransportRecipient)(nil).ProcessMessage), arg0, arg1)
+}
+
+// SetAppData mocks base method.
+func (m *MockTransportRecipient) SetAppData(arg0 context.Context, arg1 string, arg2 interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetAppData", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetAppData indicates an expected call of SetAppData.
+func (mr *MockTransportRecipientMockRecorder) SetAppData(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAppData", reflect.TypeOf((*MockTransportRecipient)(nil).SetAppData), arg0, arg1, arg2)
 }
 
 // SetConfig mocks base method.

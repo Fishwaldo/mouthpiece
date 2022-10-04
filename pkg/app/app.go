@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
+	"github.com/mitchellh/mapstructure"
 	"github.com/go-logr/logr"
 )
 
@@ -21,7 +22,7 @@ type App struct {
 
 func newApp(ctx context.Context, log logr.Logger, appname string, desc string) (*App, error) {
 	newlogger := log.WithName("App").WithValues("App", appname)
-	dbApp, err := db.DbClient.DbApp.Create().
+	dbApp, err := dbdriver.DbClient.DbApp.Create().
 		SetName(appname).
 		SetDescription(desc).
 		SetStatus(interfaces.AppEnabled).
@@ -57,7 +58,6 @@ func (app *App) Load(ctx context.Context, logger logr.Logger, a any) error {
 		return mperror.ErrInvalidType
 	}
 	app.log = logger.WithName("App").WithValues("App", app.dbApp.Name)
-	app.log.V(1).Info("Loaded App")
 	return app.init()
 }
 
@@ -291,5 +291,34 @@ func (app *App) GetFilters(ctx context.Context) (flts []interfaces.FilterI, err 
 	}
 	return flts, nil
 }
+
+func (a *App) GetAppData(ctx context.Context, name string, data any) (err error) {
+	a.lock.RLock()
+	defer a.lock.RUnlock()
+	newdata, ok := a.dbApp.AppData.Data[name]
+	if !ok {
+		return mperror.ErrAppDataNotFound
+	}
+	err = mapstructure.Decode(newdata, &data)
+	if err != nil {
+		a.log.Error(err, "Error decoding AppData", "name", name)
+	}
+	return nil
+}
+
+func (a *App) SetAppData(ctx context.Context, name string, data any) (err error) {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+	appdata := a.dbApp.AppData
+	appdata.Data[name] = data
+	dbtmp, err := a.dbApp.Update().SetAppData(appdata).Save(ctx)
+	if err != nil {
+		a.log.Error(err, "Error setting app data on App", "name", name)
+		return mperror.FilterErrors(err)
+	}
+	a.dbApp= dbtmp
+	return nil
+}
+
 
 var _ interfaces.AppI = (*App)(nil)

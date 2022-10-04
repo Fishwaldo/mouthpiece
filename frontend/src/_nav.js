@@ -7,6 +7,16 @@ export default [
   },
   {
     component: 'CNavTitle',
+    name: 'Messages',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Messages',
+    to: '/messages',
+    icon: 'cil-puzzle',
+  },
+  {
+    component: 'CNavTitle',
     name: 'Apps',
   },
   {

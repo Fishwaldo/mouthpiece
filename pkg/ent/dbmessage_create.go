@@ -40,6 +40,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessage"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessagefields"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/google/uuid"
 )
 
@@ -54,6 +55,20 @@ type DbMessageCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (dmc *DbMessageCreate) SetTenantID(i int) *DbMessageCreate {
 	dmc.mutation.SetTenantID(i)
+	return dmc
+}
+
+// SetAppData sets the "AppData" field.
+func (dmc *DbMessageCreate) SetAppData(id interfaces.AppData) *DbMessageCreate {
+	dmc.mutation.SetAppData(id)
+	return dmc
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dmc *DbMessageCreate) SetNillableAppData(id *interfaces.AppData) *DbMessageCreate {
+	if id != nil {
+		dmc.SetAppData(*id)
+	}
 	return dmc
 }
 
@@ -330,6 +345,14 @@ func (dmc *DbMessageCreate) createSpec() (*DbMessage, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := dmc.mutation.AppData(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbmessage.FieldAppData,
+		})
+		_node.AppData = value
+	}
 	if value, ok := dmc.mutation.Message(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -495,6 +518,24 @@ func (u *DbMessageUpsert) UpdateTenantID() *DbMessageUpsert {
 	return u
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbMessageUpsert) SetAppData(v interfaces.AppData) *DbMessageUpsert {
+	u.Set(dbmessage.FieldAppData, v)
+	return u
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbMessageUpsert) UpdateAppData() *DbMessageUpsert {
+	u.SetExcluded(dbmessage.FieldAppData)
+	return u
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbMessageUpsert) ClearAppData() *DbMessageUpsert {
+	u.SetNull(dbmessage.FieldAppData)
+	return u
+}
+
 // SetMessage sets the "Message" field.
 func (u *DbMessageUpsert) SetMessage(v string) *DbMessageUpsert {
 	u.Set(dbmessage.FieldMessage, v)
@@ -643,6 +684,27 @@ func (u *DbMessageUpsertOne) UpdateTenantID() *DbMessageUpsertOne {
 	})
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbMessageUpsertOne) SetAppData(v interfaces.AppData) *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbMessageUpsertOne) UpdateAppData() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbMessageUpsertOne) ClearAppData() *DbMessageUpsertOne {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.ClearAppData()
+	})
+}
+
 // SetMessage sets the "Message" field.
 func (u *DbMessageUpsertOne) SetMessage(v string) *DbMessageUpsertOne {
 	return u.Update(func(s *DbMessageUpsert) {
@@ -782,6 +844,8 @@ func (u *DbMessageUpsertOne) IDX(ctx context.Context) uuid.UUID {
 func (dmc *DbMessageCreate) SetDbMessageFromStruct(input *DbMessage) *DbMessageCreate {
 
 	dmc.SetTenantID(input.TenantID)
+
+	dmc.SetAppData(input.AppData)
 
 	dmc.SetMessage(input.Message)
 
@@ -989,6 +1053,27 @@ func (u *DbMessageUpsertBulk) SetTenantID(v int) *DbMessageUpsertBulk {
 func (u *DbMessageUpsertBulk) UpdateTenantID() *DbMessageUpsertBulk {
 	return u.Update(func(s *DbMessageUpsert) {
 		s.UpdateTenantID()
+	})
+}
+
+// SetAppData sets the "AppData" field.
+func (u *DbMessageUpsertBulk) SetAppData(v interfaces.AppData) *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbMessageUpsertBulk) UpdateAppData() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbMessageUpsertBulk) ClearAppData() *DbMessageUpsertBulk {
+	return u.Update(func(s *DbMessageUpsert) {
+		s.ClearAppData()
 	})
 }
 

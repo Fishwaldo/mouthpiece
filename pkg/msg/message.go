@@ -8,7 +8,7 @@ import (
 
 	"github.com/jinzhu/copier"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessage"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
@@ -38,7 +38,7 @@ func NewMessage(ctx context.Context, message string, app interfaces.AppI) *Messa
 		return nil
 	}
 	var err error
-	msg.dbEntry, err = db.DbClient.DbMessage.Create().
+	msg.dbEntry, err = dbdriver.DbClient.DbMessage.Create().
 		SetMessage(message).
 		SetAppID(app.GetID()).
 		Save(ctx)
@@ -55,7 +55,7 @@ func LoadFromDB(ctx context.Context, id uuid.UUID) (*Message, error) {
 		log:      log.Log.WithName("Message"),
 		metaData: make(map[string]any),
 	}
-	if newmsg, err := db.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(id)).First(ctx); err != nil {
+	if newmsg, err := dbdriver.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(id)).First(ctx); err != nil {
 		msg.log.Error(err, "Error Loading Message", "Message", msg)
 		return nil, mperror.FilterErrors(err)
 	} else {
@@ -90,14 +90,14 @@ func (msg *Message) Load(ctx context.Context, newmsg any) error {
 func (msg *Message) Save(ctx context.Context, app interfaces.AppI) error {
 	msg.lock.Lock()
 	defer msg.lock.Unlock()
-	if _, err := db.DbClient.DbMessage.Create().
+	if _, err := dbdriver.DbClient.DbMessage.Create().
 		SetDbMessageFromStruct(msg.dbEntry).
 		SetAppID(app.GetID()).
 		Save(ctx); err != nil {
 		msg.log.Error(err, "Error Saving Message")
 		return mperror.FilterErrors(err)
 	}
-	msg.dbEntry = db.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(msg.dbEntry.ID)).FirstX(ctx)
+	msg.dbEntry = dbdriver.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(msg.dbEntry.ID)).FirstX(ctx)
 	msg.log = log.Log.WithName("Message").WithValues("MessageID", msg.dbEntry.ID)
 	return nil
 }
@@ -242,7 +242,7 @@ func (msg *Message) SetFields(ctx context.Context, fields map[string]string) err
 		return mperror.ErrMsgLocked
 	}
 
-	tx, err := db.DbClient.Tx(ctx)
+	tx, err := dbdriver.DbClient.Tx(ctx)
 	if err != nil {
 		msg.log.Error(err, "Error Starting Transaction", "Message", msg)
 		return mperror.FilterErrors(err)
@@ -262,7 +262,7 @@ func (msg *Message) SetFields(ctx context.Context, fields map[string]string) err
 		}
 	}
 	tx.Commit()
-	msg.dbEntry = db.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(msg.dbEntry.ID)).FirstX(ctx)
+	msg.dbEntry = dbdriver.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(msg.dbEntry.ID)).FirstX(ctx)
 	return nil
 }
 
@@ -314,7 +314,7 @@ func (msg *Message) SetField(ctx context.Context, key string, value string) (err
 		return mperror.ErrMsgLocked
 	}
 
-	if err := db.DbClient.DbMessageFields.Create().
+	if err := dbdriver.DbClient.DbMessageFields.Create().
 		SetOwner(msg.dbEntry).
 		SetName(key).
 		SetValue(value).
@@ -324,7 +324,7 @@ func (msg *Message) SetField(ctx context.Context, key string, value string) (err
 		msg.log.Error(err, "Error Saving Message Field", "Message", msg, "Field", key, "Value", value)
 		return mperror.FilterErrors(err)
 	}
-	msg.dbEntry = db.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(msg.dbEntry.ID)).FirstX(ctx)
+	msg.dbEntry = dbdriver.DbClient.DbMessage.Query().WithFields().WithApp().Where(dbmessage.ID(msg.dbEntry.ID)).FirstX(ctx)
 	return nil
 }
 
@@ -425,5 +425,6 @@ func (msg *Message) Clone() interfaces.MessageI {
 	newmsg.lock.RUnlock()
 	return &newmsg
 }
+
 
 var _ interfaces.MessageI = (*Message)(nil)

@@ -2,15 +2,17 @@ package mouthpiece
 
 import (
 	"context"
+	godb "database/sql"
 
 	"github.com/Fishwaldo/mouthpiece/pkg/app"
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/rules"
 	"github.com/Fishwaldo/mouthpiece/pkg/filter"
 	"github.com/Fishwaldo/mouthpiece/pkg/group"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
+	"github.com/Fishwaldo/mouthpiece/pkg/msg"
 	"github.com/Fishwaldo/mouthpiece/pkg/transport"
 	"github.com/Fishwaldo/mouthpiece/pkg/user"
 
@@ -22,6 +24,7 @@ import (
 )
 
 type MouthPiece struct {
+	msgService       interfaces.MessageServiceI
 	appService       interfaces.AppServiceI
 	userService      interfaces.UserServiceI
 	groupService     interfaces.GroupServiceI
@@ -33,9 +36,9 @@ type MouthPiece struct {
 	tenantUserRole   *rules.UserViewer
 }
 
-func NewMouthPiece(ctx context.Context, dbtype string, dbconnstring string, logger logr.Logger) *MouthPiece {
+func NewMouthPiece(ctx context.Context, dbtype string, db *godb.DB, logger logr.Logger) *MouthPiece {
 	mplog := log.InitLogger(logger)
-	if _, err := db.Initialize(dbtype, dbconnstring); err != nil {
+	if _, err := dbdriver.Initialize(dbtype, db); err != nil {
 		mplog.Error(err, "Error Initializing DB")
 		return nil
 	} else {
@@ -46,17 +49,18 @@ func NewMouthPiece(ctx context.Context, dbtype string, dbconnstring string, logg
 			groupService:     group.NewGroupService(ctx, mplog),
 			filterService:    filter.NewFilterService(ctx, mplog),
 			transportService: transport.NewTransportService(ctx, mplog),
+			msgService:       msg.NewMsgService(ctx, mplog),
 			globalAdminRole: &rules.UserViewer{
 				Role: rules.GlobalAdmin,
-				T:    db.GetDefaultTenant(),
+				T:    dbdriver.GetDefaultTenant(),
 			},
 			tenantAdminRole: &rules.UserViewer{
 				Role: rules.Admin,
-				T:    db.GetDefaultTenant(),
+				T:    dbdriver.GetDefaultTenant(),
 			},
 			tenantUserRole: &rules.UserViewer{
 				Role: rules.View,
-				T:    db.GetDefaultTenant(),
+				T:    dbdriver.GetDefaultTenant(),
 			},
 		}
 		return mp
@@ -70,6 +74,7 @@ func (mp MouthPiece) Start(ctx context.Context) error {
 	mp.groupService.Start(ctx)
 	mp.filterService.Start(ctx)
 	mp.transportService.Start(ctx)
+	mp.msgService.Start(ctx)
 	mp.SeedMouthPieceApp(ctx)
 	mp.log.Info("Moutpiece Services Started")
 	return nil
@@ -97,6 +102,10 @@ func (mp MouthPiece) GetFilterService() interfaces.FilterServiceI {
 
 func (mp MouthPiece) GetTransportService() interfaces.TransportServiceI {
 	return mp.transportService
+}
+
+func (mp MouthPiece) GetMsgService() interfaces.MessageServiceI {
+	return mp.msgService
 }
 
 func (mp MouthPiece) SeedMouthPieceApp(ctx context.Context) error {
@@ -168,8 +177,8 @@ func (mp MouthPiece) SeedMouthPieceApp(ctx context.Context) error {
 		if err != nil {
 			log.Log.Error(err, "Error Creating SevFilter")
 		}
-		svfltconfig := &severity.SeverityFilterConfig {
-			Op: severity.SeverityFilterOpGT,
+		svfltconfig := &severity.SeverityFilterConfig{
+			Op:       severity.SeverityFilterOpGT,
 			Severity: 3,
 		}
 		if err := flt.SetConfig(ctx, svfltconfig); err != nil {
@@ -186,11 +195,9 @@ func (mp MouthPiece) SeedMouthPieceApp(ctx context.Context) error {
 			grp.AddUser(ctx, admin)
 			grp.AddUser(ctx, user)
 		}
-	} else {
-		mp.log.Error(err, "Error Seeding MouthPiece App")
-		panic(err)
+		mp.log.Info("Seeding Database Complete")
 	}
-	mp.log.Info("Seeding Database Complete")
+
 	return nil
 }
 
@@ -204,6 +211,10 @@ func (mp MouthPiece) SetAdminTenant(ctx context.Context) context.Context {
 
 func (mp MouthPiece) SetUserTenant(ctx context.Context) context.Context {
 	return mp.withContext(rules.NewContext(ctx, mp.tenantUserRole))
+}
+
+func (mp MouthPiece) GetTenant(ctx context.Context) *ent.Tenant {
+	return rules.FromContextGetTenant(ctx)
 }
 
 func (mp MouthPiece) RouteMessage(ctx context.Context, msg interfaces.MessageI) error {

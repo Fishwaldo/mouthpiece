@@ -40,6 +40,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/predicate"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbTransportRecipientsUpdate is the builder for updating DbTransportRecipients entities.
@@ -58,6 +59,26 @@ func (dtru *DbTransportRecipientsUpdate) Where(ps ...predicate.DbTransportRecipi
 // SetTenantID sets the "tenant_id" field.
 func (dtru *DbTransportRecipientsUpdate) SetTenantID(i int) *DbTransportRecipientsUpdate {
 	dtru.mutation.SetTenantID(i)
+	return dtru
+}
+
+// SetAppData sets the "AppData" field.
+func (dtru *DbTransportRecipientsUpdate) SetAppData(id interfaces.AppData) *DbTransportRecipientsUpdate {
+	dtru.mutation.SetAppData(id)
+	return dtru
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dtru *DbTransportRecipientsUpdate) SetNillableAppData(id *interfaces.AppData) *DbTransportRecipientsUpdate {
+	if id != nil {
+		dtru.SetAppData(*id)
+	}
+	return dtru
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dtru *DbTransportRecipientsUpdate) ClearAppData() *DbTransportRecipientsUpdate {
+	dtru.mutation.ClearAppData()
 	return dtru
 }
 
@@ -270,6 +291,19 @@ func (dtru *DbTransportRecipientsUpdate) sqlSave(ctx context.Context) (n int, er
 			}
 		}
 	}
+	if value, ok := dtru.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbtransportrecipients.FieldAppData,
+		})
+	}
+	if dtru.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbtransportrecipients.FieldAppData,
+		})
+	}
 	if value, ok := dtru.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -459,6 +493,26 @@ type DbTransportRecipientsUpdateOne struct {
 // SetTenantID sets the "tenant_id" field.
 func (dtruo *DbTransportRecipientsUpdateOne) SetTenantID(i int) *DbTransportRecipientsUpdateOne {
 	dtruo.mutation.SetTenantID(i)
+	return dtruo
+}
+
+// SetAppData sets the "AppData" field.
+func (dtruo *DbTransportRecipientsUpdateOne) SetAppData(id interfaces.AppData) *DbTransportRecipientsUpdateOne {
+	dtruo.mutation.SetAppData(id)
+	return dtruo
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dtruo *DbTransportRecipientsUpdateOne) SetNillableAppData(id *interfaces.AppData) *DbTransportRecipientsUpdateOne {
+	if id != nil {
+		dtruo.SetAppData(*id)
+	}
+	return dtruo
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dtruo *DbTransportRecipientsUpdateOne) ClearAppData() *DbTransportRecipientsUpdateOne {
+	dtruo.mutation.ClearAppData()
 	return dtruo
 }
 
@@ -700,6 +754,19 @@ func (dtruo *DbTransportRecipientsUpdateOne) sqlSave(ctx context.Context) (_node
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dtruo.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbtransportrecipients.FieldAppData,
+		})
+	}
+	if dtruo.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbtransportrecipients.FieldAppData,
+		})
 	}
 	if value, ok := dtruo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

@@ -38,6 +38,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbmessagefields"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/predicate"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/google/uuid"
 )
 
@@ -57,6 +58,26 @@ func (dmfu *DbMessageFieldsUpdate) Where(ps ...predicate.DbMessageFields) *DbMes
 // SetTenantID sets the "tenant_id" field.
 func (dmfu *DbMessageFieldsUpdate) SetTenantID(i int) *DbMessageFieldsUpdate {
 	dmfu.mutation.SetTenantID(i)
+	return dmfu
+}
+
+// SetAppData sets the "AppData" field.
+func (dmfu *DbMessageFieldsUpdate) SetAppData(id interfaces.AppData) *DbMessageFieldsUpdate {
+	dmfu.mutation.SetAppData(id)
+	return dmfu
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dmfu *DbMessageFieldsUpdate) SetNillableAppData(id *interfaces.AppData) *DbMessageFieldsUpdate {
+	if id != nil {
+		dmfu.SetAppData(*id)
+	}
+	return dmfu
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dmfu *DbMessageFieldsUpdate) ClearAppData() *DbMessageFieldsUpdate {
+	dmfu.mutation.ClearAppData()
 	return dmfu
 }
 
@@ -204,6 +225,19 @@ func (dmfu *DbMessageFieldsUpdate) sqlSave(ctx context.Context) (n int, err erro
 			}
 		}
 	}
+	if value, ok := dmfu.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbmessagefields.FieldAppData,
+		})
+	}
+	if dmfu.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbmessagefields.FieldAppData,
+		})
+	}
 	if value, ok := dmfu.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -310,6 +344,26 @@ type DbMessageFieldsUpdateOne struct {
 // SetTenantID sets the "tenant_id" field.
 func (dmfuo *DbMessageFieldsUpdateOne) SetTenantID(i int) *DbMessageFieldsUpdateOne {
 	dmfuo.mutation.SetTenantID(i)
+	return dmfuo
+}
+
+// SetAppData sets the "AppData" field.
+func (dmfuo *DbMessageFieldsUpdateOne) SetAppData(id interfaces.AppData) *DbMessageFieldsUpdateOne {
+	dmfuo.mutation.SetAppData(id)
+	return dmfuo
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dmfuo *DbMessageFieldsUpdateOne) SetNillableAppData(id *interfaces.AppData) *DbMessageFieldsUpdateOne {
+	if id != nil {
+		dmfuo.SetAppData(*id)
+	}
+	return dmfuo
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dmfuo *DbMessageFieldsUpdateOne) ClearAppData() *DbMessageFieldsUpdateOne {
+	dmfuo.mutation.ClearAppData()
 	return dmfuo
 }
 
@@ -486,6 +540,19 @@ func (dmfuo *DbMessageFieldsUpdateOne) sqlSave(ctx context.Context) (_node *DbMe
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dmfuo.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbmessagefields.FieldAppData,
+		})
+	}
+	if dmfuo.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbmessagefields.FieldAppData,
+		})
 	}
 	if value, ok := dmfuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

@@ -62,6 +62,26 @@ func (dfu *DbFilterUpdate) SetTenantID(i int) *DbFilterUpdate {
 	return dfu
 }
 
+// SetAppData sets the "AppData" field.
+func (dfu *DbFilterUpdate) SetAppData(id interfaces.AppData) *DbFilterUpdate {
+	dfu.mutation.SetAppData(id)
+	return dfu
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dfu *DbFilterUpdate) SetNillableAppData(id *interfaces.AppData) *DbFilterUpdate {
+	if id != nil {
+		dfu.SetAppData(*id)
+	}
+	return dfu
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dfu *DbFilterUpdate) ClearAppData() *DbFilterUpdate {
+	dfu.mutation.ClearAppData()
+	return dfu
+}
+
 // SetName sets the "Name" field.
 func (dfu *DbFilterUpdate) SetName(s string) *DbFilterUpdate {
 	dfu.mutation.SetName(s)
@@ -334,6 +354,19 @@ func (dfu *DbFilterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := dfu.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbfilter.FieldAppData,
+		})
+	}
+	if dfu.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbfilter.FieldAppData,
+		})
+	}
 	if value, ok := dfu.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -594,6 +627,26 @@ type DbFilterUpdateOne struct {
 // SetTenantID sets the "tenant_id" field.
 func (dfuo *DbFilterUpdateOne) SetTenantID(i int) *DbFilterUpdateOne {
 	dfuo.mutation.SetTenantID(i)
+	return dfuo
+}
+
+// SetAppData sets the "AppData" field.
+func (dfuo *DbFilterUpdateOne) SetAppData(id interfaces.AppData) *DbFilterUpdateOne {
+	dfuo.mutation.SetAppData(id)
+	return dfuo
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dfuo *DbFilterUpdateOne) SetNillableAppData(id *interfaces.AppData) *DbFilterUpdateOne {
+	if id != nil {
+		dfuo.SetAppData(*id)
+	}
+	return dfuo
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dfuo *DbFilterUpdateOne) ClearAppData() *DbFilterUpdateOne {
+	dfuo.mutation.ClearAppData()
 	return dfuo
 }
 
@@ -898,6 +951,19 @@ func (dfuo *DbFilterUpdateOne) sqlSave(ctx context.Context) (_node *DbFilter, er
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dfuo.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbfilter.FieldAppData,
+		})
+	}
+	if dfuo.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbfilter.FieldAppData,
+		})
 	}
 	if value, ok := dfuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

@@ -40,6 +40,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbtransportrecipients"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbGroupCreate is the builder for creating a DbGroup entity.
@@ -53,6 +54,20 @@ type DbGroupCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (dgc *DbGroupCreate) SetTenantID(i int) *DbGroupCreate {
 	dgc.mutation.SetTenantID(i)
+	return dgc
+}
+
+// SetAppData sets the "AppData" field.
+func (dgc *DbGroupCreate) SetAppData(id interfaces.AppData) *DbGroupCreate {
+	dgc.mutation.SetAppData(id)
+	return dgc
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dgc *DbGroupCreate) SetNillableAppData(id *interfaces.AppData) *DbGroupCreate {
+	if id != nil {
+		dgc.SetAppData(*id)
+	}
 	return dgc
 }
 
@@ -259,6 +274,14 @@ func (dgc *DbGroupCreate) createSpec() (*DbGroup, *sqlgraph.CreateSpec) {
 		}
 	)
 	_spec.OnConflict = dgc.conflict
+	if value, ok := dgc.mutation.AppData(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbgroup.FieldAppData,
+		})
+		_node.AppData = value
+	}
 	if value, ok := dgc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -437,6 +460,24 @@ func (u *DbGroupUpsert) UpdateTenantID() *DbGroupUpsert {
 	return u
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbGroupUpsert) SetAppData(v interfaces.AppData) *DbGroupUpsert {
+	u.Set(dbgroup.FieldAppData, v)
+	return u
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbGroupUpsert) UpdateAppData() *DbGroupUpsert {
+	u.SetExcluded(dbgroup.FieldAppData)
+	return u
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbGroupUpsert) ClearAppData() *DbGroupUpsert {
+	u.SetNull(dbgroup.FieldAppData)
+	return u
+}
+
 // SetName sets the "Name" field.
 func (u *DbGroupUpsert) SetName(v string) *DbGroupUpsert {
 	u.Set(dbgroup.FieldName, v)
@@ -523,6 +564,27 @@ func (u *DbGroupUpsertOne) UpdateTenantID() *DbGroupUpsertOne {
 	})
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbGroupUpsertOne) SetAppData(v interfaces.AppData) *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbGroupUpsertOne) UpdateAppData() *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbGroupUpsertOne) ClearAppData() *DbGroupUpsertOne {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.ClearAppData()
+	})
+}
+
 // SetName sets the "Name" field.
 func (u *DbGroupUpsertOne) SetName(v string) *DbGroupUpsertOne {
 	return u.Update(func(s *DbGroupUpsert) {
@@ -594,6 +656,8 @@ func (u *DbGroupUpsertOne) IDX(ctx context.Context) int {
 func (dgc *DbGroupCreate) SetDbGroupFromStruct(input *DbGroup) *DbGroupCreate {
 
 	dgc.SetTenantID(input.TenantID)
+
+	dgc.SetAppData(input.AppData)
 
 	dgc.SetName(input.Name)
 
@@ -783,6 +847,27 @@ func (u *DbGroupUpsertBulk) SetTenantID(v int) *DbGroupUpsertBulk {
 func (u *DbGroupUpsertBulk) UpdateTenantID() *DbGroupUpsertBulk {
 	return u.Update(func(s *DbGroupUpsert) {
 		s.UpdateTenantID()
+	})
+}
+
+// SetAppData sets the "AppData" field.
+func (u *DbGroupUpsertBulk) SetAppData(v interfaces.AppData) *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbGroupUpsertBulk) UpdateAppData() *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbGroupUpsertBulk) ClearAppData() *DbGroupUpsertBulk {
+	return u.Update(func(s *DbGroupUpsert) {
+		s.ClearAppData()
 	})
 }
 

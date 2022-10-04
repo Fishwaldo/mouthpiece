@@ -9,16 +9,16 @@
             <CTable>
               <CTableHead>
                 <CTableRow>
+                  <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Name</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Description</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                <CTableRow v-for="apps in applications" v-bind:key="apps.AppName">
-                  <CTableDataCell>{{apps.AppName}}</CTableDataCell>
-                  <CTableDataCell>{{apps.description}}</CTableDataCell>
-                  <CTableDataCell>{{apps.Status}}</CTableDataCell>
+                <CTableRow v-for="apps in applications" v-bind:key="apps.ID">
+                  <CTableDataCell>{{apps.ID}}</CTableDataCell>
+                  <CTableDataCell>{{apps.Name}}</CTableDataCell>
+                  <CTableDataCell>{{apps.Description}}</CTableDataCell>
                 </CTableRow>
               </CTableBody>
             </CTable>
@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { DefaultService } from '@/generated/'
+import { AppsService } from '@/generated/'
 
 export default {
   name: 'Applications',
@@ -39,10 +39,8 @@ export default {
     }
   },
   mounted() {
-    console.log("Heloo world")
-    DefaultService.getApps().then(response => {
+    AppsService.getApps().then(response => {
       this.applications = response
-      console.log(response)
     })
   },
 }

@@ -56,6 +56,20 @@ func (dfc *DbFilterCreate) SetTenantID(i int) *DbFilterCreate {
 	return dfc
 }
 
+// SetAppData sets the "AppData" field.
+func (dfc *DbFilterCreate) SetAppData(id interfaces.AppData) *DbFilterCreate {
+	dfc.mutation.SetAppData(id)
+	return dfc
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dfc *DbFilterCreate) SetNillableAppData(id *interfaces.AppData) *DbFilterCreate {
+	if id != nil {
+		dfc.SetAppData(*id)
+	}
+	return dfc
+}
+
 // SetName sets the "Name" field.
 func (dfc *DbFilterCreate) SetName(s string) *DbFilterCreate {
 	dfc.mutation.SetName(s)
@@ -310,6 +324,14 @@ func (dfc *DbFilterCreate) createSpec() (*DbFilter, *sqlgraph.CreateSpec) {
 		}
 	)
 	_spec.OnConflict = dfc.conflict
+	if value, ok := dfc.mutation.AppData(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbfilter.FieldAppData,
+		})
+		_node.AppData = value
+	}
 	if value, ok := dfc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -501,6 +523,24 @@ func (u *DbFilterUpsert) UpdateTenantID() *DbFilterUpsert {
 	return u
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbFilterUpsert) SetAppData(v interfaces.AppData) *DbFilterUpsert {
+	u.Set(dbfilter.FieldAppData, v)
+	return u
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbFilterUpsert) UpdateAppData() *DbFilterUpsert {
+	u.SetExcluded(dbfilter.FieldAppData)
+	return u
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbFilterUpsert) ClearAppData() *DbFilterUpsert {
+	u.SetNull(dbfilter.FieldAppData)
+	return u
+}
+
 // SetName sets the "Name" field.
 func (u *DbFilterUpsert) SetName(v string) *DbFilterUpsert {
 	u.Set(dbfilter.FieldName, v)
@@ -640,6 +680,27 @@ func (u *DbFilterUpsertOne) UpdateTenantID() *DbFilterUpsertOne {
 	})
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbFilterUpsertOne) SetAppData(v interfaces.AppData) *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbFilterUpsertOne) UpdateAppData() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbFilterUpsertOne) ClearAppData() *DbFilterUpsertOne {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.ClearAppData()
+	})
+}
+
 // SetName sets the "Name" field.
 func (u *DbFilterUpsertOne) SetName(v string) *DbFilterUpsertOne {
 	return u.Update(func(s *DbFilterUpsert) {
@@ -767,6 +828,8 @@ func (u *DbFilterUpsertOne) IDX(ctx context.Context) int {
 func (dfc *DbFilterCreate) SetDbFilterFromStruct(input *DbFilter) *DbFilterCreate {
 
 	dfc.SetTenantID(input.TenantID)
+
+	dfc.SetAppData(input.AppData)
 
 	dfc.SetName(input.Name)
 
@@ -972,6 +1035,27 @@ func (u *DbFilterUpsertBulk) SetTenantID(v int) *DbFilterUpsertBulk {
 func (u *DbFilterUpsertBulk) UpdateTenantID() *DbFilterUpsertBulk {
 	return u.Update(func(s *DbFilterUpsert) {
 		s.UpdateTenantID()
+	})
+}
+
+// SetAppData sets the "AppData" field.
+func (u *DbFilterUpsertBulk) SetAppData(v interfaces.AppData) *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbFilterUpsertBulk) UpdateAppData() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbFilterUpsertBulk) ClearAppData() *DbFilterUpsertBulk {
+	return u.Update(func(s *DbFilterUpsert) {
+		s.ClearAppData()
 	})
 }
 

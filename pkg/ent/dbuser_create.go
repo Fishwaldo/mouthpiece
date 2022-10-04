@@ -40,6 +40,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbusermetadata"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbUserCreate is the builder for creating a DbUser entity.
@@ -53,6 +54,20 @@ type DbUserCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (duc *DbUserCreate) SetTenantID(i int) *DbUserCreate {
 	duc.mutation.SetTenantID(i)
+	return duc
+}
+
+// SetAppData sets the "AppData" field.
+func (duc *DbUserCreate) SetAppData(id interfaces.AppData) *DbUserCreate {
+	duc.mutation.SetAppData(id)
+	return duc
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (duc *DbUserCreate) SetNillableAppData(id *interfaces.AppData) *DbUserCreate {
+	if id != nil {
+		duc.SetAppData(*id)
+	}
 	return duc
 }
 
@@ -273,6 +288,14 @@ func (duc *DbUserCreate) createSpec() (*DbUser, *sqlgraph.CreateSpec) {
 		}
 	)
 	_spec.OnConflict = duc.conflict
+	if value, ok := duc.mutation.AppData(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbuser.FieldAppData,
+		})
+		_node.AppData = value
+	}
 	if value, ok := duc.mutation.Email(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -459,6 +482,24 @@ func (u *DbUserUpsert) UpdateTenantID() *DbUserUpsert {
 	return u
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbUserUpsert) SetAppData(v interfaces.AppData) *DbUserUpsert {
+	u.Set(dbuser.FieldAppData, v)
+	return u
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbUserUpsert) UpdateAppData() *DbUserUpsert {
+	u.SetExcluded(dbuser.FieldAppData)
+	return u
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbUserUpsert) ClearAppData() *DbUserUpsert {
+	u.SetNull(dbuser.FieldAppData)
+	return u
+}
+
 // SetEmail sets the "Email" field.
 func (u *DbUserUpsert) SetEmail(v string) *DbUserUpsert {
 	u.Set(dbuser.FieldEmail, v)
@@ -557,6 +598,27 @@ func (u *DbUserUpsertOne) UpdateTenantID() *DbUserUpsertOne {
 	})
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbUserUpsertOne) SetAppData(v interfaces.AppData) *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbUserUpsertOne) UpdateAppData() *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbUserUpsertOne) ClearAppData() *DbUserUpsertOne {
+	return u.Update(func(s *DbUserUpsert) {
+		s.ClearAppData()
+	})
+}
+
 // SetEmail sets the "Email" field.
 func (u *DbUserUpsertOne) SetEmail(v string) *DbUserUpsertOne {
 	return u.Update(func(s *DbUserUpsert) {
@@ -642,6 +704,8 @@ func (u *DbUserUpsertOne) IDX(ctx context.Context) int {
 func (duc *DbUserCreate) SetDbUserFromStruct(input *DbUser) *DbUserCreate {
 
 	duc.SetTenantID(input.TenantID)
+
+	duc.SetAppData(input.AppData)
 
 	duc.SetEmail(input.Email)
 
@@ -833,6 +897,27 @@ func (u *DbUserUpsertBulk) SetTenantID(v int) *DbUserUpsertBulk {
 func (u *DbUserUpsertBulk) UpdateTenantID() *DbUserUpsertBulk {
 	return u.Update(func(s *DbUserUpsert) {
 		s.UpdateTenantID()
+	})
+}
+
+// SetAppData sets the "AppData" field.
+func (u *DbUserUpsertBulk) SetAppData(v interfaces.AppData) *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbUserUpsertBulk) UpdateAppData() *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbUserUpsertBulk) ClearAppData() *DbUserUpsertBulk {
+	return u.Update(func(s *DbUserUpsert) {
+		s.ClearAppData()
 	})
 }
 

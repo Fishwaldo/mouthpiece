@@ -27,12 +27,14 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/validate"
 )
 
@@ -43,6 +45,8 @@ type DbUser struct {
 	ID int `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// AppData holds the value of the "AppData" field.
+	AppData interfaces.AppData `json:"-"`
 	// Email holds the value of the "Email" field.
 	Email string `json:"Email,omitempty" doc:"Email Address of the User`
 	// Name holds the value of the "Name" field.
@@ -125,6 +129,8 @@ func (*DbUser) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case dbuser.FieldAppData:
+			values[i] = new([]byte)
 		case dbuser.FieldID, dbuser.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case dbuser.FieldEmail, dbuser.FieldName, dbuser.FieldDescription:
@@ -155,6 +161,14 @@ func (du *DbUser) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				du.TenantID = int(value.Int64)
+			}
+		case dbuser.FieldAppData:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field AppData", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &du.AppData); err != nil {
+					return fmt.Errorf("unmarshal field AppData: %w", err)
+				}
 			}
 		case dbuser.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -229,6 +243,8 @@ func (du *DbUser) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", du.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", du.TenantID))
+	builder.WriteString(", ")
+	builder.WriteString("AppData=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("Email=")
 	builder.WriteString(du.Email)

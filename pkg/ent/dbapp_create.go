@@ -57,6 +57,20 @@ func (dac *DbAppCreate) SetTenantID(i int) *DbAppCreate {
 	return dac
 }
 
+// SetAppData sets the "AppData" field.
+func (dac *DbAppCreate) SetAppData(id interfaces.AppData) *DbAppCreate {
+	dac.mutation.SetAppData(id)
+	return dac
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dac *DbAppCreate) SetNillableAppData(id *interfaces.AppData) *DbAppCreate {
+	if id != nil {
+		dac.SetAppData(*id)
+	}
+	return dac
+}
+
 // SetName sets the "Name" field.
 func (dac *DbAppCreate) SetName(s string) *DbAppCreate {
 	dac.mutation.SetName(s)
@@ -297,6 +311,14 @@ func (dac *DbAppCreate) createSpec() (*DbApp, *sqlgraph.CreateSpec) {
 		}
 	)
 	_spec.OnConflict = dac.conflict
+	if value, ok := dac.mutation.AppData(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbapp.FieldAppData,
+		})
+		_node.AppData = value
+	}
 	if value, ok := dac.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -480,6 +502,24 @@ func (u *DbAppUpsert) UpdateTenantID() *DbAppUpsert {
 	return u
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbAppUpsert) SetAppData(v interfaces.AppData) *DbAppUpsert {
+	u.Set(dbapp.FieldAppData, v)
+	return u
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbAppUpsert) UpdateAppData() *DbAppUpsert {
+	u.SetExcluded(dbapp.FieldAppData)
+	return u
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbAppUpsert) ClearAppData() *DbAppUpsert {
+	u.SetNull(dbapp.FieldAppData)
+	return u
+}
+
 // SetName sets the "Name" field.
 func (u *DbAppUpsert) SetName(v string) *DbAppUpsert {
 	u.Set(dbapp.FieldName, v)
@@ -608,6 +648,27 @@ func (u *DbAppUpsertOne) UpdateTenantID() *DbAppUpsertOne {
 	})
 }
 
+// SetAppData sets the "AppData" field.
+func (u *DbAppUpsertOne) SetAppData(v interfaces.AppData) *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbAppUpsertOne) UpdateAppData() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbAppUpsertOne) ClearAppData() *DbAppUpsertOne {
+	return u.Update(func(s *DbAppUpsert) {
+		s.ClearAppData()
+	})
+}
+
 // SetName sets the "Name" field.
 func (u *DbAppUpsertOne) SetName(v string) *DbAppUpsertOne {
 	return u.Update(func(s *DbAppUpsert) {
@@ -728,6 +789,8 @@ func (u *DbAppUpsertOne) IDX(ctx context.Context) int {
 func (dac *DbAppCreate) SetDbAppFromStruct(input *DbApp) *DbAppCreate {
 
 	dac.SetTenantID(input.TenantID)
+
+	dac.SetAppData(input.AppData)
 
 	dac.SetName(input.Name)
 
@@ -923,6 +986,27 @@ func (u *DbAppUpsertBulk) SetTenantID(v int) *DbAppUpsertBulk {
 func (u *DbAppUpsertBulk) UpdateTenantID() *DbAppUpsertBulk {
 	return u.Update(func(s *DbAppUpsert) {
 		s.UpdateTenantID()
+	})
+}
+
+// SetAppData sets the "AppData" field.
+func (u *DbAppUpsertBulk) SetAppData(v interfaces.AppData) *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.SetAppData(v)
+	})
+}
+
+// UpdateAppData sets the "AppData" field to the value that was provided on create.
+func (u *DbAppUpsertBulk) UpdateAppData() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.UpdateAppData()
+	})
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (u *DbAppUpsertBulk) ClearAppData() *DbAppUpsertBulk {
+	return u.Update(func(s *DbAppUpsert) {
+		s.ClearAppData()
 	})
 }
 

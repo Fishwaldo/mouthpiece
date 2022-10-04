@@ -27,6 +27,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -34,6 +35,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbusermetadata"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/validate"
 )
 
@@ -44,6 +46,8 @@ type DbUserMetaData struct {
 	ID int `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// AppData holds the value of the "AppData" field.
+	AppData interfaces.AppData `doc:"-" json:"-"`
 	// Name holds the value of the "Name" field.
 	Name string `json:"Name,omitempty" doc:"Name of the Field"`
 	// Value holds the value of the "Value" field.
@@ -96,6 +100,8 @@ func (*DbUserMetaData) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case dbusermetadata.FieldAppData:
+			values[i] = new([]byte)
 		case dbusermetadata.FieldID, dbusermetadata.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case dbusermetadata.FieldName, dbusermetadata.FieldValue:
@@ -128,6 +134,14 @@ func (dumd *DbUserMetaData) assignValues(columns []string, values []interface{})
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				dumd.TenantID = int(value.Int64)
+			}
+		case dbusermetadata.FieldAppData:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field AppData", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &dumd.AppData); err != nil {
+					return fmt.Errorf("unmarshal field AppData: %w", err)
+				}
 			}
 		case dbusermetadata.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -188,6 +202,8 @@ func (dumd *DbUserMetaData) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", dumd.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", dumd.TenantID))
+	builder.WriteString(", ")
+	builder.WriteString("AppData=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("Name=")
 	builder.WriteString(dumd.Name)

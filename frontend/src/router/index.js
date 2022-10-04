@@ -15,31 +15,57 @@ const routes = [
         name: 'Dashboard',
         component: () =>
           import(/* webpackChunkName: "dashboard" */ '@/views/Dashboard.vue'),
+        meta: {
+          auth: true
+        },
+      },
+      {
+        path: '/messages',
+        name: 'Messages',
+        component: () => import('@/views/messages/Messages.vue'),
+        meta: {
+          auth: true
+        },
       },
       {
         path: '/apps',
         name: 'Applications',
         component: () => import('@/views/apps/Applications.vue'),
+        meta: {
+          auth: true
+        },
       },
       {
         path: '/users',
         name: 'Users',
         component: () => import('@/views/users/Users.vue'),
+        meta: {
+          auth: true
+        },
       },
       {
         path: '/transports',
         name: 'Transports',
         component: () => import('@/views/transports/Transports.vue'),
+        meta: {
+          auth: true
+        },
       },
       {
         path: '/notifications',
         name: 'Notifications',
         component: () => import('@/views/notifications/Notifications.vue'),
+        meta: {
+          auth: true
+        },
       },
       {
         path: '/settings',
         name: 'Settings',
         component: () => import('@/views/settings/Settings.vue'),
+        meta: {
+          auth: true
+        },
       },        
     ],
   },

@@ -41,6 +41,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbuser"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/predicate"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/tenant"
+	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 )
 
 // DbGroupUpdate is the builder for updating DbGroup entities.
@@ -59,6 +60,26 @@ func (dgu *DbGroupUpdate) Where(ps ...predicate.DbGroup) *DbGroupUpdate {
 // SetTenantID sets the "tenant_id" field.
 func (dgu *DbGroupUpdate) SetTenantID(i int) *DbGroupUpdate {
 	dgu.mutation.SetTenantID(i)
+	return dgu
+}
+
+// SetAppData sets the "AppData" field.
+func (dgu *DbGroupUpdate) SetAppData(id interfaces.AppData) *DbGroupUpdate {
+	dgu.mutation.SetAppData(id)
+	return dgu
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dgu *DbGroupUpdate) SetNillableAppData(id *interfaces.AppData) *DbGroupUpdate {
+	if id != nil {
+		dgu.SetAppData(*id)
+	}
+	return dgu
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dgu *DbGroupUpdate) ClearAppData() *DbGroupUpdate {
+	dgu.mutation.ClearAppData()
 	return dgu
 }
 
@@ -338,6 +359,19 @@ func (dgu *DbGroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dgu.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbgroup.FieldAppData,
+		})
+	}
+	if dgu.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbgroup.FieldAppData,
+		})
 	}
 	if value, ok := dgu.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -632,6 +666,26 @@ type DbGroupUpdateOne struct {
 // SetTenantID sets the "tenant_id" field.
 func (dguo *DbGroupUpdateOne) SetTenantID(i int) *DbGroupUpdateOne {
 	dguo.mutation.SetTenantID(i)
+	return dguo
+}
+
+// SetAppData sets the "AppData" field.
+func (dguo *DbGroupUpdateOne) SetAppData(id interfaces.AppData) *DbGroupUpdateOne {
+	dguo.mutation.SetAppData(id)
+	return dguo
+}
+
+// SetNillableAppData sets the "AppData" field if the given value is not nil.
+func (dguo *DbGroupUpdateOne) SetNillableAppData(id *interfaces.AppData) *DbGroupUpdateOne {
+	if id != nil {
+		dguo.SetAppData(*id)
+	}
+	return dguo
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (dguo *DbGroupUpdateOne) ClearAppData() *DbGroupUpdateOne {
+	dguo.mutation.ClearAppData()
 	return dguo
 }
 
@@ -941,6 +995,19 @@ func (dguo *DbGroupUpdateOne) sqlSave(ctx context.Context) (_node *DbGroup, err 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dguo.mutation.AppData(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dbgroup.FieldAppData,
+		})
+	}
+	if dguo.mutation.AppDataCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: dbgroup.FieldAppData,
+		})
 	}
 	if value, ok := dguo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{

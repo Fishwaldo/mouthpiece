@@ -28,19 +28,22 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"net/url"
 
 	"strings"
+
 
 	// "github.com/Fishwaldo/mouthpiece/frontend"
 	"github.com/Fishwaldo/mouthpiece/internal"
 	"github.com/Fishwaldo/mouthpiece/internal/restapi"
+	"github.com/Fishwaldo/mouthpiece/internal/server"
+	"github.com/Fishwaldo/mouthpiece/internal/cache"
+	"github.com/Fishwaldo/mouthpiece/internal/database"
+
 
 	mouthpiece "github.com/Fishwaldo/mouthpiece/pkg"
 	// "github.com/Fishwaldo/mouthpiece/pkg/apps"
 	// "github.com/Fishwaldo/mouthpiece/pkg/db"
 	// "github.com/Fishwaldo/mouthpiece/pkg/filter"
-	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/log"
 	"github.com/Fishwaldo/mouthpiece/pkg/msg"
 
@@ -55,7 +58,6 @@ import (
 
 	//	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"entgo.io/ent/dialect"
 
 )
 
@@ -121,29 +123,42 @@ func main() {
 
 	fmt.Println(bi.String())
 
-	ctx := interfaces.NewContext(context.Background())
-	db := sqlite.Open("test.db?cache=shared&mode=rwc&_fk=1")
+	cache.Start()
 
 
-	dbType := dialect.SQLite
-	dbConnString := "file:test.db?cache=shared&mode=rwc&_fk=1"
 
-	mps := mouthpiece.NewMouthPiece(ctx, dbType, dbConnString, mpserver.InitLogger())
-	mps.Start()
-	mps.SeedMouthPieceApp(context.Background())
 
-	msg := msg.NewMessage("MouthPiece")
-	msg.Body.Message = "Hello World"
-	msg.ProcessMessage()
-	mps.RouteMessage(context.Background(), msg)
+	if err := database.Start(); err != nil {
+		panic(err)
+	}
+	
 
-	restapi := restapi.NewRestAPI(mps)
+	server.Set(mouthpiece.NewMouthPiece(context.Background(), database.Type, database.Conn, mpserver.InitLogger()))
+
+	ctx := server.Get().SetAdminTenant(context.Background())
+	server.Get().Start(ctx)
+//	mps.SeedMouthPieceApp(ctx)
+
+
+	restapi := restapi.NewRestAPI()
+
+	app, err := server.Get().GetAppService().Get(ctx, "MouthPiece")
+	if err != nil {
+		panic(err)
+	}
+
+	msg := msg.NewMessage(ctx, "MouthPiece Starting", app)
+	msg.ProcessMessage(ctx)
+	server.Get().RouteMessage(context.Background(), msg)
 
 	restapi.Start()
 
 	log.Log.Info("Server Shut Down")
 	zl, _ := mpserver.GetZapLogger()
 	zl.Sync()
+
+
+
 
 	// Create a new router & CLI with default middleware.
 

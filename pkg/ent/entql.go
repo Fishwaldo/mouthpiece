@@ -60,6 +60,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "DbApp",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			dbapp.FieldTenantID:    {Type: field.TypeInt, Column: dbapp.FieldTenantID},
+			dbapp.FieldAppData:     {Type: field.TypeJSON, Column: dbapp.FieldAppData},
 			dbapp.FieldName:        {Type: field.TypeString, Column: dbapp.FieldName},
 			dbapp.FieldStatus:      {Type: field.TypeEnum, Column: dbapp.FieldStatus},
 			dbapp.FieldDescription: {Type: field.TypeString, Column: dbapp.FieldDescription},
@@ -79,6 +80,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "DbFilter",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			dbfilter.FieldTenantID:    {Type: field.TypeInt, Column: dbfilter.FieldTenantID},
+			dbfilter.FieldAppData:     {Type: field.TypeJSON, Column: dbfilter.FieldAppData},
 			dbfilter.FieldName:        {Type: field.TypeString, Column: dbfilter.FieldName},
 			dbfilter.FieldDescription: {Type: field.TypeString, Column: dbfilter.FieldDescription},
 			dbfilter.FieldType:        {Type: field.TypeEnum, Column: dbfilter.FieldType},
@@ -99,6 +101,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "DbGroup",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			dbgroup.FieldTenantID:    {Type: field.TypeInt, Column: dbgroup.FieldTenantID},
+			dbgroup.FieldAppData:     {Type: field.TypeJSON, Column: dbgroup.FieldAppData},
 			dbgroup.FieldName:        {Type: field.TypeString, Column: dbgroup.FieldName},
 			dbgroup.FieldDescription: {Type: field.TypeString, Column: dbgroup.FieldDescription},
 		},
@@ -115,6 +118,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "DbMessage",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			dbmessage.FieldTenantID:  {Type: field.TypeInt, Column: dbmessage.FieldTenantID},
+			dbmessage.FieldAppData:   {Type: field.TypeJSON, Column: dbmessage.FieldAppData},
 			dbmessage.FieldMessage:   {Type: field.TypeString, Column: dbmessage.FieldMessage},
 			dbmessage.FieldShortMsg:  {Type: field.TypeString, Column: dbmessage.FieldShortMsg},
 			dbmessage.FieldTopic:     {Type: field.TypeString, Column: dbmessage.FieldTopic},
@@ -134,6 +138,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "DbMessageFields",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			dbmessagefields.FieldTenantID: {Type: field.TypeInt, Column: dbmessagefields.FieldTenantID},
+			dbmessagefields.FieldAppData:  {Type: field.TypeJSON, Column: dbmessagefields.FieldAppData},
 			dbmessagefields.FieldName:     {Type: field.TypeString, Column: dbmessagefields.FieldName},
 			dbmessagefields.FieldValue:    {Type: field.TypeString, Column: dbmessagefields.FieldValue},
 		},
@@ -150,6 +155,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "DbTransportInstances",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			dbtransportinstances.FieldTenantID:          {Type: field.TypeInt, Column: dbtransportinstances.FieldTenantID},
+			dbtransportinstances.FieldAppData:           {Type: field.TypeJSON, Column: dbtransportinstances.FieldAppData},
 			dbtransportinstances.FieldName:              {Type: field.TypeString, Column: dbtransportinstances.FieldName},
 			dbtransportinstances.FieldDescription:       {Type: field.TypeString, Column: dbtransportinstances.FieldDescription},
 			dbtransportinstances.FieldConfig:            {Type: field.TypeString, Column: dbtransportinstances.FieldConfig},
@@ -168,6 +174,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "DbTransportRecipients",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			dbtransportrecipients.FieldTenantID:    {Type: field.TypeInt, Column: dbtransportrecipients.FieldTenantID},
+			dbtransportrecipients.FieldAppData:     {Type: field.TypeJSON, Column: dbtransportrecipients.FieldAppData},
 			dbtransportrecipients.FieldName:        {Type: field.TypeString, Column: dbtransportrecipients.FieldName},
 			dbtransportrecipients.FieldDescription: {Type: field.TypeString, Column: dbtransportrecipients.FieldDescription},
 			dbtransportrecipients.FieldConfig:      {Type: field.TypeString, Column: dbtransportrecipients.FieldConfig},
@@ -185,6 +192,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "DbUser",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			dbuser.FieldTenantID:    {Type: field.TypeInt, Column: dbuser.FieldTenantID},
+			dbuser.FieldAppData:     {Type: field.TypeJSON, Column: dbuser.FieldAppData},
 			dbuser.FieldEmail:       {Type: field.TypeString, Column: dbuser.FieldEmail},
 			dbuser.FieldName:        {Type: field.TypeString, Column: dbuser.FieldName},
 			dbuser.FieldDescription: {Type: field.TypeString, Column: dbuser.FieldDescription},
@@ -202,6 +210,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "DbUserMetaData",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			dbusermetadata.FieldTenantID: {Type: field.TypeInt, Column: dbusermetadata.FieldTenantID},
+			dbusermetadata.FieldAppData:  {Type: field.TypeJSON, Column: dbusermetadata.FieldAppData},
 			dbusermetadata.FieldName:     {Type: field.TypeString, Column: dbusermetadata.FieldName},
 			dbusermetadata.FieldValue:    {Type: field.TypeString, Column: dbusermetadata.FieldValue},
 		},
@@ -646,6 +655,11 @@ func (f *DbAppFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(dbapp.FieldTenantID))
 }
 
+// WhereAppData applies the entql json.RawMessage predicate on the AppData field.
+func (f *DbAppFilter) WhereAppData(p entql.BytesP) {
+	f.Where(p.Field(dbapp.FieldAppData))
+}
+
 // WhereName applies the entql string predicate on the Name field.
 func (f *DbAppFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(dbapp.FieldName))
@@ -770,6 +784,11 @@ func (f *DbFilterFilter) WhereID(p entql.IntP) {
 // WhereTenantID applies the entql int predicate on the tenant_id field.
 func (f *DbFilterFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(dbfilter.FieldTenantID))
+}
+
+// WhereAppData applies the entql json.RawMessage predicate on the AppData field.
+func (f *DbFilterFilter) WhereAppData(p entql.BytesP) {
+	f.Where(p.Field(dbfilter.FieldAppData))
 }
 
 // WhereName applies the entql string predicate on the Name field.
@@ -903,6 +922,11 @@ func (f *DbGroupFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(dbgroup.FieldTenantID))
 }
 
+// WhereAppData applies the entql json.RawMessage predicate on the AppData field.
+func (f *DbGroupFilter) WhereAppData(p entql.BytesP) {
+	f.Where(p.Field(dbgroup.FieldAppData))
+}
+
 // WhereName applies the entql string predicate on the Name field.
 func (f *DbGroupFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(dbgroup.FieldName))
@@ -1028,6 +1052,11 @@ func (f *DbMessageFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(dbmessage.FieldTenantID))
 }
 
+// WhereAppData applies the entql json.RawMessage predicate on the AppData field.
+func (f *DbMessageFilter) WhereAppData(p entql.BytesP) {
+	f.Where(p.Field(dbmessage.FieldAppData))
+}
+
 // WhereMessage applies the entql string predicate on the Message field.
 func (f *DbMessageFilter) WhereMessage(p entql.StringP) {
 	f.Where(p.Field(dbmessage.FieldMessage))
@@ -1140,6 +1169,11 @@ func (f *DbMessageFieldsFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(dbmessagefields.FieldTenantID))
 }
 
+// WhereAppData applies the entql json.RawMessage predicate on the AppData field.
+func (f *DbMessageFieldsFilter) WhereAppData(p entql.BytesP) {
+	f.Where(p.Field(dbmessagefields.FieldAppData))
+}
+
 // WhereName applies the entql string predicate on the Name field.
 func (f *DbMessageFieldsFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(dbmessagefields.FieldName))
@@ -1221,6 +1255,11 @@ func (f *DbTransportInstancesFilter) WhereID(p entql.IntP) {
 // WhereTenantID applies the entql int predicate on the tenant_id field.
 func (f *DbTransportInstancesFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(dbtransportinstances.FieldTenantID))
+}
+
+// WhereAppData applies the entql json.RawMessage predicate on the AppData field.
+func (f *DbTransportInstancesFilter) WhereAppData(p entql.BytesP) {
+	f.Where(p.Field(dbtransportinstances.FieldAppData))
 }
 
 // WhereName applies the entql string predicate on the Name field.
@@ -1314,6 +1353,11 @@ func (f *DbTransportRecipientsFilter) WhereID(p entql.IntP) {
 // WhereTenantID applies the entql int predicate on the tenant_id field.
 func (f *DbTransportRecipientsFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(dbtransportrecipients.FieldTenantID))
+}
+
+// WhereAppData applies the entql json.RawMessage predicate on the AppData field.
+func (f *DbTransportRecipientsFilter) WhereAppData(p entql.BytesP) {
+	f.Where(p.Field(dbtransportrecipients.FieldAppData))
 }
 
 // WhereName applies the entql string predicate on the Name field.
@@ -1430,6 +1474,11 @@ func (f *DbUserFilter) WhereID(p entql.IntP) {
 // WhereTenantID applies the entql int predicate on the tenant_id field.
 func (f *DbUserFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(dbuser.FieldTenantID))
+}
+
+// WhereAppData applies the entql json.RawMessage predicate on the AppData field.
+func (f *DbUserFilter) WhereAppData(p entql.BytesP) {
+	f.Where(p.Field(dbuser.FieldAppData))
 }
 
 // WhereEmail applies the entql string predicate on the Email field.
@@ -1560,6 +1609,11 @@ func (f *DbUserMetaDataFilter) WhereID(p entql.IntP) {
 // WhereTenantID applies the entql int predicate on the tenant_id field.
 func (f *DbUserMetaDataFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(dbusermetadata.FieldTenantID))
+}
+
+// WhereAppData applies the entql json.RawMessage predicate on the AppData field.
+func (f *DbUserMetaDataFilter) WhereAppData(p entql.BytesP) {
+	f.Where(p.Field(dbusermetadata.FieldAppData))
 }
 
 // WhereName applies the entql string predicate on the Name field.

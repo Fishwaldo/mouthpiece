@@ -184,6 +184,20 @@ func TenantIDNotIn(vs ...int) predicate.DbMessage {
 	})
 }
 
+// AppDataIsNil applies the IsNil predicate on the "AppData" field.
+func AppDataIsNil() predicate.DbMessage {
+	return predicate.DbMessage(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldAppData)))
+	})
+}
+
+// AppDataNotNil applies the NotNil predicate on the "AppData" field.
+func AppDataNotNil() predicate.DbMessage {
+	return predicate.DbMessage(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldAppData)))
+	})
+}
+
 // MessageEQ applies the EQ predicate on the "Message" field.
 func MessageEQ(v string) predicate.DbMessage {
 	return predicate.DbMessage(func(s *sql.Selector) {

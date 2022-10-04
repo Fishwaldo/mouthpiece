@@ -35,6 +35,7 @@ var (
 	// DbAppsColumns holds the columns for the "db_apps" table.
 	DbAppsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"AppEnabled", "AppDisabled"}},
 		{Name: "description", Type: field.TypeString},
@@ -50,7 +51,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "db_apps_tenants_tenant",
-				Columns:    []*schema.Column{DbAppsColumns[6]},
+				Columns:    []*schema.Column{DbAppsColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -59,6 +60,7 @@ var (
 	// DbFiltersColumns holds the columns for the "db_filters" table.
 	DbFiltersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"InvalidFilter", "AppFilter", "UserFilter", "TransportFilter"}},
@@ -75,7 +77,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "db_filters_tenants_tenant",
-				Columns:    []*schema.Column{DbFiltersColumns[7]},
+				Columns:    []*schema.Column{DbFiltersColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -84,6 +86,7 @@ var (
 	// DbGroupsColumns holds the columns for the "db_groups" table.
 	DbGroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -96,7 +99,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "db_groups_tenants_tenant",
-				Columns:    []*schema.Column{DbGroupsColumns[3]},
+				Columns:    []*schema.Column{DbGroupsColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -105,6 +108,7 @@ var (
 	// DbMessagesColumns holds the columns for the "db_messages" table.
 	DbMessagesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "message", Type: field.TypeString, Size: 2147483647},
 		{Name: "short_msg", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "topic", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -121,13 +125,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "db_messages_db_apps_messages",
-				Columns:    []*schema.Column{DbMessagesColumns[6]},
+				Columns:    []*schema.Column{DbMessagesColumns[7]},
 				RefColumns: []*schema.Column{DbAppsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "db_messages_tenants_tenant",
-				Columns:    []*schema.Column{DbMessagesColumns[7]},
+				Columns:    []*schema.Column{DbMessagesColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -136,6 +140,7 @@ var (
 	// DbMessageFieldsColumns holds the columns for the "db_message_fields" table.
 	DbMessageFieldsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "name", Type: field.TypeString, Unique: true, Size: 2147483647},
 		{Name: "value", Type: field.TypeString, Size: 2147483647},
 		{Name: "db_message_fields", Type: field.TypeUUID},
@@ -149,13 +154,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "db_message_fields_db_messages_fields",
-				Columns:    []*schema.Column{DbMessageFieldsColumns[3]},
+				Columns:    []*schema.Column{DbMessageFieldsColumns[4]},
 				RefColumns: []*schema.Column{DbMessagesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "db_message_fields_tenants_tenant",
-				Columns:    []*schema.Column{DbMessageFieldsColumns[4]},
+				Columns:    []*schema.Column{DbMessageFieldsColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -164,6 +169,7 @@ var (
 	// DbTransportInstancesColumns holds the columns for the "db_transport_instances" table.
 	DbTransportInstancesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "config", Type: field.TypeString},
@@ -178,7 +184,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "db_transport_instances_tenants_tenant",
-				Columns:    []*schema.Column{DbTransportInstancesColumns[5]},
+				Columns:    []*schema.Column{DbTransportInstancesColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -187,6 +193,7 @@ var (
 	// DbTransportRecipientsColumns holds the columns for the "db_transport_recipients" table.
 	DbTransportRecipientsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "config", Type: field.TypeString},
@@ -203,25 +210,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "db_transport_recipients_db_groups_TransportRecipients",
-				Columns:    []*schema.Column{DbTransportRecipientsColumns[4]},
+				Columns:    []*schema.Column{DbTransportRecipientsColumns[5]},
 				RefColumns: []*schema.Column{DbGroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "db_transport_recipients_db_transport_instances_TransportRecipients",
-				Columns:    []*schema.Column{DbTransportRecipientsColumns[5]},
+				Columns:    []*schema.Column{DbTransportRecipientsColumns[6]},
 				RefColumns: []*schema.Column{DbTransportInstancesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "db_transport_recipients_tenants_tenant",
-				Columns:    []*schema.Column{DbTransportRecipientsColumns[6]},
+				Columns:    []*schema.Column{DbTransportRecipientsColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "db_transport_recipients_db_users_TransportRecipients",
-				Columns:    []*schema.Column{DbTransportRecipientsColumns[7]},
+				Columns:    []*schema.Column{DbTransportRecipientsColumns[8]},
 				RefColumns: []*schema.Column{DbUsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -230,6 +237,7 @@ var (
 	// DbUsersColumns holds the columns for the "db_users" table.
 	DbUsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "email", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
@@ -243,7 +251,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "db_users_tenants_tenant",
-				Columns:    []*schema.Column{DbUsersColumns[4]},
+				Columns:    []*schema.Column{DbUsersColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -252,13 +260,14 @@ var (
 			{
 				Name:    "dbuser_email_tenant_id",
 				Unique:  true,
-				Columns: []*schema.Column{DbUsersColumns[1], DbUsersColumns[4]},
+				Columns: []*schema.Column{DbUsersColumns[2], DbUsersColumns[5]},
 			},
 		},
 	}
 	// DbUserMetaDataColumns holds the columns for the "db_user_meta_data" table.
 	DbUserMetaDataColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
 		{Name: "value", Type: field.TypeString, Size: 2147483647},
 		{Name: "db_user_metadata", Type: field.TypeInt},
@@ -272,13 +281,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "db_user_meta_data_db_users_metadata",
-				Columns:    []*schema.Column{DbUserMetaDataColumns[3]},
+				Columns:    []*schema.Column{DbUserMetaDataColumns[4]},
 				RefColumns: []*schema.Column{DbUsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "db_user_meta_data_tenants_tenant",
-				Columns:    []*schema.Column{DbUserMetaDataColumns[4]},
+				Columns:    []*schema.Column{DbUserMetaDataColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

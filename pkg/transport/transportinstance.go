@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
+
+	"github.com/mitchellh/mapstructure"
 	"github.com/go-logr/logr"
 )
 
@@ -32,7 +34,7 @@ func newTransportInstance(ctx context.Context, log logr.Logger, trp interfaces.T
 		return nil, mperror.ErrInvalidType
 	}
 
-	if db_ti, err = db.DbClient.DbTransportInstances.Create().
+	if db_ti, err = dbdriver.DbClient.DbTransportInstances.Create().
 		SetName(name).
 		SetTransportProvider(trp.GetName()).
 		SetConfig(string(jsonconfig)).
@@ -221,6 +223,34 @@ func (ti *TransportInstance) LoadTransportReciepientConfig(ctx context.Context, 
 	defer ti.lock.Unlock()
 	cfg, err := ti.impl.LoadTransportReciepientConfig(ctx, config)
 	return cfg, mperror.FilterErrors(err)
+}
+
+func (ti *TransportInstance) GetAppData(ctx context.Context, name string, data any) (err error) {
+	ti.lock.RLock()
+	defer ti.lock.RUnlock()
+	newdata, ok := ti.dbTi.AppData.Data[name]
+	if !ok {
+		return mperror.ErrAppDataNotFound
+	}
+	err = mapstructure.Decode(newdata, &data)
+	if err != nil {
+		ti.log.Error(err, "Error decoding AppData", "name", name)
+	}
+	return  nil
+}
+
+func (ti *TransportInstance) SetAppData(ctx context.Context, name string, data any) (err error) {
+	ti.lock.Lock()
+	defer ti.lock.Unlock()
+	appdata := ti.dbTi.AppData
+	appdata.Data[name] = data
+	dbtmp, err := ti.dbTi.Update().SetAppData(appdata).Save(ctx)
+	if err != nil {
+		ti.log.Error(err, "Error setting app data on TransportInstance", "name", name)
+		return mperror.FilterErrors(err)
+	}
+	ti.dbTi = dbtmp
+	return nil
 }
 
 var _ interfaces.TransportInstance = (*TransportInstance)(nil)

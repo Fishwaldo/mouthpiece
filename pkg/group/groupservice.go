@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent/dbgroup"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
@@ -57,7 +57,7 @@ func (gs *GroupService) Delete(ctx context.Context, group interfaces.GroupI) err
 	}
 
 	gs.log.Info("Group: Deleting Group", "name", group.GetName())
-	err := db.DbClient.DbGroup.DeleteOneID(group.GetID()).Exec(ctx)
+	err := dbdriver.DbClient.DbGroup.DeleteOneID(group.GetID()).Exec(ctx)
 	if err != nil {
 		gs.log.Error(err, "Error deleting group", "name", group.GetName())
 	}
@@ -66,7 +66,7 @@ func (gs *GroupService) Delete(ctx context.Context, group interfaces.GroupI) err
 
 func (gs *GroupService) GetByID(ctx context.Context, id int) (interfaces.GroupI, error) {
 
-	grp, err := db.DbClient.DbGroup.Query().Where(dbgroup.IDEQ(id)).Only(ctx)
+	grp, err := dbdriver.DbClient.DbGroup.Query().Where(dbgroup.IDEQ(id)).Only(ctx)
 	if err != nil {
 		gs.log.V(1).Error(err, "Error getting group by ID", "id", id)
 		return nil, mperror.ErrGroupNotFound
@@ -76,7 +76,7 @@ func (gs *GroupService) GetByID(ctx context.Context, id int) (interfaces.GroupI,
 
 func (gs *GroupService) Get(ctx context.Context, name string) (interfaces.GroupI, error) {
 
-	grp, err := db.DbClient.DbGroup.Query().Where(dbgroup.NameEQ(name)).Only(ctx)
+	grp, err := dbdriver.DbClient.DbGroup.Query().Where(dbgroup.NameEQ(name)).Only(ctx)
 	if err != nil {
 		gs.log.V(1).Error(err, "Error getting group", "name", name)
 		return nil, mperror.ErrGroupNotFound
@@ -86,7 +86,7 @@ func (gs *GroupService) Get(ctx context.Context, name string) (interfaces.GroupI
 
 func (gs *GroupService) GetAll(ctx context.Context) ([]interfaces.GroupI, error) {
 
-	groups, err := db.DbClient.DbGroup.Query().All(ctx)
+	groups, err := dbdriver.DbClient.DbGroup.Query().All(ctx)
 	if err != nil {
 		gs.log.Error(err, "Error getting all groups")
 		return nil, mperror.ErrInternalError
@@ -122,7 +122,7 @@ func (gs *GroupService) Load(ctx context.Context, dbGroup any) (interfaces.Group
 }
 
 func (gs *GroupService) Exists(ctx context.Context, name string) (bool, error) {
-	if ok, err := db.DbClient.DbGroup.Query().Where(dbgroup.NameEQ(name)).Exist(ctx); err != nil {
+	if ok, err := dbdriver.DbClient.DbGroup.Query().Where(dbgroup.NameEQ(name)).Exist(ctx); err != nil {
 		gs.log.V(1).Error(err, "Error checking if group exists", "name", name)
 		return false, mperror.ErrInternalError
 	} else {
@@ -131,7 +131,7 @@ func (gs *GroupService) Exists(ctx context.Context, name string) (bool, error) {
 }
 
 func (gs *GroupService) ExistsByID(ctx context.Context, id int) (bool, error) {
-	if ok, err :=  db.DbClient.DbGroup.Query().Where(dbgroup.IDEQ(id)).Exist(ctx); err != nil {
+	if ok, err :=  dbdriver.DbClient.DbGroup.Query().Where(dbgroup.IDEQ(id)).Exist(ctx); err != nil {
 		gs.log.V(1).Error(err, "Error checking if group exists", "id", id)
 		return false, mperror.ErrInternalError
 	} else {

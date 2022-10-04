@@ -3,6 +3,7 @@ package mouthpiece_test
 import (
 	"context"
 	"testing"
+	"database/sql"
 
 	mouthpiece "github.com/Fishwaldo/mouthpiece/pkg"
 	"github.com/Fishwaldo/mouthpiece/pkg/msg"
@@ -27,10 +28,15 @@ var _ = Describe("MouthPiece", func() {
 	Context("Initialize", func() {
 		It("should initialize", func() {
 			logger := testr.NewWithOptions(tst, testr.Options{Verbosity: 10})
-			mp := mouthpiece.NewMouthPiece(context.Background(), "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1", logger)
+
+			db, err := sql.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+			Expect(err).To(BeNil())
+			Expect(db).ToNot(BeNil())
+
+			mp := mouthpiece.NewMouthPiece(context.Background(), "sqlite3", db, logger)
 			Expect(mp).ToNot(BeNil())
 			ctx := mp.SetAdminTenant(context.Background())
-			err := mp.Start(ctx)
+			err = mp.Start(ctx)
 			Expect(err).To(BeNil())
 
 			app, err := mp.GetAppService().Get(ctx, "MouthPiece")

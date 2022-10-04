@@ -77,6 +77,7 @@ type DbAppMutation struct {
 	op              Op
 	typ             string
 	id              *int
+	_AppData        *interfaces.AppData
 	_Name           *string
 	_Status         *interfaces.AppStatus
 	_Description    *string
@@ -231,6 +232,55 @@ func (m *DbAppMutation) OldTenantID(ctx context.Context) (v int, err error) {
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *DbAppMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetAppData sets the "AppData" field.
+func (m *DbAppMutation) SetAppData(id interfaces.AppData) {
+	m._AppData = &id
+}
+
+// AppData returns the value of the "AppData" field in the mutation.
+func (m *DbAppMutation) AppData() (r interfaces.AppData, exists bool) {
+	v := m._AppData
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppData returns the old "AppData" field's value of the DbApp entity.
+// If the DbApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DbAppMutation) OldAppData(ctx context.Context) (v interfaces.AppData, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppData: %w", err)
+	}
+	return oldValue.AppData, nil
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (m *DbAppMutation) ClearAppData() {
+	m._AppData = nil
+	m.clearedFields[dbapp.FieldAppData] = struct{}{}
+}
+
+// AppDataCleared returns if the "AppData" field was cleared in this mutation.
+func (m *DbAppMutation) AppDataCleared() bool {
+	_, ok := m.clearedFields[dbapp.FieldAppData]
+	return ok
+}
+
+// ResetAppData resets all changes to the "AppData" field.
+func (m *DbAppMutation) ResetAppData() {
+	m._AppData = nil
+	delete(m.clearedFields, dbapp.FieldAppData)
 }
 
 // SetName sets the "Name" field.
@@ -646,9 +696,12 @@ func (m *DbAppMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DbAppMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, dbapp.FieldTenantID)
+	}
+	if m._AppData != nil {
+		fields = append(fields, dbapp.FieldAppData)
 	}
 	if m._Name != nil {
 		fields = append(fields, dbapp.FieldName)
@@ -675,6 +728,8 @@ func (m *DbAppMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dbapp.FieldTenantID:
 		return m.TenantID()
+	case dbapp.FieldAppData:
+		return m.AppData()
 	case dbapp.FieldName:
 		return m.Name()
 	case dbapp.FieldStatus:
@@ -696,6 +751,8 @@ func (m *DbAppMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case dbapp.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case dbapp.FieldAppData:
+		return m.OldAppData(ctx)
 	case dbapp.FieldName:
 		return m.OldName(ctx)
 	case dbapp.FieldStatus:
@@ -721,6 +778,13 @@ func (m *DbAppMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case dbapp.FieldAppData:
+		v, ok := value.(interfaces.AppData)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppData(v)
 		return nil
 	case dbapp.FieldName:
 		v, ok := value.(string)
@@ -790,6 +854,9 @@ func (m *DbAppMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *DbAppMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(dbapp.FieldAppData) {
+		fields = append(fields, dbapp.FieldAppData)
+	}
 	if m.FieldCleared(dbapp.FieldIcon) {
 		fields = append(fields, dbapp.FieldIcon)
 	}
@@ -810,6 +877,9 @@ func (m *DbAppMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *DbAppMutation) ClearField(name string) error {
 	switch name {
+	case dbapp.FieldAppData:
+		m.ClearAppData()
+		return nil
 	case dbapp.FieldIcon:
 		m.ClearIcon()
 		return nil
@@ -826,6 +896,9 @@ func (m *DbAppMutation) ResetField(name string) error {
 	switch name {
 	case dbapp.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case dbapp.FieldAppData:
+		m.ResetAppData()
 		return nil
 	case dbapp.FieldName:
 		m.ResetName()
@@ -1006,6 +1079,7 @@ type DbFilterMutation struct {
 	op            Op
 	typ           string
 	id            *int
+	_AppData      *interfaces.AppData
 	_Name         *string
 	_Description  *string
 	_Type         *interfaces.FilterType
@@ -1161,6 +1235,55 @@ func (m *DbFilterMutation) OldTenantID(ctx context.Context) (v int, err error) {
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *DbFilterMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetAppData sets the "AppData" field.
+func (m *DbFilterMutation) SetAppData(id interfaces.AppData) {
+	m._AppData = &id
+}
+
+// AppData returns the value of the "AppData" field in the mutation.
+func (m *DbFilterMutation) AppData() (r interfaces.AppData, exists bool) {
+	v := m._AppData
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppData returns the old "AppData" field's value of the DbFilter entity.
+// If the DbFilter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DbFilterMutation) OldAppData(ctx context.Context) (v interfaces.AppData, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppData: %w", err)
+	}
+	return oldValue.AppData, nil
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (m *DbFilterMutation) ClearAppData() {
+	m._AppData = nil
+	m.clearedFields[dbfilter.FieldAppData] = struct{}{}
+}
+
+// AppDataCleared returns if the "AppData" field was cleared in this mutation.
+func (m *DbFilterMutation) AppDataCleared() bool {
+	_, ok := m.clearedFields[dbfilter.FieldAppData]
+	return ok
+}
+
+// ResetAppData resets all changes to the "AppData" field.
+func (m *DbFilterMutation) ResetAppData() {
+	m._AppData = nil
+	delete(m.clearedFields, dbfilter.FieldAppData)
 }
 
 // SetName sets the "Name" field.
@@ -1599,9 +1722,12 @@ func (m *DbFilterMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DbFilterMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, dbfilter.FieldTenantID)
+	}
+	if m._AppData != nil {
+		fields = append(fields, dbfilter.FieldAppData)
 	}
 	if m._Name != nil {
 		fields = append(fields, dbfilter.FieldName)
@@ -1631,6 +1757,8 @@ func (m *DbFilterMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dbfilter.FieldTenantID:
 		return m.TenantID()
+	case dbfilter.FieldAppData:
+		return m.AppData()
 	case dbfilter.FieldName:
 		return m.Name()
 	case dbfilter.FieldDescription:
@@ -1654,6 +1782,8 @@ func (m *DbFilterMutation) OldField(ctx context.Context, name string) (ent.Value
 	switch name {
 	case dbfilter.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case dbfilter.FieldAppData:
+		return m.OldAppData(ctx)
 	case dbfilter.FieldName:
 		return m.OldName(ctx)
 	case dbfilter.FieldDescription:
@@ -1681,6 +1811,13 @@ func (m *DbFilterMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case dbfilter.FieldAppData:
+		v, ok := value.(interfaces.AppData)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppData(v)
 		return nil
 	case dbfilter.FieldName:
 		v, ok := value.(string)
@@ -1757,6 +1894,9 @@ func (m *DbFilterMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *DbFilterMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(dbfilter.FieldAppData) {
+		fields = append(fields, dbfilter.FieldAppData)
+	}
 	if m.FieldCleared(dbfilter.FieldDescription) {
 		fields = append(fields, dbfilter.FieldDescription)
 	}
@@ -1774,6 +1914,9 @@ func (m *DbFilterMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *DbFilterMutation) ClearField(name string) error {
 	switch name {
+	case dbfilter.FieldAppData:
+		m.ClearAppData()
+		return nil
 	case dbfilter.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -1787,6 +1930,9 @@ func (m *DbFilterMutation) ResetField(name string) error {
 	switch name {
 	case dbfilter.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case dbfilter.FieldAppData:
+		m.ResetAppData()
 		return nil
 	case dbfilter.FieldName:
 		m.ResetName()
@@ -1970,6 +2116,7 @@ type DbGroupMutation struct {
 	op                          Op
 	typ                         string
 	id                          *int
+	_AppData                    *interfaces.AppData
 	_Name                       *string
 	_Description                *string
 	clearedFields               map[string]struct{}
@@ -2124,6 +2271,55 @@ func (m *DbGroupMutation) OldTenantID(ctx context.Context) (v int, err error) {
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *DbGroupMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetAppData sets the "AppData" field.
+func (m *DbGroupMutation) SetAppData(id interfaces.AppData) {
+	m._AppData = &id
+}
+
+// AppData returns the value of the "AppData" field in the mutation.
+func (m *DbGroupMutation) AppData() (r interfaces.AppData, exists bool) {
+	v := m._AppData
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppData returns the old "AppData" field's value of the DbGroup entity.
+// If the DbGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DbGroupMutation) OldAppData(ctx context.Context) (v interfaces.AppData, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppData: %w", err)
+	}
+	return oldValue.AppData, nil
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (m *DbGroupMutation) ClearAppData() {
+	m._AppData = nil
+	m.clearedFields[dbgroup.FieldAppData] = struct{}{}
+}
+
+// AppDataCleared returns if the "AppData" field was cleared in this mutation.
+func (m *DbGroupMutation) AppDataCleared() bool {
+	_, ok := m.clearedFields[dbgroup.FieldAppData]
+	return ok
+}
+
+// ResetAppData resets all changes to the "AppData" field.
+func (m *DbGroupMutation) ResetAppData() {
+	m._AppData = nil
+	delete(m.clearedFields, dbgroup.FieldAppData)
 }
 
 // SetName sets the "Name" field.
@@ -2472,9 +2668,12 @@ func (m *DbGroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DbGroupMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.tenant != nil {
 		fields = append(fields, dbgroup.FieldTenantID)
+	}
+	if m._AppData != nil {
+		fields = append(fields, dbgroup.FieldAppData)
 	}
 	if m._Name != nil {
 		fields = append(fields, dbgroup.FieldName)
@@ -2492,6 +2691,8 @@ func (m *DbGroupMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dbgroup.FieldTenantID:
 		return m.TenantID()
+	case dbgroup.FieldAppData:
+		return m.AppData()
 	case dbgroup.FieldName:
 		return m.Name()
 	case dbgroup.FieldDescription:
@@ -2507,6 +2708,8 @@ func (m *DbGroupMutation) OldField(ctx context.Context, name string) (ent.Value,
 	switch name {
 	case dbgroup.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case dbgroup.FieldAppData:
+		return m.OldAppData(ctx)
 	case dbgroup.FieldName:
 		return m.OldName(ctx)
 	case dbgroup.FieldDescription:
@@ -2526,6 +2729,13 @@ func (m *DbGroupMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case dbgroup.FieldAppData:
+		v, ok := value.(interfaces.AppData)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppData(v)
 		return nil
 	case dbgroup.FieldName:
 		v, ok := value.(string)
@@ -2574,6 +2784,9 @@ func (m *DbGroupMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *DbGroupMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(dbgroup.FieldAppData) {
+		fields = append(fields, dbgroup.FieldAppData)
+	}
 	if m.FieldCleared(dbgroup.FieldDescription) {
 		fields = append(fields, dbgroup.FieldDescription)
 	}
@@ -2591,6 +2804,9 @@ func (m *DbGroupMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *DbGroupMutation) ClearField(name string) error {
 	switch name {
+	case dbgroup.FieldAppData:
+		m.ClearAppData()
+		return nil
 	case dbgroup.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -2604,6 +2820,9 @@ func (m *DbGroupMutation) ResetField(name string) error {
 	switch name {
 	case dbgroup.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case dbgroup.FieldAppData:
+		m.ResetAppData()
 		return nil
 	case dbgroup.FieldName:
 		m.ResetName()
@@ -2801,6 +3020,7 @@ type DbMessageMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
+	_AppData      *interfaces.AppData
 	_Message      *string
 	_ShortMsg     *string
 	_Topic        *string
@@ -2958,6 +3178,55 @@ func (m *DbMessageMutation) OldTenantID(ctx context.Context) (v int, err error) 
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *DbMessageMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetAppData sets the "AppData" field.
+func (m *DbMessageMutation) SetAppData(id interfaces.AppData) {
+	m._AppData = &id
+}
+
+// AppData returns the value of the "AppData" field in the mutation.
+func (m *DbMessageMutation) AppData() (r interfaces.AppData, exists bool) {
+	v := m._AppData
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppData returns the old "AppData" field's value of the DbMessage entity.
+// If the DbMessage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DbMessageMutation) OldAppData(ctx context.Context) (v interfaces.AppData, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppData: %w", err)
+	}
+	return oldValue.AppData, nil
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (m *DbMessageMutation) ClearAppData() {
+	m._AppData = nil
+	m.clearedFields[dbmessage.FieldAppData] = struct{}{}
+}
+
+// AppDataCleared returns if the "AppData" field was cleared in this mutation.
+func (m *DbMessageMutation) AppDataCleared() bool {
+	_, ok := m.clearedFields[dbmessage.FieldAppData]
+	return ok
+}
+
+// ResetAppData resets all changes to the "AppData" field.
+func (m *DbMessageMutation) ResetAppData() {
+	m._AppData = nil
+	delete(m.clearedFields, dbmessage.FieldAppData)
 }
 
 // SetMessage sets the "Message" field.
@@ -3338,9 +3607,12 @@ func (m *DbMessageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DbMessageMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, dbmessage.FieldTenantID)
+	}
+	if m._AppData != nil {
+		fields = append(fields, dbmessage.FieldAppData)
 	}
 	if m._Message != nil {
 		fields = append(fields, dbmessage.FieldMessage)
@@ -3367,6 +3639,8 @@ func (m *DbMessageMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dbmessage.FieldTenantID:
 		return m.TenantID()
+	case dbmessage.FieldAppData:
+		return m.AppData()
 	case dbmessage.FieldMessage:
 		return m.Message()
 	case dbmessage.FieldShortMsg:
@@ -3388,6 +3662,8 @@ func (m *DbMessageMutation) OldField(ctx context.Context, name string) (ent.Valu
 	switch name {
 	case dbmessage.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case dbmessage.FieldAppData:
+		return m.OldAppData(ctx)
 	case dbmessage.FieldMessage:
 		return m.OldMessage(ctx)
 	case dbmessage.FieldShortMsg:
@@ -3413,6 +3689,13 @@ func (m *DbMessageMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case dbmessage.FieldAppData:
+		v, ok := value.(interfaces.AppData)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppData(v)
 		return nil
 	case dbmessage.FieldMessage:
 		v, ok := value.(string)
@@ -3494,6 +3777,9 @@ func (m *DbMessageMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *DbMessageMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(dbmessage.FieldAppData) {
+		fields = append(fields, dbmessage.FieldAppData)
+	}
 	if m.FieldCleared(dbmessage.FieldShortMsg) {
 		fields = append(fields, dbmessage.FieldShortMsg)
 	}
@@ -3517,6 +3803,9 @@ func (m *DbMessageMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *DbMessageMutation) ClearField(name string) error {
 	switch name {
+	case dbmessage.FieldAppData:
+		m.ClearAppData()
+		return nil
 	case dbmessage.FieldShortMsg:
 		m.ClearShortMsg()
 		return nil
@@ -3536,6 +3825,9 @@ func (m *DbMessageMutation) ResetField(name string) error {
 	switch name {
 	case dbmessage.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case dbmessage.FieldAppData:
+		m.ResetAppData()
 		return nil
 	case dbmessage.FieldMessage:
 		m.ResetMessage()
@@ -3682,6 +3974,7 @@ type DbMessageFieldsMutation struct {
 	op            Op
 	typ           string
 	id            *int
+	_AppData      *interfaces.AppData
 	_Name         *string
 	_Value        *string
 	clearedFields map[string]struct{}
@@ -3826,6 +4119,55 @@ func (m *DbMessageFieldsMutation) OldTenantID(ctx context.Context) (v int, err e
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *DbMessageFieldsMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetAppData sets the "AppData" field.
+func (m *DbMessageFieldsMutation) SetAppData(id interfaces.AppData) {
+	m._AppData = &id
+}
+
+// AppData returns the value of the "AppData" field in the mutation.
+func (m *DbMessageFieldsMutation) AppData() (r interfaces.AppData, exists bool) {
+	v := m._AppData
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppData returns the old "AppData" field's value of the DbMessageFields entity.
+// If the DbMessageFields object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DbMessageFieldsMutation) OldAppData(ctx context.Context) (v interfaces.AppData, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppData: %w", err)
+	}
+	return oldValue.AppData, nil
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (m *DbMessageFieldsMutation) ClearAppData() {
+	m._AppData = nil
+	m.clearedFields[dbmessagefields.FieldAppData] = struct{}{}
+}
+
+// AppDataCleared returns if the "AppData" field was cleared in this mutation.
+func (m *DbMessageFieldsMutation) AppDataCleared() bool {
+	_, ok := m.clearedFields[dbmessagefields.FieldAppData]
+	return ok
+}
+
+// ResetAppData resets all changes to the "AppData" field.
+func (m *DbMessageFieldsMutation) ResetAppData() {
+	m._AppData = nil
+	delete(m.clearedFields, dbmessagefields.FieldAppData)
 }
 
 // SetName sets the "Name" field.
@@ -3984,9 +4326,12 @@ func (m *DbMessageFieldsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DbMessageFieldsMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.tenant != nil {
 		fields = append(fields, dbmessagefields.FieldTenantID)
+	}
+	if m._AppData != nil {
+		fields = append(fields, dbmessagefields.FieldAppData)
 	}
 	if m._Name != nil {
 		fields = append(fields, dbmessagefields.FieldName)
@@ -4004,6 +4349,8 @@ func (m *DbMessageFieldsMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dbmessagefields.FieldTenantID:
 		return m.TenantID()
+	case dbmessagefields.FieldAppData:
+		return m.AppData()
 	case dbmessagefields.FieldName:
 		return m.Name()
 	case dbmessagefields.FieldValue:
@@ -4019,6 +4366,8 @@ func (m *DbMessageFieldsMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case dbmessagefields.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case dbmessagefields.FieldAppData:
+		return m.OldAppData(ctx)
 	case dbmessagefields.FieldName:
 		return m.OldName(ctx)
 	case dbmessagefields.FieldValue:
@@ -4038,6 +4387,13 @@ func (m *DbMessageFieldsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case dbmessagefields.FieldAppData:
+		v, ok := value.(interfaces.AppData)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppData(v)
 		return nil
 	case dbmessagefields.FieldName:
 		v, ok := value.(string)
@@ -4085,7 +4441,11 @@ func (m *DbMessageFieldsMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *DbMessageFieldsMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(dbmessagefields.FieldAppData) {
+		fields = append(fields, dbmessagefields.FieldAppData)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -4098,6 +4458,11 @@ func (m *DbMessageFieldsMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *DbMessageFieldsMutation) ClearField(name string) error {
+	switch name {
+	case dbmessagefields.FieldAppData:
+		m.ClearAppData()
+		return nil
+	}
 	return fmt.Errorf("unknown DbMessageFields nullable field %s", name)
 }
 
@@ -4107,6 +4472,9 @@ func (m *DbMessageFieldsMutation) ResetField(name string) error {
 	switch name {
 	case dbmessagefields.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case dbmessagefields.FieldAppData:
+		m.ResetAppData()
 		return nil
 	case dbmessagefields.FieldName:
 		m.ResetName()
@@ -4218,6 +4586,7 @@ type DbTransportInstancesMutation struct {
 	op                          Op
 	typ                         string
 	id                          *int
+	_AppData                    *interfaces.AppData
 	_Name                       *string
 	_Description                *string
 	_Config                     *string
@@ -4365,6 +4734,55 @@ func (m *DbTransportInstancesMutation) OldTenantID(ctx context.Context) (v int, 
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *DbTransportInstancesMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetAppData sets the "AppData" field.
+func (m *DbTransportInstancesMutation) SetAppData(id interfaces.AppData) {
+	m._AppData = &id
+}
+
+// AppData returns the value of the "AppData" field in the mutation.
+func (m *DbTransportInstancesMutation) AppData() (r interfaces.AppData, exists bool) {
+	v := m._AppData
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppData returns the old "AppData" field's value of the DbTransportInstances entity.
+// If the DbTransportInstances object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DbTransportInstancesMutation) OldAppData(ctx context.Context) (v interfaces.AppData, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppData: %w", err)
+	}
+	return oldValue.AppData, nil
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (m *DbTransportInstancesMutation) ClearAppData() {
+	m._AppData = nil
+	m.clearedFields[dbtransportinstances.FieldAppData] = struct{}{}
+}
+
+// AppDataCleared returns if the "AppData" field was cleared in this mutation.
+func (m *DbTransportInstancesMutation) AppDataCleared() bool {
+	_, ok := m.clearedFields[dbtransportinstances.FieldAppData]
+	return ok
+}
+
+// ResetAppData resets all changes to the "AppData" field.
+func (m *DbTransportInstancesMutation) ResetAppData() {
+	m._AppData = nil
+	delete(m.clearedFields, dbtransportinstances.FieldAppData)
 }
 
 // SetName sets the "Name" field.
@@ -4623,9 +5041,12 @@ func (m *DbTransportInstancesMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DbTransportInstancesMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, dbtransportinstances.FieldTenantID)
+	}
+	if m._AppData != nil {
+		fields = append(fields, dbtransportinstances.FieldAppData)
 	}
 	if m._Name != nil {
 		fields = append(fields, dbtransportinstances.FieldName)
@@ -4649,6 +5070,8 @@ func (m *DbTransportInstancesMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dbtransportinstances.FieldTenantID:
 		return m.TenantID()
+	case dbtransportinstances.FieldAppData:
+		return m.AppData()
 	case dbtransportinstances.FieldName:
 		return m.Name()
 	case dbtransportinstances.FieldDescription:
@@ -4668,6 +5091,8 @@ func (m *DbTransportInstancesMutation) OldField(ctx context.Context, name string
 	switch name {
 	case dbtransportinstances.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case dbtransportinstances.FieldAppData:
+		return m.OldAppData(ctx)
 	case dbtransportinstances.FieldName:
 		return m.OldName(ctx)
 	case dbtransportinstances.FieldDescription:
@@ -4691,6 +5116,13 @@ func (m *DbTransportInstancesMutation) SetField(name string, value ent.Value) er
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case dbtransportinstances.FieldAppData:
+		v, ok := value.(interfaces.AppData)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppData(v)
 		return nil
 	case dbtransportinstances.FieldName:
 		v, ok := value.(string)
@@ -4753,6 +5185,9 @@ func (m *DbTransportInstancesMutation) AddField(name string, value ent.Value) er
 // mutation.
 func (m *DbTransportInstancesMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(dbtransportinstances.FieldAppData) {
+		fields = append(fields, dbtransportinstances.FieldAppData)
+	}
 	if m.FieldCleared(dbtransportinstances.FieldDescription) {
 		fields = append(fields, dbtransportinstances.FieldDescription)
 	}
@@ -4770,6 +5205,9 @@ func (m *DbTransportInstancesMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *DbTransportInstancesMutation) ClearField(name string) error {
 	switch name {
+	case dbtransportinstances.FieldAppData:
+		m.ClearAppData()
+		return nil
 	case dbtransportinstances.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -4783,6 +5221,9 @@ func (m *DbTransportInstancesMutation) ResetField(name string) error {
 	switch name {
 	case dbtransportinstances.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case dbtransportinstances.FieldAppData:
+		m.ResetAppData()
 		return nil
 	case dbtransportinstances.FieldName:
 		m.ResetName()
@@ -4908,6 +5349,7 @@ type DbTransportRecipientsMutation struct {
 	op                        Op
 	typ                       string
 	id                        *int
+	_AppData                  *interfaces.AppData
 	_Name                     *string
 	_Description              *string
 	_config                   *string
@@ -5057,6 +5499,55 @@ func (m *DbTransportRecipientsMutation) OldTenantID(ctx context.Context) (v int,
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *DbTransportRecipientsMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetAppData sets the "AppData" field.
+func (m *DbTransportRecipientsMutation) SetAppData(id interfaces.AppData) {
+	m._AppData = &id
+}
+
+// AppData returns the value of the "AppData" field in the mutation.
+func (m *DbTransportRecipientsMutation) AppData() (r interfaces.AppData, exists bool) {
+	v := m._AppData
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppData returns the old "AppData" field's value of the DbTransportRecipients entity.
+// If the DbTransportRecipients object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DbTransportRecipientsMutation) OldAppData(ctx context.Context) (v interfaces.AppData, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppData: %w", err)
+	}
+	return oldValue.AppData, nil
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (m *DbTransportRecipientsMutation) ClearAppData() {
+	m._AppData = nil
+	m.clearedFields[dbtransportrecipients.FieldAppData] = struct{}{}
+}
+
+// AppDataCleared returns if the "AppData" field was cleared in this mutation.
+func (m *DbTransportRecipientsMutation) AppDataCleared() bool {
+	_, ok := m.clearedFields[dbtransportrecipients.FieldAppData]
+	return ok
+}
+
+// ResetAppData resets all changes to the "AppData" field.
+func (m *DbTransportRecipientsMutation) ResetAppData() {
+	m._AppData = nil
+	delete(m.clearedFields, dbtransportrecipients.FieldAppData)
 }
 
 // SetName sets the "Name" field.
@@ -5342,9 +5833,12 @@ func (m *DbTransportRecipientsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DbTransportRecipientsMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, dbtransportrecipients.FieldTenantID)
+	}
+	if m._AppData != nil {
+		fields = append(fields, dbtransportrecipients.FieldAppData)
 	}
 	if m._Name != nil {
 		fields = append(fields, dbtransportrecipients.FieldName)
@@ -5365,6 +5859,8 @@ func (m *DbTransportRecipientsMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dbtransportrecipients.FieldTenantID:
 		return m.TenantID()
+	case dbtransportrecipients.FieldAppData:
+		return m.AppData()
 	case dbtransportrecipients.FieldName:
 		return m.Name()
 	case dbtransportrecipients.FieldDescription:
@@ -5382,6 +5878,8 @@ func (m *DbTransportRecipientsMutation) OldField(ctx context.Context, name strin
 	switch name {
 	case dbtransportrecipients.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case dbtransportrecipients.FieldAppData:
+		return m.OldAppData(ctx)
 	case dbtransportrecipients.FieldName:
 		return m.OldName(ctx)
 	case dbtransportrecipients.FieldDescription:
@@ -5403,6 +5901,13 @@ func (m *DbTransportRecipientsMutation) SetField(name string, value ent.Value) e
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case dbtransportrecipients.FieldAppData:
+		v, ok := value.(interfaces.AppData)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppData(v)
 		return nil
 	case dbtransportrecipients.FieldName:
 		v, ok := value.(string)
@@ -5458,6 +5963,9 @@ func (m *DbTransportRecipientsMutation) AddField(name string, value ent.Value) e
 // mutation.
 func (m *DbTransportRecipientsMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(dbtransportrecipients.FieldAppData) {
+		fields = append(fields, dbtransportrecipients.FieldAppData)
+	}
 	if m.FieldCleared(dbtransportrecipients.FieldDescription) {
 		fields = append(fields, dbtransportrecipients.FieldDescription)
 	}
@@ -5475,6 +5983,9 @@ func (m *DbTransportRecipientsMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *DbTransportRecipientsMutation) ClearField(name string) error {
 	switch name {
+	case dbtransportrecipients.FieldAppData:
+		m.ClearAppData()
+		return nil
 	case dbtransportrecipients.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -5488,6 +5999,9 @@ func (m *DbTransportRecipientsMutation) ResetField(name string) error {
 	switch name {
 	case dbtransportrecipients.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case dbtransportrecipients.FieldAppData:
+		m.ResetAppData()
 		return nil
 	case dbtransportrecipients.FieldName:
 		m.ResetName()
@@ -5638,6 +6152,7 @@ type DbUserMutation struct {
 	op                          Op
 	typ                         string
 	id                          *int
+	_AppData                    *interfaces.AppData
 	_Email                      *string
 	_Name                       *string
 	_Description                *string
@@ -5793,6 +6308,55 @@ func (m *DbUserMutation) OldTenantID(ctx context.Context) (v int, err error) {
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *DbUserMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetAppData sets the "AppData" field.
+func (m *DbUserMutation) SetAppData(id interfaces.AppData) {
+	m._AppData = &id
+}
+
+// AppData returns the value of the "AppData" field in the mutation.
+func (m *DbUserMutation) AppData() (r interfaces.AppData, exists bool) {
+	v := m._AppData
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppData returns the old "AppData" field's value of the DbUser entity.
+// If the DbUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DbUserMutation) OldAppData(ctx context.Context) (v interfaces.AppData, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppData: %w", err)
+	}
+	return oldValue.AppData, nil
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (m *DbUserMutation) ClearAppData() {
+	m._AppData = nil
+	m.clearedFields[dbuser.FieldAppData] = struct{}{}
+}
+
+// AppDataCleared returns if the "AppData" field was cleared in this mutation.
+func (m *DbUserMutation) AppDataCleared() bool {
+	_, ok := m.clearedFields[dbuser.FieldAppData]
+	return ok
+}
+
+// ResetAppData resets all changes to the "AppData" field.
+func (m *DbUserMutation) ResetAppData() {
+	m._AppData = nil
+	delete(m.clearedFields, dbuser.FieldAppData)
 }
 
 // SetEmail sets the "Email" field.
@@ -6177,9 +6741,12 @@ func (m *DbUserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DbUserMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, dbuser.FieldTenantID)
+	}
+	if m._AppData != nil {
+		fields = append(fields, dbuser.FieldAppData)
 	}
 	if m._Email != nil {
 		fields = append(fields, dbuser.FieldEmail)
@@ -6200,6 +6767,8 @@ func (m *DbUserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dbuser.FieldTenantID:
 		return m.TenantID()
+	case dbuser.FieldAppData:
+		return m.AppData()
 	case dbuser.FieldEmail:
 		return m.Email()
 	case dbuser.FieldName:
@@ -6217,6 +6786,8 @@ func (m *DbUserMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case dbuser.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case dbuser.FieldAppData:
+		return m.OldAppData(ctx)
 	case dbuser.FieldEmail:
 		return m.OldEmail(ctx)
 	case dbuser.FieldName:
@@ -6238,6 +6809,13 @@ func (m *DbUserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case dbuser.FieldAppData:
+		v, ok := value.(interfaces.AppData)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppData(v)
 		return nil
 	case dbuser.FieldEmail:
 		v, ok := value.(string)
@@ -6293,6 +6871,9 @@ func (m *DbUserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *DbUserMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(dbuser.FieldAppData) {
+		fields = append(fields, dbuser.FieldAppData)
+	}
 	if m.FieldCleared(dbuser.FieldDescription) {
 		fields = append(fields, dbuser.FieldDescription)
 	}
@@ -6310,6 +6891,9 @@ func (m *DbUserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *DbUserMutation) ClearField(name string) error {
 	switch name {
+	case dbuser.FieldAppData:
+		m.ClearAppData()
+		return nil
 	case dbuser.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -6323,6 +6907,9 @@ func (m *DbUserMutation) ResetField(name string) error {
 	switch name {
 	case dbuser.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case dbuser.FieldAppData:
+		m.ResetAppData()
 		return nil
 	case dbuser.FieldEmail:
 		m.ResetEmail()
@@ -6523,6 +7110,7 @@ type DbUserMetaDataMutation struct {
 	op            Op
 	typ           string
 	id            *int
+	_AppData      *interfaces.AppData
 	_Name         *string
 	_Value        *string
 	clearedFields map[string]struct{}
@@ -6667,6 +7255,55 @@ func (m *DbUserMetaDataMutation) OldTenantID(ctx context.Context) (v int, err er
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *DbUserMetaDataMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetAppData sets the "AppData" field.
+func (m *DbUserMetaDataMutation) SetAppData(id interfaces.AppData) {
+	m._AppData = &id
+}
+
+// AppData returns the value of the "AppData" field in the mutation.
+func (m *DbUserMetaDataMutation) AppData() (r interfaces.AppData, exists bool) {
+	v := m._AppData
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppData returns the old "AppData" field's value of the DbUserMetaData entity.
+// If the DbUserMetaData object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DbUserMetaDataMutation) OldAppData(ctx context.Context) (v interfaces.AppData, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppData: %w", err)
+	}
+	return oldValue.AppData, nil
+}
+
+// ClearAppData clears the value of the "AppData" field.
+func (m *DbUserMetaDataMutation) ClearAppData() {
+	m._AppData = nil
+	m.clearedFields[dbusermetadata.FieldAppData] = struct{}{}
+}
+
+// AppDataCleared returns if the "AppData" field was cleared in this mutation.
+func (m *DbUserMetaDataMutation) AppDataCleared() bool {
+	_, ok := m.clearedFields[dbusermetadata.FieldAppData]
+	return ok
+}
+
+// ResetAppData resets all changes to the "AppData" field.
+func (m *DbUserMetaDataMutation) ResetAppData() {
+	m._AppData = nil
+	delete(m.clearedFields, dbusermetadata.FieldAppData)
 }
 
 // SetName sets the "Name" field.
@@ -6825,9 +7462,12 @@ func (m *DbUserMetaDataMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DbUserMetaDataMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.tenant != nil {
 		fields = append(fields, dbusermetadata.FieldTenantID)
+	}
+	if m._AppData != nil {
+		fields = append(fields, dbusermetadata.FieldAppData)
 	}
 	if m._Name != nil {
 		fields = append(fields, dbusermetadata.FieldName)
@@ -6845,6 +7485,8 @@ func (m *DbUserMetaDataMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dbusermetadata.FieldTenantID:
 		return m.TenantID()
+	case dbusermetadata.FieldAppData:
+		return m.AppData()
 	case dbusermetadata.FieldName:
 		return m.Name()
 	case dbusermetadata.FieldValue:
@@ -6860,6 +7502,8 @@ func (m *DbUserMetaDataMutation) OldField(ctx context.Context, name string) (ent
 	switch name {
 	case dbusermetadata.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case dbusermetadata.FieldAppData:
+		return m.OldAppData(ctx)
 	case dbusermetadata.FieldName:
 		return m.OldName(ctx)
 	case dbusermetadata.FieldValue:
@@ -6879,6 +7523,13 @@ func (m *DbUserMetaDataMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case dbusermetadata.FieldAppData:
+		v, ok := value.(interfaces.AppData)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppData(v)
 		return nil
 	case dbusermetadata.FieldName:
 		v, ok := value.(string)
@@ -6926,7 +7577,11 @@ func (m *DbUserMetaDataMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *DbUserMetaDataMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(dbusermetadata.FieldAppData) {
+		fields = append(fields, dbusermetadata.FieldAppData)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -6939,6 +7594,11 @@ func (m *DbUserMetaDataMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *DbUserMetaDataMutation) ClearField(name string) error {
+	switch name {
+	case dbusermetadata.FieldAppData:
+		m.ClearAppData()
+		return nil
+	}
 	return fmt.Errorf("unknown DbUserMetaData nullable field %s", name)
 }
 
@@ -6948,6 +7608,9 @@ func (m *DbUserMetaDataMutation) ResetField(name string) error {
 	switch name {
 	case dbusermetadata.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case dbusermetadata.FieldAppData:
+		m.ResetAppData()
 		return nil
 	case dbusermetadata.FieldName:
 		m.ResetName()

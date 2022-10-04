@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Fishwaldo/mouthpiece/pkg/db"
+	"github.com/Fishwaldo/mouthpiece/pkg/dbdriver"
 	"github.com/Fishwaldo/mouthpiece/pkg/ent"
 	"github.com/Fishwaldo/mouthpiece/pkg/interfaces"
 	"github.com/Fishwaldo/mouthpiece/pkg/mperror"
+	"github.com/mitchellh/mapstructure"
 	"github.com/go-logr/logr"
 )
 
@@ -20,7 +21,7 @@ type Group struct {
 
 func newGroup(ctx context.Context, logger logr.Logger, name string, description string) (*Group, error) {
 	newlogger := logger.WithName("Group").WithValues("name", name)
-	dbgrp, err := db.DbClient.DbGroup.Create().
+	dbgrp, err := dbdriver.DbClient.DbGroup.Create().
 		SetName(name).
 		SetDescription(description).
 		Save(ctx)
@@ -308,6 +309,34 @@ func (g *Group) ProcessMessage(ctx context.Context, msg interfaces.MessageI) (er
 		}
 	}
 
+	return nil
+}
+
+func (g *Group) GetAppData(ctx context.Context, name string, data any) (err error) {
+	g.lock.RLock()
+	defer g.lock.RUnlock()
+	newdata, ok := g.dbGroup.AppData.Data[name]
+	if !ok {
+		return mperror.ErrAppDataNotFound
+	}
+	err = mapstructure.Decode(newdata, &data)
+	if err != nil {
+		g.log.Error(err, "Error decoding AppData", "name", name)
+	}
+	return nil
+}
+
+func (g *Group) SetAppData(ctx context.Context, name string, data any) (err error) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+	appdata := g.dbGroup.AppData
+	appdata.Data[name] = data
+	dbtmp, err := g.dbGroup.Update().SetAppData(appdata).Save(ctx)
+	if err != nil {
+		g.log.Error(err, "Error setting app data on Group", "name", name)
+		return mperror.FilterErrors(err)
+	}
+	g.dbGroup = dbtmp
 	return nil
 }
 
