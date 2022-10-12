@@ -308,7 +308,6 @@ func (dumdc *DbUserMetaDataCreate) createSpec() (*DbUserMetaData, *sqlgraph.Crea
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dumdc *DbUserMetaDataCreate) OnConflict(opts ...sql.ConflictOption) *DbUserMetaDataUpsertOne {
 	dumdc.conflict = opts
 	return &DbUserMetaDataUpsertOne{
@@ -322,7 +321,6 @@ func (dumdc *DbUserMetaDataCreate) OnConflict(opts ...sql.ConflictOption) *DbUse
 //	client.DbUserMetaData.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dumdc *DbUserMetaDataCreate) OnConflictColumns(columns ...string) *DbUserMetaDataUpsertOne {
 	dumdc.conflict = append(dumdc.conflict, sql.ConflictColumns(columns...))
 	return &DbUserMetaDataUpsertOne{
@@ -405,7 +403,6 @@ func (u *DbUserMetaDataUpsert) UpdateValue() *DbUserMetaDataUpsert {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbUserMetaDataUpsertOne) UpdateNewValues() *DbUserMetaDataUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -414,10 +411,9 @@ func (u *DbUserMetaDataUpsertOne) UpdateNewValues() *DbUserMetaDataUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//  client.DbUserMetaData.Create().
-//      OnConflict(sql.ResolveWithIgnore()).
-//      Exec(ctx)
-//
+//	client.DbUserMetaData.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
 func (u *DbUserMetaDataUpsertOne) Ignore() *DbUserMetaDataUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
@@ -648,7 +644,6 @@ func (dumdcb *DbUserMetaDataCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dumdcb *DbUserMetaDataCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbUserMetaDataUpsertBulk {
 	dumdcb.conflict = opts
 	return &DbUserMetaDataUpsertBulk{
@@ -662,7 +657,6 @@ func (dumdcb *DbUserMetaDataCreateBulk) OnConflict(opts ...sql.ConflictOption) *
 //	client.DbUserMetaData.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dumdcb *DbUserMetaDataCreateBulk) OnConflictColumns(columns ...string) *DbUserMetaDataUpsertBulk {
 	dumdcb.conflict = append(dumdcb.conflict, sql.ConflictColumns(columns...))
 	return &DbUserMetaDataUpsertBulk{
@@ -684,7 +678,6 @@ type DbUserMetaDataUpsertBulk struct {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbUserMetaDataUpsertBulk) UpdateNewValues() *DbUserMetaDataUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -696,7 +689,6 @@ func (u *DbUserMetaDataUpsertBulk) UpdateNewValues() *DbUserMetaDataUpsertBulk {
 //	client.DbUserMetaData.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-//
 func (u *DbUserMetaDataUpsertBulk) Ignore() *DbUserMetaDataUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u

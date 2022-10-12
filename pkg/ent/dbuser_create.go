@@ -435,7 +435,6 @@ func (duc *DbUserCreate) createSpec() (*DbUser, *sqlgraph.CreateSpec) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (duc *DbUserCreate) OnConflict(opts ...sql.ConflictOption) *DbUserUpsertOne {
 	duc.conflict = opts
 	return &DbUserUpsertOne{
@@ -449,7 +448,6 @@ func (duc *DbUserCreate) OnConflict(opts ...sql.ConflictOption) *DbUserUpsertOne
 //	client.DbUser.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (duc *DbUserCreate) OnConflictColumns(columns ...string) *DbUserUpsertOne {
 	duc.conflict = append(duc.conflict, sql.ConflictColumns(columns...))
 	return &DbUserUpsertOne{
@@ -550,7 +548,6 @@ func (u *DbUserUpsert) ClearDescription() *DbUserUpsert {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbUserUpsertOne) UpdateNewValues() *DbUserUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -559,10 +556,9 @@ func (u *DbUserUpsertOne) UpdateNewValues() *DbUserUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//  client.DbUser.Create().
-//      OnConflict(sql.ResolveWithIgnore()).
-//      Exec(ctx)
-//
+//	client.DbUser.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
 func (u *DbUserUpsertOne) Ignore() *DbUserUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
@@ -816,7 +812,6 @@ func (ducb *DbUserCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (ducb *DbUserCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbUserUpsertBulk {
 	ducb.conflict = opts
 	return &DbUserUpsertBulk{
@@ -830,7 +825,6 @@ func (ducb *DbUserCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbUserUpse
 //	client.DbUser.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (ducb *DbUserCreateBulk) OnConflictColumns(columns ...string) *DbUserUpsertBulk {
 	ducb.conflict = append(ducb.conflict, sql.ConflictColumns(columns...))
 	return &DbUserUpsertBulk{
@@ -852,7 +846,6 @@ type DbUserUpsertBulk struct {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbUserUpsertBulk) UpdateNewValues() *DbUserUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -864,7 +857,6 @@ func (u *DbUserUpsertBulk) UpdateNewValues() *DbUserUpsertBulk {
 //	client.DbUser.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-//
 func (u *DbUserUpsertBulk) Ignore() *DbUserUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u

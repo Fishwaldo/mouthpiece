@@ -124,7 +124,6 @@ func ValidColumn(column string) bool {
 // it should be imported in the main as follows:
 //
 //	import _ "github.com/Fishwaldo/mouthpiece/pkg/ent/runtime"
-//
 var (
 	Hooks  [3]ent.Hook
 	Policy ent.Policy
@@ -141,7 +140,7 @@ var (
 // StatusValidator is a validator for the "Status" field enum values. It is called by the builders before save.
 func StatusValidator(_status interfaces.AppStatus) error {
 	switch _status.String() {
-	case "AppEnabled", "AppDisabled":
+	case "Enabled", "Disabled":
 		return nil
 	default:
 		return fmt.Errorf("dbapp: invalid enum value for Status field: %q", _status)

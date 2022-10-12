@@ -167,7 +167,6 @@ func ParseJWTAuth(next http.Handler) http.Handler {
 				jwttoken = header[7:]
 			}
 		}
-
 		if len(jwttoken) == 0 {
 			next.ServeHTTP(w, r.WithContext(ctx))
 			return

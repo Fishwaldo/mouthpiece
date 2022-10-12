@@ -22,18 +22,100 @@ const routes = [
       {
         path: '/messages',
         name: 'Messages',
-        component: () => import('@/views/messages/Messages.vue'),
+        //component: () => import('@/views/messages/Messages.vue'),
+        render() {
+          return h(resolveComponent('router-view'))
+        },
         meta: {
           auth: true
         },
+        children: [
+          {
+            path: '',
+            //name: 'Messages',
+            component: () => import('@/views/messages/Messages.vue'),
+            props: true,
+            meta: {
+              auth: true
+            },
+          },      
+          {
+            path: ':messageID',
+            name: 'Message Details',
+            component: () => import('@/views/messages/MessageDetail.vue'),
+            props: true,
+            meta: {
+              auth: true
+            },
+          },      
+        ]
       },
       {
         path: '/apps',
         name: 'Applications',
-        component: () => import('@/views/apps/Applications.vue'),
+        render() {
+          return h(resolveComponent('router-view'))
+        },
         meta: {
           auth: true
         },
+        children: [
+          {
+            path: '',
+            //name: 'Applications',
+            component: () => import('@/views/apps/Applications.vue'),
+            meta: {
+              auth: true
+            },
+          },      
+          {
+            path: 'new',
+            name: 'New Application',
+            component: () => import('@/views/apps/NewApplication.vue'),
+            meta: {
+              auth: true
+            },
+          },      
+          {
+            path: ':appID',
+            name: 'App Details',
+            component: () => import('@/views/apps/ApplicationDetail.vue'),
+            props: true,
+            meta: {
+              auth: true
+            },
+          },      
+        ]
+
+      },
+      {
+        path: '/groups',
+        //name: 'Groups',
+        render() {
+          return h(resolveComponent('router-view'))
+        },
+        meta: {
+          auth: true
+        },
+        children: [
+          {
+            path: '',
+            name: 'Groups',
+            //component: () => import('@/views/apps/Applications.vue'),
+            meta: {
+              auth: true
+            },
+          },      
+          {
+            path: ':grpID',
+            name: 'Details',
+            //component: () => import('@/views/apps/ApplicationDetail.vue'),
+            props: true,
+            meta: {
+              auth: true
+            },
+          },      
+        ]
       },
       {
         path: '/users',

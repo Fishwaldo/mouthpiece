@@ -190,7 +190,6 @@ func (tc *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 //			SetName(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (tc *TenantCreate) OnConflict(opts ...sql.ConflictOption) *TenantUpsertOne {
 	tc.conflict = opts
 	return &TenantUpsertOne{
@@ -204,7 +203,6 @@ func (tc *TenantCreate) OnConflict(opts ...sql.ConflictOption) *TenantUpsertOne 
 //	client.Tenant.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (tc *TenantCreate) OnConflictColumns(columns ...string) *TenantUpsertOne {
 	tc.conflict = append(tc.conflict, sql.ConflictColumns(columns...))
 	return &TenantUpsertOne{
@@ -245,7 +243,6 @@ func (u *TenantUpsert) UpdateName() *TenantUpsert {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *TenantUpsertOne) UpdateNewValues() *TenantUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -254,10 +251,9 @@ func (u *TenantUpsertOne) UpdateNewValues() *TenantUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//  client.Tenant.Create().
-//      OnConflict(sql.ResolveWithIgnore()).
-//      Exec(ctx)
-//
+//	client.Tenant.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
 func (u *TenantUpsertOne) Ignore() *TenantUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
@@ -433,7 +429,6 @@ func (tcb *TenantCreateBulk) ExecX(ctx context.Context) {
 //			SetName(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (tcb *TenantCreateBulk) OnConflict(opts ...sql.ConflictOption) *TenantUpsertBulk {
 	tcb.conflict = opts
 	return &TenantUpsertBulk{
@@ -447,7 +442,6 @@ func (tcb *TenantCreateBulk) OnConflict(opts ...sql.ConflictOption) *TenantUpser
 //	client.Tenant.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (tcb *TenantCreateBulk) OnConflictColumns(columns ...string) *TenantUpsertBulk {
 	tcb.conflict = append(tcb.conflict, sql.ConflictColumns(columns...))
 	return &TenantUpsertBulk{
@@ -469,7 +463,6 @@ type TenantUpsertBulk struct {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *TenantUpsertBulk) UpdateNewValues() *TenantUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -481,7 +474,6 @@ func (u *TenantUpsertBulk) UpdateNewValues() *TenantUpsertBulk {
 //	client.Tenant.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-//
 func (u *TenantUpsertBulk) Ignore() *TenantUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u

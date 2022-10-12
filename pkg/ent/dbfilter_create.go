@@ -476,7 +476,6 @@ func (dfc *DbFilterCreate) createSpec() (*DbFilter, *sqlgraph.CreateSpec) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dfc *DbFilterCreate) OnConflict(opts ...sql.ConflictOption) *DbFilterUpsertOne {
 	dfc.conflict = opts
 	return &DbFilterUpsertOne{
@@ -490,7 +489,6 @@ func (dfc *DbFilterCreate) OnConflict(opts ...sql.ConflictOption) *DbFilterUpser
 //	client.DbFilter.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dfc *DbFilterCreate) OnConflictColumns(columns ...string) *DbFilterUpsertOne {
 	dfc.conflict = append(dfc.conflict, sql.ConflictColumns(columns...))
 	return &DbFilterUpsertOne{
@@ -627,7 +625,6 @@ func (u *DbFilterUpsert) UpdateConfig() *DbFilterUpsert {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbFilterUpsertOne) UpdateNewValues() *DbFilterUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
@@ -641,10 +638,9 @@ func (u *DbFilterUpsertOne) UpdateNewValues() *DbFilterUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//  client.DbFilter.Create().
-//      OnConflict(sql.ResolveWithIgnore()).
-//      Exec(ctx)
-//
+//	client.DbFilter.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
 func (u *DbFilterUpsertOne) Ignore() *DbFilterUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
@@ -947,7 +943,6 @@ func (dfcb *DbFilterCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dfcb *DbFilterCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbFilterUpsertBulk {
 	dfcb.conflict = opts
 	return &DbFilterUpsertBulk{
@@ -961,7 +956,6 @@ func (dfcb *DbFilterCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbFilter
 //	client.DbFilter.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dfcb *DbFilterCreateBulk) OnConflictColumns(columns ...string) *DbFilterUpsertBulk {
 	dfcb.conflict = append(dfcb.conflict, sql.ConflictColumns(columns...))
 	return &DbFilterUpsertBulk{
@@ -983,7 +977,6 @@ type DbFilterUpsertBulk struct {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbFilterUpsertBulk) UpdateNewValues() *DbFilterUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
@@ -1002,7 +995,6 @@ func (u *DbFilterUpsertBulk) UpdateNewValues() *DbFilterUpsertBulk {
 //	client.DbFilter.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-//
 func (u *DbFilterUpsertBulk) Ignore() *DbFilterUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u

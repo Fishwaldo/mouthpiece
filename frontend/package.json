@@ -24,12 +24,14 @@
     "@websanova/vue-auth": "^4.1.13",
     "axios": "^0.27.2",
     "core-js": "^3.19.0",
+    "just-diff": "^5.1.1",
     "luxon": "^3.0.4",
     "tabulator-tables": "^5.3.4",
     "vue": "^3.2.37",
     "vue-class-component": "^8.0.0-0",
     "vue-router": "^4.0.12",
     "vuex": "^4.0.2",
+    "vuex-cache": "^3.5.0",
     "yup": "^0.32.11"
   },
   "devDependencies": {

@@ -7,6 +7,11 @@ export const $meResponse = {
             type: 'string',
             isRequired: true,
         },
+        id: {
+            type: 'number',
+            isRequired: true,
+            format: 'int32',
+        },
         name: {
             type: 'string',
             isRequired: true,

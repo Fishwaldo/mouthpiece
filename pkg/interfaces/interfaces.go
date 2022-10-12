@@ -86,6 +86,7 @@ type AppI interface {
 	DelFilter(context.Context, FilterI) error
 	// GetFilters returns the filters of the App
 	GetFilters(context.Context) ([]FilterI, error)
+	GetGroups(ctx context.Context) ([]GroupI, error)
 	GetAppData(ctx context.Context, name string, data any) (err error)
 	SetAppData(ctx context.Context, name string, data any) (err error)
 }

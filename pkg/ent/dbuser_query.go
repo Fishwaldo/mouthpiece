@@ -467,7 +467,6 @@ func (duq *DbUserQuery) WithTransportRecipients(opts ...func(*DbTransportRecipie
 //		GroupBy(dbuser.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (duq *DbUserQuery) GroupBy(field string, fields ...string) *DbUserGroupBy {
 	grbuild := &DbUserGroupBy{config: duq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -494,7 +493,6 @@ func (duq *DbUserQuery) GroupBy(field string, fields ...string) *DbUserGroupBy {
 //	client.DbUser.Query().
 //		Select(dbuser.FieldTenantID).
 //		Scan(ctx, &v)
-//
 func (duq *DbUserQuery) Select(fields ...string) *DbUserSelect {
 	duq.fields = append(duq.fields, fields...)
 	selbuild := &DbUserSelect{DbUserQuery: duq}

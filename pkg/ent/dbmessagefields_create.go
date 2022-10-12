@@ -309,7 +309,6 @@ func (dmfc *DbMessageFieldsCreate) createSpec() (*DbMessageFields, *sqlgraph.Cre
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dmfc *DbMessageFieldsCreate) OnConflict(opts ...sql.ConflictOption) *DbMessageFieldsUpsertOne {
 	dmfc.conflict = opts
 	return &DbMessageFieldsUpsertOne{
@@ -323,7 +322,6 @@ func (dmfc *DbMessageFieldsCreate) OnConflict(opts ...sql.ConflictOption) *DbMes
 //	client.DbMessageFields.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dmfc *DbMessageFieldsCreate) OnConflictColumns(columns ...string) *DbMessageFieldsUpsertOne {
 	dmfc.conflict = append(dmfc.conflict, sql.ConflictColumns(columns...))
 	return &DbMessageFieldsUpsertOne{
@@ -406,7 +404,6 @@ func (u *DbMessageFieldsUpsert) UpdateValue() *DbMessageFieldsUpsert {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbMessageFieldsUpsertOne) UpdateNewValues() *DbMessageFieldsUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -415,10 +412,9 @@ func (u *DbMessageFieldsUpsertOne) UpdateNewValues() *DbMessageFieldsUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//  client.DbMessageFields.Create().
-//      OnConflict(sql.ResolveWithIgnore()).
-//      Exec(ctx)
-//
+//	client.DbMessageFields.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
 func (u *DbMessageFieldsUpsertOne) Ignore() *DbMessageFieldsUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
@@ -649,7 +645,6 @@ func (dmfcb *DbMessageFieldsCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dmfcb *DbMessageFieldsCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbMessageFieldsUpsertBulk {
 	dmfcb.conflict = opts
 	return &DbMessageFieldsUpsertBulk{
@@ -663,7 +658,6 @@ func (dmfcb *DbMessageFieldsCreateBulk) OnConflict(opts ...sql.ConflictOption) *
 //	client.DbMessageFields.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dmfcb *DbMessageFieldsCreateBulk) OnConflictColumns(columns ...string) *DbMessageFieldsUpsertBulk {
 	dmfcb.conflict = append(dmfcb.conflict, sql.ConflictColumns(columns...))
 	return &DbMessageFieldsUpsertBulk{
@@ -685,7 +679,6 @@ type DbMessageFieldsUpsertBulk struct {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbMessageFieldsUpsertBulk) UpdateNewValues() *DbMessageFieldsUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -697,7 +690,6 @@ func (u *DbMessageFieldsUpsertBulk) UpdateNewValues() *DbMessageFieldsUpsertBulk
 //	client.DbMessageFields.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-//
 func (u *DbMessageFieldsUpsertBulk) Ignore() *DbMessageFieldsUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u

@@ -431,7 +431,6 @@ func (daq *DbAppQuery) WithGroups(opts ...func(*DbGroupQuery)) *DbAppQuery {
 //		GroupBy(dbapp.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (daq *DbAppQuery) GroupBy(field string, fields ...string) *DbAppGroupBy {
 	grbuild := &DbAppGroupBy{config: daq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -458,7 +457,6 @@ func (daq *DbAppQuery) GroupBy(field string, fields ...string) *DbAppGroupBy {
 //	client.DbApp.Query().
 //		Select(dbapp.FieldTenantID).
 //		Scan(ctx, &v)
-//
 func (daq *DbAppQuery) Select(fields ...string) *DbAppSelect {
 	daq.fields = append(daq.fields, fields...)
 	selbuild := &DbAppSelect{DbAppQuery: daq}

@@ -397,7 +397,6 @@ func (dmq *DbMessageQuery) WithApp(opts ...func(*DbAppQuery)) *DbMessageQuery {
 //		GroupBy(dbmessage.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (dmq *DbMessageQuery) GroupBy(field string, fields ...string) *DbMessageGroupBy {
 	grbuild := &DbMessageGroupBy{config: dmq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -424,7 +423,6 @@ func (dmq *DbMessageQuery) GroupBy(field string, fields ...string) *DbMessageGro
 //	client.DbMessage.Query().
 //		Select(dbmessage.FieldTenantID).
 //		Scan(ctx, &v)
-//
 func (dmq *DbMessageQuery) Select(fields ...string) *DbMessageSelect {
 	dmq.fields = append(dmq.fields, fields...)
 	selbuild := &DbMessageSelect{DbMessageQuery: dmq}

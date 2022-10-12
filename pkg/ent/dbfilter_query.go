@@ -431,7 +431,6 @@ func (dfq *DbFilterQuery) WithUser(opts ...func(*DbUserQuery)) *DbFilterQuery {
 //		GroupBy(dbfilter.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (dfq *DbFilterQuery) GroupBy(field string, fields ...string) *DbFilterGroupBy {
 	grbuild := &DbFilterGroupBy{config: dfq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -458,7 +457,6 @@ func (dfq *DbFilterQuery) GroupBy(field string, fields ...string) *DbFilterGroup
 //	client.DbFilter.Query().
 //		Select(dbfilter.FieldTenantID).
 //		Scan(ctx, &v)
-//
 func (dfq *DbFilterQuery) Select(fields ...string) *DbFilterSelect {
 	dfq.fields = append(dfq.fields, fields...)
 	selbuild := &DbFilterSelect{DbFilterQuery: dfq}

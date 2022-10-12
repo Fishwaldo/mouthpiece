@@ -471,7 +471,6 @@ func (dmc *DbMessageCreate) createSpec() (*DbMessage, *sqlgraph.CreateSpec) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dmc *DbMessageCreate) OnConflict(opts ...sql.ConflictOption) *DbMessageUpsertOne {
 	dmc.conflict = opts
 	return &DbMessageUpsertOne{
@@ -485,7 +484,6 @@ func (dmc *DbMessageCreate) OnConflict(opts ...sql.ConflictOption) *DbMessageUps
 //	client.DbMessage.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dmc *DbMessageCreate) OnConflictColumns(columns ...string) *DbMessageUpsertOne {
 	dmc.conflict = append(dmc.conflict, sql.ConflictColumns(columns...))
 	return &DbMessageUpsertOne{
@@ -631,7 +629,6 @@ func (u *DbMessageUpsert) UpdateTimestamp() *DbMessageUpsert {
 //			}),
 //		).
 //		Exec(ctx)
-//
 func (u *DbMessageUpsertOne) UpdateNewValues() *DbMessageUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
@@ -645,10 +642,9 @@ func (u *DbMessageUpsertOne) UpdateNewValues() *DbMessageUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//  client.DbMessage.Create().
-//      OnConflict(sql.ResolveWithIgnore()).
-//      Exec(ctx)
-//
+//	client.DbMessage.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
 func (u *DbMessageUpsertOne) Ignore() *DbMessageUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
@@ -961,7 +957,6 @@ func (dmcb *DbMessageCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dmcb *DbMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbMessageUpsertBulk {
 	dmcb.conflict = opts
 	return &DbMessageUpsertBulk{
@@ -975,7 +970,6 @@ func (dmcb *DbMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbMessa
 //	client.DbMessage.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dmcb *DbMessageCreateBulk) OnConflictColumns(columns ...string) *DbMessageUpsertBulk {
 	dmcb.conflict = append(dmcb.conflict, sql.ConflictColumns(columns...))
 	return &DbMessageUpsertBulk{
@@ -1000,7 +994,6 @@ type DbMessageUpsertBulk struct {
 //			}),
 //		).
 //		Exec(ctx)
-//
 func (u *DbMessageUpsertBulk) UpdateNewValues() *DbMessageUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
@@ -1020,7 +1013,6 @@ func (u *DbMessageUpsertBulk) UpdateNewValues() *DbMessageUpsertBulk {
 //	client.DbMessage.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-//
 func (u *DbMessageUpsertBulk) Ignore() *DbMessageUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u

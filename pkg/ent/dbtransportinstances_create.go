@@ -352,7 +352,6 @@ func (dtic *DbTransportInstancesCreate) createSpec() (*DbTransportInstances, *sq
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dtic *DbTransportInstancesCreate) OnConflict(opts ...sql.ConflictOption) *DbTransportInstancesUpsertOne {
 	dtic.conflict = opts
 	return &DbTransportInstancesUpsertOne{
@@ -366,7 +365,6 @@ func (dtic *DbTransportInstancesCreate) OnConflict(opts ...sql.ConflictOption) *
 //	client.DbTransportInstances.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dtic *DbTransportInstancesCreate) OnConflictColumns(columns ...string) *DbTransportInstancesUpsertOne {
 	dtic.conflict = append(dtic.conflict, sql.ConflictColumns(columns...))
 	return &DbTransportInstancesUpsertOne{
@@ -479,7 +477,6 @@ func (u *DbTransportInstancesUpsert) UpdateTransportProvider() *DbTransportInsta
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbTransportInstancesUpsertOne) UpdateNewValues() *DbTransportInstancesUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -488,10 +485,9 @@ func (u *DbTransportInstancesUpsertOne) UpdateNewValues() *DbTransportInstancesU
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//  client.DbTransportInstances.Create().
-//      OnConflict(sql.ResolveWithIgnore()).
-//      Exec(ctx)
-//
+//	client.DbTransportInstances.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
 func (u *DbTransportInstancesUpsertOne) Ignore() *DbTransportInstancesUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
@@ -761,7 +757,6 @@ func (dticb *DbTransportInstancesCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dticb *DbTransportInstancesCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbTransportInstancesUpsertBulk {
 	dticb.conflict = opts
 	return &DbTransportInstancesUpsertBulk{
@@ -775,7 +770,6 @@ func (dticb *DbTransportInstancesCreateBulk) OnConflict(opts ...sql.ConflictOpti
 //	client.DbTransportInstances.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dticb *DbTransportInstancesCreateBulk) OnConflictColumns(columns ...string) *DbTransportInstancesUpsertBulk {
 	dticb.conflict = append(dticb.conflict, sql.ConflictColumns(columns...))
 	return &DbTransportInstancesUpsertBulk{
@@ -797,7 +791,6 @@ type DbTransportInstancesUpsertBulk struct {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbTransportInstancesUpsertBulk) UpdateNewValues() *DbTransportInstancesUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -809,7 +802,6 @@ func (u *DbTransportInstancesUpsertBulk) UpdateNewValues() *DbTransportInstances
 //	client.DbTransportInstances.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-//
 func (u *DbTransportInstancesUpsertBulk) Ignore() *DbTransportInstancesUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u

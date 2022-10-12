@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/alexliesenfeld/health v0.6.0
-	github.com/danielgtaylor/huma v1.12.1
+	github.com/danielgtaylor/huma v1.12.2
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
 	github.com/hellofresh/health-go/v4 v4.6.0
@@ -15,6 +15,7 @@ require (
 
 require (
 	entgo.io/ent v0.11.2
+	github.com/aofei/cameron v1.2.1
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/dmarkham/enumer v1.5.6
 	github.com/eko/gocache/v3 v3.1.1
@@ -37,7 +38,6 @@ require (
 	github.com/xo/dburl v0.12.4
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
-	modernc.org/sqlite v1.19.1
 )
 
 require (
@@ -71,7 +71,6 @@ require (
 	github.com/graphql-go/handler v0.2.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
-	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/koron-go/gqlcost v0.2.2 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
@@ -89,7 +88,6 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.33.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
@@ -122,15 +120,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apimachinery v0.23.5 // indirect
-	lukechampine.com/uint128 v1.1.1 // indirect
-	modernc.org/cc/v3 v3.38.1 // indirect
-	modernc.org/ccgo/v3 v3.16.9 // indirect
-	modernc.org/libc v1.19.0 // indirect
-	modernc.org/mathutil v1.5.0 // indirect
-	modernc.org/memory v1.4.0 // indirect
-	modernc.org/opt v0.1.3 // indirect
-	modernc.org/strutil v1.1.3 // indirect
-	modernc.org/token v1.0.1 // indirect
 )
 
-//replace github.com/danielgtaylor/huma => github.com/Fishwaldo/huma v1.8.1-0.20220819155156-3e550a6f97f9

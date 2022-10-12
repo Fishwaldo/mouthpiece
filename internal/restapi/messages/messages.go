@@ -3,7 +3,6 @@ package messages
 import (
 	"net/http"
 	"time"
-	"fmt"
 
 	"github.com/Fishwaldo/mouthpiece/internal/restapi/auth"
 	"github.com/Fishwaldo/mouthpiece/internal/server"
@@ -23,12 +22,17 @@ type msgListGet struct {
 	OrderDir string `json:"order_dir" query:"orderDir"`
 }
 
-func (m *msgListGet) Resolve(ctx huma.Context, r *http.Request) {
-	fmt.Printf("%s\n", r.URL.Query())
+
+type msgListResponse struct {
+	Data []msgResponse `json:"data"`
+	Count int 		   `json:"count"`
 }
 
+type msgGet struct {
+	ID	string `path:"msgid"`
+}
 
-type msgListData struct {
+type msgResponse struct {
 	ID        uuid.UUID 		  
 	Message   string
 	ShortMsg  *string
@@ -39,21 +43,26 @@ type msgListData struct {
 	AppID     int
 }
 
-type msgListResponse struct {
-	Data []msgListData `json:"data"`
-	Count int 		   `json:"count"`
-}
+
 
 func Setup(res *huma.Resource) error {
 	// //AuthService.AddResourceURL("/v1/apps/", "apigroup:apps")
-	appapi := res.SubResource("/messages")
-	appapi.Middleware(auth.RequireAuth)
-	appapi.Tags("Messages")
+	msglistapi := res.SubResource("/messages")
+	msglistapi.Middleware(auth.RequireAuth)
+	msglistapi.Tags("Messages")
 
-	appapi.Get("get-messages", "Get A List of Messages",
+	msglistapi.Get("get-messages", "Get A List of Messages",
 		responses.OK().ContentType("application/json"),
 		responses.OK().Model(msgListResponse{}),
 	).Run(msgList)
+
+	msggetapi := msglistapi.SubResource("/{msgid}")
+	msggetapi.Get("get-message", "Get a Single Message",
+		responses.OK().ContentType("application/json"),
+		responses.OK().Model(msgResponse{}),
+		responses.NotFound().ContentType("application/json"),
+	).Run(getMsg)
+	
 
 	return nil
 }
@@ -84,7 +93,7 @@ func msgList(ctx huma.Context, input msgListGet) {
 	for _, msg := range msgs {
 		flds, _ := msg.GetFields(ctx)
 		app, _ := msg.GetApp(ctx)
-		nemsg := msgListData{
+		nemsg := msgResponse{
 			ID:        msg.GetID(),
 			Message:   msg.GetMessage(),
 			ShortMsg:  msg.GetShortMsg(),
@@ -98,4 +107,32 @@ func msgList(ctx huma.Context, input msgListGet) {
 	}
 	msgmodel.Count = count
 	ctx.WriteModel(http.StatusOK, msgmodel)
+}
+
+func getMsg(ctx huma.Context, input msgGet) {
+	//fmt.Printf("Page: %d, Size: %d Sort: %s %s\n", input.Page, input.Size, input.OrderBy, input.OrderDir)
+
+	uuid, err := uuid.Parse(input.ID)
+	if err != nil {
+		ctx.WriteError(http.StatusBadRequest, "Invalid UUID")
+		return
+	}
+	msg, err := server.Get().GetMsgService().Get(ctx, uuid)
+	if err != nil {
+		ctx.WriteError(http.StatusNotFound, "Error getting messages")
+		return
+	}
+	flds, _ := msg.GetFields(ctx)
+	app, _ := msg.GetApp(ctx)
+	nemsg := msgResponse{
+		ID:        msg.GetID(),
+		Message:   msg.GetMessage(),
+		ShortMsg:  msg.GetShortMsg(),
+		Topic:     msg.GetTopic(),
+		Severity:  msg.GetSeverity(),
+		TimeStamp: msg.GetTimestamp(),
+		Fields:    flds,
+		AppID:     app.GetID(),
+	}
+	ctx.WriteModel(http.StatusOK, nemsg)
 }

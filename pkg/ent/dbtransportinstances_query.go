@@ -359,7 +359,6 @@ func (dtiq *DbTransportInstancesQuery) WithTransportRecipients(opts ...func(*DbT
 //		GroupBy(dbtransportinstances.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (dtiq *DbTransportInstancesQuery) GroupBy(field string, fields ...string) *DbTransportInstancesGroupBy {
 	grbuild := &DbTransportInstancesGroupBy{config: dtiq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -386,7 +385,6 @@ func (dtiq *DbTransportInstancesQuery) GroupBy(field string, fields ...string) *
 //	client.DbTransportInstances.Query().
 //		Select(dbtransportinstances.FieldTenantID).
 //		Scan(ctx, &v)
-//
 func (dtiq *DbTransportInstancesQuery) Select(fields ...string) *DbTransportInstancesSelect {
 	dtiq.fields = append(dtiq.fields, fields...)
 	selbuild := &DbTransportInstancesSelect{DbTransportInstancesQuery: dtiq}

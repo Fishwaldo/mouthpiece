@@ -37,7 +37,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "app_data", Type: field.TypeJSON, Nullable: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"AppEnabled", "AppDisabled"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"Enabled", "Disabled"}},
 		{Name: "description", Type: field.TypeString},
 		{Name: "icon", Type: field.TypeString, Nullable: true},
 		{Name: "url", Type: field.TypeString, Nullable: true},

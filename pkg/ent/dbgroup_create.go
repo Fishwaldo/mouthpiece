@@ -413,7 +413,6 @@ func (dgc *DbGroupCreate) createSpec() (*DbGroup, *sqlgraph.CreateSpec) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dgc *DbGroupCreate) OnConflict(opts ...sql.ConflictOption) *DbGroupUpsertOne {
 	dgc.conflict = opts
 	return &DbGroupUpsertOne{
@@ -427,7 +426,6 @@ func (dgc *DbGroupCreate) OnConflict(opts ...sql.ConflictOption) *DbGroupUpsertO
 //	client.DbGroup.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dgc *DbGroupCreate) OnConflictColumns(columns ...string) *DbGroupUpsertOne {
 	dgc.conflict = append(dgc.conflict, sql.ConflictColumns(columns...))
 	return &DbGroupUpsertOne{
@@ -516,7 +514,6 @@ func (u *DbGroupUpsert) ClearDescription() *DbGroupUpsert {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbGroupUpsertOne) UpdateNewValues() *DbGroupUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -525,10 +522,9 @@ func (u *DbGroupUpsertOne) UpdateNewValues() *DbGroupUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//  client.DbGroup.Create().
-//      OnConflict(sql.ResolveWithIgnore()).
-//      Exec(ctx)
-//
+//	client.DbGroup.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
 func (u *DbGroupUpsertOne) Ignore() *DbGroupUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
@@ -766,7 +762,6 @@ func (dgcb *DbGroupCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-//
 func (dgcb *DbGroupCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbGroupUpsertBulk {
 	dgcb.conflict = opts
 	return &DbGroupUpsertBulk{
@@ -780,7 +775,6 @@ func (dgcb *DbGroupCreateBulk) OnConflict(opts ...sql.ConflictOption) *DbGroupUp
 //	client.DbGroup.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-//
 func (dgcb *DbGroupCreateBulk) OnConflictColumns(columns ...string) *DbGroupUpsertBulk {
 	dgcb.conflict = append(dgcb.conflict, sql.ConflictColumns(columns...))
 	return &DbGroupUpsertBulk{
@@ -802,7 +796,6 @@ type DbGroupUpsertBulk struct {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-//
 func (u *DbGroupUpsertBulk) UpdateNewValues() *DbGroupUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	return u
@@ -814,7 +807,6 @@ func (u *DbGroupUpsertBulk) UpdateNewValues() *DbGroupUpsertBulk {
 //	client.DbGroup.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-//
 func (u *DbGroupUpsertBulk) Ignore() *DbGroupUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u

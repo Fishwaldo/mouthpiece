@@ -128,7 +128,6 @@ func ValidColumn(column string) bool {
 // it should be imported in the main as follows:
 //
 //	import _ "github.com/Fishwaldo/mouthpiece/pkg/ent/runtime"
-//
 var (
 	Hooks  [3]ent.Hook
 	Policy ent.Policy

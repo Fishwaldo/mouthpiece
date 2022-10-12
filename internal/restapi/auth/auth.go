@@ -55,6 +55,7 @@ type patResponse struct {
 }
 
 type meResponse struct {
+	ID int
 	Status string
 	Email string
 	Name string
@@ -164,6 +165,7 @@ func getMe(ctx huma.Context) {
 	}
 
 	res := meResponse{
+		ID: id,
 		Status: "OK",
 		Email: user.GetEmail(),
 		Name: user.GetName(),

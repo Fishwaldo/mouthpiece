@@ -359,7 +359,6 @@ func (dumdq *DbUserMetaDataQuery) WithUser(opts ...func(*DbUserQuery)) *DbUserMe
 //		GroupBy(dbusermetadata.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (dumdq *DbUserMetaDataQuery) GroupBy(field string, fields ...string) *DbUserMetaDataGroupBy {
 	grbuild := &DbUserMetaDataGroupBy{config: dumdq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -386,7 +385,6 @@ func (dumdq *DbUserMetaDataQuery) GroupBy(field string, fields ...string) *DbUse
 //	client.DbUserMetaData.Query().
 //		Select(dbusermetadata.FieldTenantID).
 //		Scan(ctx, &v)
-//
 func (dumdq *DbUserMetaDataQuery) Select(fields ...string) *DbUserMetaDataSelect {
 	dumdq.fields = append(dumdq.fields, fields...)
 	selbuild := &DbUserMetaDataSelect{DbUserMetaDataQuery: dumdq}

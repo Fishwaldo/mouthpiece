@@ -24,7 +24,7 @@ func (DbApp) Fields() []ent.Field {
 			Validate(validate.EntStringValidator("required,max=255,alphanum")).
 			StructTag(`doc:"Application Name"`),
 		field.Enum("Status").
-			GoType(interfaces.AppStatus(interfaces.AppEnabled)).
+			GoType(interfaces.AppStatus(interfaces.Enabled)).
 			StructTag(`doc:"Status of Application"`),
 		field.String("Description").
 			NotEmpty().

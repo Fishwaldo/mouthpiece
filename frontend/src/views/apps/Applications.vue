@@ -3,7 +3,15 @@
     <CCol :xs="12">
       <CCard class="mb-4">
         <CCardHeader>
-          <strong>Application List</strong>
+          <CNavbar color-scheme="light" class="bg-light">
+            <CContainer fluid>
+              <CNavbarBrand href="#">Application List</CNavbarBrand>
+              <CForm class="d-flex">
+                <CButton type="submit" color="success" variant="outline" @click="newClicked">New</CButton>
+              </CForm>
+            </CContainer>
+          </CNavbar>
+          <strong></strong>
         </CCardHeader>
         <CCardBody>
             <CTable>
@@ -17,7 +25,7 @@
               <CTableBody>
                 <CTableRow v-for="apps in applications" v-bind:key="apps.ID">
                   <CTableDataCell>{{apps.ID}}</CTableDataCell>
-                  <CTableDataCell>{{apps.Name}}</CTableDataCell>
+                  <CTableDataCell><router-link :to="'/apps/' + apps.ID">{{apps.Name}}</router-link></CTableDataCell>
                   <CTableDataCell>{{apps.Description}}</CTableDataCell>
                 </CTableRow>
               </CTableBody>
@@ -43,5 +51,10 @@ export default {
       this.applications = response
     })
   },
+  methods: {
+    newClicked() {
+      this.$router.push('/apps/new')
+    }
+  }
 }
 </script>

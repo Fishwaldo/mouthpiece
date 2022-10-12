@@ -467,7 +467,6 @@ func (dgq *DbGroupQuery) WithApps(opts ...func(*DbAppQuery)) *DbGroupQuery {
 //		GroupBy(dbgroup.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (dgq *DbGroupQuery) GroupBy(field string, fields ...string) *DbGroupGroupBy {
 	grbuild := &DbGroupGroupBy{config: dgq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -494,7 +493,6 @@ func (dgq *DbGroupQuery) GroupBy(field string, fields ...string) *DbGroupGroupBy
 //	client.DbGroup.Query().
 //		Select(dbgroup.FieldTenantID).
 //		Scan(ctx, &v)
-//
 func (dgq *DbGroupQuery) Select(fields ...string) *DbGroupSelect {
 	dgq.fields = append(dgq.fields, fields...)
 	selbuild := &DbGroupSelect{DbGroupQuery: dgq}

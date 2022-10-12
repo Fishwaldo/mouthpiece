@@ -7,8 +7,7 @@
       >
     </div>
     <div class="ms-auto">
-      <span class="me-1" target="_blank">Powered by</span>
-      <a href="https://coreui.io/vue">CoreUI for Vue</a>
+      <span class="me-1">Local Cache Size {{size}}</span>
     </div>
   </CFooter>
 </template>
@@ -16,5 +15,25 @@
 <script>
 export default {
   name: 'AppFooter',
+  data () {
+    return {
+      size: this.$store.cache.state().size
+    }
+  },
+  methods: {
+    updateSize () {
+      this.$store.cache.state().forEach(this.checkCache)
+      this.size = this.$store.cache.state().size
+    },
+    checkCache(item, key) {
+      if (item.expiresIn < Date.now()) {
+        const tokens = key.split(':')
+        this.$store.cache.delete(tokens[0], tokens[1])
+      }
+    }
+  },
+  mounted () {
+    setInterval(this.updateSize, 2500);
+  }
 }
 </script>

@@ -431,7 +431,6 @@ func (dtrq *DbTransportRecipientsQuery) WithUserRecipient(opts ...func(*DbUserQu
 //		GroupBy(dbtransportrecipients.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (dtrq *DbTransportRecipientsQuery) GroupBy(field string, fields ...string) *DbTransportRecipientsGroupBy {
 	grbuild := &DbTransportRecipientsGroupBy{config: dtrq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -458,7 +457,6 @@ func (dtrq *DbTransportRecipientsQuery) GroupBy(field string, fields ...string) 
 //	client.DbTransportRecipients.Query().
 //		Select(dbtransportrecipients.FieldTenantID).
 //		Scan(ctx, &v)
-//
 func (dtrq *DbTransportRecipientsQuery) Select(fields ...string) *DbTransportRecipientsSelect {
 	dtrq.fields = append(dtrq.fields, fields...)
 	selbuild := &DbTransportRecipientsSelect{DbTransportRecipientsQuery: dtrq}

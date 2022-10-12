@@ -16,6 +16,7 @@ import (
 	"github.com/Fishwaldo/mouthpiece/internal/restapi/auth"
 	"github.com/Fishwaldo/mouthpiece/internal/restapi/app"
 	"github.com/Fishwaldo/mouthpiece/internal/restapi/messages"
+	"github.com/Fishwaldo/mouthpiece/internal/restapi/avatar"
 
 	mpserver "github.com/Fishwaldo/mouthpiece/internal"
 	mouthpiece "github.com/Fishwaldo/mouthpiece/pkg"
@@ -55,6 +56,7 @@ func NewRestAPI() *RestAPI {
 	restapi.huma = huma.New(bi.Name, bi.GitVersion)
 	huma.AddAllowedHeaders("App-Name", "Author", "App-Version", "X-Request-Id", "Set-Cookie", "Authorization")
 	restapi.huma.DisableSchemaProperty()
+	restapi.huma.DisableAutoPatch()
 	restapi.huma.GatewayBearerFormat("Authorization", "JWT Token", "Bearer {token}")
 	//restapi.huma.DocsHandler(huma.SwaggerUIHandler(restapi.huma))
 
@@ -63,7 +65,6 @@ func NewRestAPI() *RestAPI {
 	hmw.NewLogger = mpserver.GetHumaLogger
 
 	restapi.mux.Use(hmw.DefaultChain)
-	restapi.mux.Use(auth.ParseJWTAuth)
 //	restapi.mux.Use(rest.AppInfo(bi.Name, "Fishwaldo", bi.GitVersion))
 	restapi.mux.Use(rest.Ping)
 	restapi.mux.Use(rest.RealIP)
@@ -99,11 +100,9 @@ func NewRestAPI() *RestAPI {
 	restapi.mux.Handle("/", http.RedirectHandler("/static/", http.StatusMovedPermanently))
 
 	restapi.mux.Handle("/api/*", restapi.huma)
+	restapi.huma.Middleware(auth.ParseJWTAuth)
 	restapi.huma.URLPrefix("/api")
 	restapi.huma.DocsPrefix("/api")
-	fmt.Printf("Docs Path %s\n", restapi.huma.DocsPath())
-	fmt.Printf("Schema Path %s\n", restapi.huma.SchemasPath())
-	fmt.Printf("OpenAPI Path %s\n", restapi.huma.OpenAPIPath())
 	v1api := restapi.huma.Resource("/api")
 	health.Setup(v1api)
 	
@@ -113,6 +112,8 @@ func NewRestAPI() *RestAPI {
 	app.Setup(v1api)
 	auth.Setup(v1api)
 	messages.Setup(v1api)
+	avatar.Setup(v1api)
+
 	restapi.huma.SecurityRequirement("Authorization", "Auth")
 
 

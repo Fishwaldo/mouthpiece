@@ -25,7 +25,7 @@ func newApp(ctx context.Context, log logr.Logger, appname string, desc string) (
 	dbApp, err := dbdriver.DbClient.DbApp.Create().
 		SetName(appname).
 		SetDescription(desc).
-		SetStatus(interfaces.AppEnabled).
+		SetStatus(interfaces.Enabled).
 		Save(ctx)
 	if err != nil {
 		newlogger.Error(err, "Error creating app")
@@ -238,6 +238,30 @@ func (app *App) ProcessMessage(ctx context.Context, msg interfaces.MessageI) (er
 		}
 	}
 	return nil
+}
+
+func (app *App) GetGroups(ctx context.Context) (grps []interfaces.GroupI, err error) {
+	app.lock.Lock()
+	defer app.lock.Unlock()
+
+	// make sure our Groups are loaded
+	var dbgrps []*ent.DbGroup
+	if dbgrps, err = app.dbApp.Edges.GroupsOrErr(); err != nil {
+		if dbgrps, err = app.dbApp.QueryGroups().All(ctx); err != nil {
+			app.log.Error(err, "Error loading Groups for App")
+			return nil, mperror.FilterErrors(err)
+		}
+	}
+
+	for _, g := range dbgrps {
+		grp, err := interfaces.GetGroupService(ctx).Load(ctx, g)
+		if err != nil {
+			app.log.Error(err, "Error loading Groups", "Group", g.Name)
+			continue
+		}
+		grps = append(grps, grp)
+	}
+	return grps, nil	
 }
 
 func (app *App) AddFilter(ctx context.Context, filter interfaces.FilterI) error {

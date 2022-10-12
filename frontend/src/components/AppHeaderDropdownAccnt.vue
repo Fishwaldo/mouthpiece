@@ -1,7 +1,7 @@
 <template>
   <CDropdown variant="nav-item">
     <CDropdownToggle placement="bottom-end" class="py-0" :caret="false">
-      <CAvatar :src="avatar" size="md" />
+      <CAvatar :src="'/api/avatar/user/' + this.$auth.user().ID" status="success" />
     </CDropdownToggle>
     <CDropdownMenu class="pt-0">
       <CDropdownHeader component="h6" class="bg-light fw-semibold py-2">
@@ -46,12 +46,13 @@
 </template>
 
 <script>
-import avatar from '@/assets/images/avatars/8.jpg'
+//import avatar from '@/assets/images/avatars/8.jpg'
+//import {useAuth as auth} from '@websanova/vue-auth';
+
 export default {
   name: 'AppHeaderDropdownAccnt',
   setup() {
     return {
-      avatar: avatar,
       itemsCount: 42,
     }
   },

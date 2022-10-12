@@ -12,8 +12,8 @@ type CtxUserValue struct{}
 type AppStatus int
 
 const (
-	AppEnabled AppStatus = iota
-	AppDisabled
+	Enabled AppStatus = iota
+	Disabled
 )
 
 func (AppStatus) Values() []string {

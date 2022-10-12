@@ -4,6 +4,7 @@ import router from './router'
 import store from './store'
 import axios from 'axios'
 
+
 // @ts-ignore
 import {createAuth}          from '@websanova/vue-auth/src/v3.js';
 // // @ts-ignore
@@ -67,6 +68,12 @@ const auth = createAuth({
         url: '/api/auth/logout',
         method: 'DELETE',
         redirect: '/pages/login'
+      },
+      stores: ['storage', 'cookie'],
+      parseUserData(data : any) {
+        const user = data;
+        //store.dispatch('userModule/setUser', user)
+        return user;
       },
     },
     auth: {
