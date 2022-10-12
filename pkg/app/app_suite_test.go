@@ -118,9 +118,9 @@ var _ = Describe("App", func() {
 			Expect(err).ToNot(BeNil())
 		})
 		It("Should Be able to Set Status", func() {
-			err := globalApp.SetStatus(mptest.Ctx, interfaces.AppDisabled)
+			err := globalApp.SetStatus(mptest.Ctx, interfaces.Disabled)
 			Expect(err).To(BeNil())
-			Expect(globalApp.GetStatus()).To(Equal(interfaces.AppDisabled))
+			Expect(globalApp.GetStatus()).To(Equal(interfaces.Disabled))
 		})
 	})
 	Context("Process Messages", func() {

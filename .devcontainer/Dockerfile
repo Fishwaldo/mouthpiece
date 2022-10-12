@@ -14,7 +14,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 # [Optional] Uncomment the next lines to use go get to install anything else you need
 USER vscode
-RUN go install github.com/golang/mock/mockgen@v1.6.0
+RUN go install github.com/golang/mock/mockgen@v1.6.0 && go install github.com/onsi/ginkgo/v2/ginkgo@v2.3.0
 
 # [Optional] Uncomment this line to install global node packages.
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1

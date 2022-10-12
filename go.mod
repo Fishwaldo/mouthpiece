@@ -30,8 +30,8 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/mymmrac/telego v0.16.1
-	github.com/onsi/ginkgo/v2 v2.1.6
-	github.com/onsi/gomega v1.20.1
+	github.com/onsi/ginkgo/v2 v2.3.0
+	github.com/onsi/gomega v1.22.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.12.2
 	github.com/spf13/viper v1.12.0

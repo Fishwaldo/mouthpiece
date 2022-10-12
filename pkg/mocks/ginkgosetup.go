@@ -59,7 +59,7 @@ var DBAfterSuite = AfterSuite(func() {
 	Mp.Close()
 })
 
-func TestTransportSend(tpi interfaces.TransportInstanceImpl) {
+func TransportSend(tpi interfaces.TransportInstanceImpl) {
 	ctrl := gomock.NewController(GinkgoT())
 	mockMessage := NewMockMessageI(ctrl)
 

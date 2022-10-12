@@ -67,7 +67,7 @@ var _ = Describe("Console", func() {
 			Expect(err).To(BeNil())
 		})
 		It("Should Process a Message", func() {
-			mptest.TestTransportSend(globalTPI)
+			mptest.TransportSend(globalTPI)
 		})
 		It("Should Stop", func() {
 			err := globalTPI.Stop(mptest.Ctx)
