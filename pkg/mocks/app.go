@@ -107,6 +107,21 @@ func (mr *MockAppIMockRecorder) GetFilters(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilters", reflect.TypeOf((*MockAppI)(nil).GetFilters), arg0)
 }
 
+// GetGroups mocks base method.
+func (m *MockAppI) GetGroups(arg0 context.Context) ([]interfaces.GroupI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroups", arg0)
+	ret0, _ := ret[0].([]interfaces.GroupI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroups indicates an expected call of GetGroups.
+func (mr *MockAppIMockRecorder) GetGroups(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroups", reflect.TypeOf((*MockAppI)(nil).GetGroups), arg0)
+}
+
 // GetID mocks base method.
 func (m *MockAppI) GetID() int {
 	m.ctrl.T.Helper()
