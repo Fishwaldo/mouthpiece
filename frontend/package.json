@@ -25,7 +25,7 @@
     "core-js": "^3.19.0",
     "vue": "^3.2.37",
     "vue-class-component": "^8.0.0-0",
-    "vue-router": "^4.0.12",
+    "vue-router": "^4.1.6",
     "vuex": "^4.0.2",
     "yup": "^0.32.11"
   },
