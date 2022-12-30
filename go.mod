@@ -25,7 +25,8 @@ require (
 	github.com/go-pkgz/rest v1.15.6
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/mymmrac/telego v0.16.0
+	github.com/mymmrac/telego v0.18.1
+	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.12.0
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
@@ -41,7 +42,7 @@ require (
 	github.com/danielgtaylor/casing v0.0.0-20210126043903-4e55e6373ac3 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.0 // indirect
 	github.com/dghubble/oauth1 v0.7.1 // indirect
-	github.com/fasthttp/router v1.4.11 // indirect
+	github.com/fasthttp/router v1.4.14 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -52,7 +53,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/goccy/go-json v0.9.10 // indirect
+	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/goccy/go-yaml v1.9.5 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.0.0-20170517235910-f1bb20e5a188 // indirect
@@ -74,7 +75,7 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/klauspost/compress v1.15.0 // indirect
+	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/koron-go/gqlcost v0.2.2 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
@@ -91,13 +92,12 @@ require (
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
-	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
 	github.com/tent/http-link-go v0.0.0-20130702225549-ac974c61c2f9 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.38.0 // indirect
+	github.com/valyala/fasthttp v1.43.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.0 // indirect
@@ -111,10 +111,10 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
-	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
+	golang.org/x/net v0.0.0-20220906165146-f3363e06e74c // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
