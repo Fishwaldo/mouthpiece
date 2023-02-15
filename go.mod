@@ -15,7 +15,7 @@ require (
 )
 
 require (
-	github.com/casbin/casbin/v2 v2.51.2
+	github.com/casbin/casbin/v2 v2.63.0
 	github.com/casbin/gorm-adapter/v3 v3.7.4
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/glebarez/sqlite v1.4.6
@@ -26,6 +26,7 @@ require (
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/mymmrac/telego v0.16.0
+	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.12.0
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
@@ -91,7 +92,6 @@ require (
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
-	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
